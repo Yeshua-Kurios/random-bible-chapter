@@ -66,6 +66,21 @@ The one true reset is "Erase everything & start over" under Reading
 history, which wipes your level and completions too — for when you
 actually want to start from zero.
 
+## Streaks, daily goal, and nudges
+
+To make coming back every day feel good:
+
+- **Daily streak.** Consecutive days with at least one chapter read. It stays
+  alive until a full day passes with nothing read, and pulses when today's
+  reading is still needed to save it. Streak milestones (3, 7, 14, 30, 60,
+  100, 180, and 365 days) unlock a one-time achievement with bonus XP.
+- **Daily goal.** Read 3 chapters in a day for a celebration. It's purely a
+  celebration — no extra XP — so it can't be farmed.
+- **"Almost there" nudges.** The app points out when you're 1–3 chapters from
+  finishing a book or a few chapters from the next milestone.
+- **Instant feedback.** A floating "+XP" pop and a light haptic buzz (where
+  supported) on every chapter you mark as read.
+
 ## How random is it?
 
 The app uses `crypto.getRandomValues()`, the browser's cryptographically
