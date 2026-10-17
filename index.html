@@ -66,6 +66,22 @@
       <p id="completions-line" class="completions-line" hidden></p>
     </div>
 
+    <div class="card trivia-card">
+      <h2>Bible Trivia</h2>
+      <p id="trivia-status" class="trivia-status"></p>
+      <div id="trivia-quiz" hidden>
+        <p id="trivia-meta" class="trivia-meta"></p>
+        <p id="trivia-question" class="trivia-question"></p>
+        <div id="trivia-choices" class="trivia-choices"></div>
+        <div id="trivia-feedback" hidden>
+          <p id="trivia-result" class="trivia-result" aria-live="polite"></p>
+          <p id="trivia-explain" class="trivia-explain"></p>
+          <button id="trivia-next" class="primary">Next</button>
+        </div>
+      </div>
+      <button id="trivia-start" class="primary">Start trivia</button>
+    </div>
+
     <div class="progress">
       <div class="progress-track">
         <div id="progress-bar"></div>
@@ -130,7 +146,7 @@
 
       <p class="hint">
         With a token saved, your full progress — history, level, achievements,
-        and streak freezes — is also backed up to your private repo after every
+        streak freezes, and trivia progress — is also backed up to your private repo after every
         chapter. If this browser ever loses its data, paste your token again
         above and tap Restore from cloud. A backup is never overwritten by a
         device that has less progress than it.
@@ -162,6 +178,7 @@
   </main>
 
   <script src="data.js"></script>
+  <script src="trivia.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -851,3 +851,79 @@ footer a {
   color: var(--muted);
   opacity: 0.8;
 }
+
+/* --- Bible Trivia --- */
+
+.trivia-card {
+  margin-top: 0.6rem;
+  text-align: left;
+  padding: 1.35rem 1.5rem;
+}
+
+.trivia-card h2 {
+  margin-top: 0;
+}
+
+.trivia-status {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.trivia-meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.trivia-question {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+.trivia-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.trivia-choice {
+  text-align: left;
+  line-height: 1.35;
+}
+
+.trivia-choice.correct {
+  border-color: #3f8f4f;
+  background: rgba(63, 143, 79, 0.15);
+  opacity: 1;
+}
+
+.trivia-choice.wrong {
+  border-color: #b24a4a;
+  background: rgba(178, 74, 74, 0.15);
+  opacity: 1;
+}
+
+.trivia-result {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.trivia-explain {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.trivia-card .primary {
+  width: 100%;
+}

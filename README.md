@@ -99,6 +99,30 @@ again and tap **Restore from cloud**.
 - "Erase everything & start over" also erases the cloud copy.
 - The token itself is never included in the backup.
 
+## Bible Trivia
+
+A trivia section built to teach you things you don't already know — obscure
+ancient-Near-East background, archaeology, rare Hebrew/Greek/Aramaic words,
+hapax legomena. Every question is a mini-lesson: the explanation always
+shows, whether you got it right or not.
+
+- **Adaptive difficulty.** Facts come in five tiers, from Warm-up to Master of
+  Obscurity. Three new facts right in a row moves you up a tier; two misses in
+  a row moves you down.
+- **Spaced repetition.** A fact you get right comes back after 1, 3, 7, 14,
+  30, 60, 120, 180, then 365 days. Forget one and it drops back toward the
+  start so it sticks. Facts missed in a session get one more try at the end.
+- **XP, with Scripture on top.** A new fact earns 2–6 XP (a chapter earns
+  10). The big reward is remembering: a correct review earns a retention
+  bonus that grows with the time since you last saw the fact — about 18 XP
+  after a week, 30 after a month, and the 45 XP maximum at around six months.
+- **Not farmable.** Only 5 new facts a day, reviews are offered only when
+  they're due, and retries earn nothing.
+
+The fact bank lives in `trivia.js`. To add facts, append cards to
+`TRIVIA_CARDS` (never rename or reuse an `id`, since progress is stored by id).
+Trivia progress is included in backups, cloud backup, and reset.
+
 ## How random is it?
 
 The app uses `crypto.getRandomValues()`, the browser's cryptographically
