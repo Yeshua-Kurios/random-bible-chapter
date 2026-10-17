@@ -161,7 +161,7 @@ shows, whether you got it right or not.
   the same session.
 - **Not farmable.** A fact pays its base XP only the first time you ever
   answer it, so total new-fact XP is capped by the size of the bank (about
-  840 XP for all 195 facts, versus 10 XP for every chapter you read).
+  about 840 XP for the first 195 facts before scaling, versus 10 XP for every chapter you read).
   Reviews are offered only when they're due, and retries earn nothing. Once
   the bank passes 200 facts, every trivia payout is scaled by
   `sqrt(200 / bank size)`, so growing the bank can't turn trivia into the main
@@ -170,7 +170,7 @@ shows, whether you got it right or not.
 The fact bank is split by theme: `trivia.js` (core), `trivia-prophecy.js`
 (oracles set beside the extrabiblical records and excavations that bear on
 them), `trivia-archaeology.js`, `trivia-language.js` (rare words, loanwords,
-manuscripts), `trivia-ane.js` (Near Eastern background), and `trivia-discoveries.js` (major finds and how they were made, including celebrated claims that did not hold up). Each card can
+manuscripts), `trivia-ane.js` (Near Eastern background), `trivia-discoveries.js` (major finds and how they were made, including celebrated claims that did not hold up), `trivia-greek-aramaic-texts.js` (Greek and Aramaic vocabulary, manuscripts and textual history), `trivia-warmups.js` (easier tier 1–2 facts across the other themes) and `trivia-deep.js` (tier 4–5 specialist facts). Each card can
 carry an `src` field naming the inscription, text, or excavation behind it,
 shown as "Evidence" after you answer.
 

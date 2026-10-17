@@ -1,0 +1,43 @@
+I'm reading through the Bible and wrote down questions as I went. Please answer each one.
+
+How to answer:
+- Start with what the passage itself says in context, then add historical, cultural, or linguistic background where it helps.
+- Where a translation's wording matters, explain what the Hebrew or Greek behind it says and how other major translations render it.
+- Say plainly where scholars disagree or the text is unclear. Don't invent details, quotes, or sources.
+- Answer in order, label each answer with its question number, and keep each one focused.
+
+My questions (the Bible version I was reading is in brackets):
+
+1. John 3:16 [KJV]
+   Edited question text
+
+2. Romans 8:1-4 [ESV]
+   Who is “condemnation” aimed at?
+   And what is “no”?
+
+3. Psalm 23 [Berean Standard]
+   Why “valley of the shadow”?
+
+4. Hezekiah’s tunnel [Berean Standard]
+   Unparseable passage test
+
+For reference, here is the King James text of the passages above:
+
+=== John 3:16 (KJV) ===
+16 For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.
+
+=== Romans 8:1–4 (KJV) ===
+1 There is therefore now no condemnation to them which are in Christ Jesus, who walk not after the flesh, but after the Spirit.
+2 For the law of the Spirit of life in Christ Jesus hath made me free from the law of sin and death.
+3 For what the law could not do, in that it was weak through the flesh, God sending his own Son in the likeness of sinful flesh, and for sin, condemned sin in the flesh:
+4 That the righteousness of the law might be fulfilled in us, who walk not after the flesh, but after the Spirit.
+
+=== Psalms 23 (KJV) ===
+1 The LORD is my shepherd; I shall not want.
+2 He maketh me to lie down in green pastures: he leadeth me beside the still waters.
+3 He restoreth my soul: he leadeth me in the paths of righteousness for his name's sake.
+4 Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me.
+5 Thou preparest a table before me in the presence of mine enemies: thou anointest my head with oil; my cup runneth over.
+6 Surely goodness and mercy shall follow me all the days of my life: and I will dwell in the house of the LORD for ever.
+
+(I couldn't include the text for: Hezekiah’s tunnel.)

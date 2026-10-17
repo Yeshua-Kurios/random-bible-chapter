@@ -193,13 +193,6 @@ TRIVIA_CARDS.push(
     why: "Psalm 22:1 in Hebrew reads Eli, Eli, lamah azavtani, but Mark records Eloi, Eloi, lama sabachthani, which is Aramaic. Matthew's Eli, Eli blends Hebrew with Aramaic, and sounds like “Elijah,” which explains why bystanders thought Jesus was calling the prophet. Mark's Eloi makes that mix-up harder to explain.",
   },
   {
-    id: "jegar-sahadutha-laban", tier: 3, cat: "Aramaic", ref: "Genesis 31:47",
-    q: "In Genesis 31:47 Laban and Jacob name the same stone heap in two languages. What language is Laban's name, Jegar-sahadutha?",
-    answer: "Aramaic",
-    wrong: ["Hebrew", "Akkadian", "Hurrian"],
-    why: "Yegar sahaduta is Aramaic for “heap of witness,” and Jacob's Galeed (gal-ed) means the same in Hebrew. The verse is a rare case of two languages named side by side in Genesis, and it fits Laban as an Aramean from Paddan-aram (Gen 25:20).",
-  },
-  {
     id: "jeremiah-10-11-aramaic-verse", tier: 3, cat: "Aramaic", ref: "Jeremiah 10:11",
     q: "Which prophet's book contains exactly one verse in Aramaic, a taunt about gods who did not make the heavens?",
     answer: "Jeremiah",
@@ -219,14 +212,6 @@ TRIVIA_CARDS.push(
     answer: "Aramaic",
     wrong: ["Akkadian", "Greek", "Phoenician"],
     why: "Aramaic was the diplomatic language of the Assyrian empire, so Hezekiah's officials and the Assyrian official both knew it, while most Judeans on the wall did not. The commander deliberately answers in “the language of Judah” (Hebrew) to frighten them. Isaiah 36:11 repeats the scene.",
-  },
-  {
-    id: "elephantine-passover-papyrus-419", tier: 4, cat: "Aramaic", ref: "Exodus 12",
-    q: "The 419 BCE Aramaic “Passover Papyrus” from Elephantine, Egypt, is notable for what?",
-    answer: "It sets dates for Unleavened Bread",
-    wrong: ["It orders the garrison to rebuild its destroyed temple", "It lists the names of every Jewish household", "It records a Persian ban on keeping the Sabbath"],
-    why: "The fragmentary letter from Hananiah gives the garrison dates in Nisan and rules about leaven, in the fifth year of Darius. The word “Passover” does not survive, and the Berlin museum notes that some scholars read it as a calendar directive instead. Some have suggested Hananiah was Nehemiah's brother Hanani, but that is only a possibility.",
-    src: "Elephantine Papyrus P. 13464 (Berlin), 419 BCE",
   },
   {
     id: "ahiqar-tobit-aramaic", tier: 4, cat: "Aramaic", ref: "Tobit 1:21-22",

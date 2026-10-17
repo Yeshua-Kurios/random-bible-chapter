@@ -5,7 +5,7 @@ Every card must have a `why`, and every non-linguistic fact needs a `src`
 (a named inscription, manuscript, site or ancient author). Cards that can't be
 corroborated are dropped, not softened.
 
-## Where it stands (195 cards)
+## Where it stands (341 cards after round 2; the table below is the 195-card starting point)
 
 | Category | T1 | T2 | T3 | T4 | T5 | Total |
 |---|---|---|---|---|---|---|
