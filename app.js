@@ -84,6 +84,7 @@ const els = {
   triviaFeedback: document.getElementById("trivia-feedback"),
   triviaResult: document.getElementById("trivia-result"),
   triviaExplain: document.getElementById("trivia-explain"),
+  triviaSrc: document.getElementById("trivia-src"),
   triviaNext: document.getElementById("trivia-next"),
   cloudRestoreBtn: document.getElementById("cloud-restore-btn"),
   cloudStatus: document.getElementById("cloud-status"),
@@ -874,6 +875,7 @@ function hideLevelUp() {
 // the retention bonus grows with the time since you last saw it, up to 45 XP
 // at about six months. Anti-farming: only a few new facts per day, and a
 // fact can't be reviewed again until it's due.
+const TRIVIA_BY_ID = new Map(TRIVIA_CARDS.map((c) => [c.id, c]));
 const TRIVIA_NEW_PER_DAY = 5;
 const TRIVIA_NEW_XP = [2, 3, 4, 5, 6]; // by the card's tier
 const TRIVIA_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120, 180, 365];
@@ -1107,6 +1109,8 @@ function answerTrivia(choice) {
   if (nextDays !== null) {
     els.triviaExplain.textContent += ` — You'll see this again ${formatInterval(nextDays) === "tomorrow" ? "tomorrow" : "in " + formatInterval(nextDays)}.`;
   }
+  els.triviaSrc.hidden = !card.src;
+  els.triviaSrc.textContent = card.src ? `Evidence: ${card.src}` : "";
   els.triviaFeedback.hidden = false;
   els.triviaNext.focus();
 

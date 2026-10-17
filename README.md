@@ -119,9 +119,23 @@ shows, whether you got it right or not.
 - **Not farmable.** Only 5 new facts a day, reviews are offered only when
   they're due, and retries earn nothing.
 
-The fact bank lives in `trivia.js`. To add facts, append cards to
-`TRIVIA_CARDS` (never rename or reuse an `id`, since progress is stored by id).
-Trivia progress is included in backups, cloud backup, and reset.
+The fact bank is split by theme: `trivia.js` (core), `trivia-prophecy.js`
+(oracles set beside the extrabiblical records and excavations that bear on
+them), `trivia-archaeology.js`, `trivia-language.js` (rare words, loanwords,
+manuscripts), and `trivia-ane.js` (Near Eastern background). Each card can
+carry an `src` field naming the inscription, text, or excavation behind it,
+shown as "Evidence" after you answer.
+
+Prophecy cards are written to separate what the sources document from what
+scholars dispute — for example when Isaiah 40–55 or Daniel was composed, or
+whether Tyre's later history matches Ezekiel 26 literally — rather than
+claiming more than the evidence shows.
+
+To add facts, push cards onto `TRIVIA_CARDS` from any `trivia-*.js` file and
+load it in `index.html` (never rename or reuse an `id`, since progress is
+stored by id). Keep the three wrong answers close in length and style to the
+right one so length isn't a clue. Trivia progress is included in backups,
+cloud backup, and reset.
 
 ## How random is it?
 
