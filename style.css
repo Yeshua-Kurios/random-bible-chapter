@@ -945,3 +945,179 @@ footer a {
   background: transparent;
   color: var(--muted);
 }
+
+/* --- KJV reader --- */
+
+.reader,
+.questions {
+  margin-top: 0.6rem;
+  text-align: left;
+  padding: 1.1rem 1.35rem;
+}
+
+.reader > summary,
+.questions > summary {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+}
+
+.reader:not([open]) > summary,
+.questions:not([open]) > summary {
+  margin-bottom: 0;
+}
+
+.reader-text {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.reader-text .verse-para {
+  margin: 0 0 1rem;
+}
+
+.reader-text .verse-num {
+  font-family: var(--font-display);
+  font-size: 0.68em;
+  font-weight: 700;
+  color: var(--gold);
+  margin-right: 0.18em;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: super;
+  line-height: 0;
+}
+
+.reader-text .verse-num:hover,
+.reader-text .verse-num:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.reader-status {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.reader-mark-row {
+  margin-top: 1rem;
+}
+
+.reader-mark-row button {
+  width: 100%;
+}
+
+/* --- Questions notebook --- */
+
+.q-form label {
+  display: block;
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.q-input {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+select.q-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+
+.q-form textarea {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.q-form button {
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+
+.q-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.q-list li {
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.q-list li.q-group {
+  border-top: none;
+  padding: 0.9rem 0 0.2rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.q-item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.q-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+.q-item-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.q-item-actions button {
+  flex: none;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.78rem;
+  background: transparent;
+  color: var(--muted);
+}
+
+.q-text {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.q-check {
+  display: block;
+  margin: 0.4rem 0 0.7rem;
+  font-size: 0.88rem;
+}
+
+#q-copy {
+  width: 100%;
+  margin-bottom: 0.6rem;
+}
+
+.q-clear {
+  display: block;
+  margin: 0.4rem auto 0;
+  flex: none;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  background: transparent;
+  color: var(--muted);
+}

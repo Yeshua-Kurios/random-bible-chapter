@@ -99,6 +99,46 @@ again and tap **Restore from cloud**.
 - "Erase everything & start over" also erases the cloud copy.
 - The token itself is never included in the backup.
 
+## Reading the chapter here (KJV)
+
+The chapter you draw appears below the card in the King James Version, with
+verse numbers, paragraph breaks, and the translators' italics (the words
+they supplied that aren't in the original). A second "Mark as Read" button
+sits under the text so you don't have to scroll back up.
+
+The text lives in `kjv/`, one small JSON file per book, and only the book you
+need is fetched. Nothing is stored server-side. Because it's fetched, the
+chapter text needs a connection (the rest of the app doesn't).
+
+**Where the text comes from.** The 1769 King James text is in the public
+domain in the US (in the UK it is covered by a Crown letters patent, which
+affects printing rather than reading). I took it from
+[farskipper/kjv](https://github.com/farskipper/kjv) (public domain), after
+cross-checking it against two other public digitizations: all three agree on
+the verse structure (66 books, 1,189 chapters, 31,102 verses). It matched one
+of them on 31,041 of 31,102 verses, and the 61 differences were spelling
+variants (e.g. "honour" vs "honor") or errors in the other file, not
+different wording. A third file had encoding damage and stray margin notes,
+so it wasn't used. If you spot a typo, it can be fixed in the matching
+`kjv/<book>.json`.
+
+## Questions for an LLM
+
+Under the text, **My questions** is a notebook for questions you have while
+reading, in *any* Bible version (KJV, NKJV, ESV, NIV, NLT, NASB, CSB, NRSV,
+AMP, MSG, or type your own). Each question records its passage (defaults to
+the chapter you're on, or tap a verse number to target that verse) and the
+version you were reading.
+
+When you're done, **Copy all as an LLM prompt** puts every question on the
+clipboard with short instructions for the model (answer from the passage
+first, explain what the Hebrew/Greek behind a translation says, flag where
+scholars disagree, don't invent sources). Tick "Also include the KJV text of
+each passage" to append the King James text of each passage you referenced
+(`John 3:16`, `Romans 8:1-4`, `Psalm 23`, ...). Passages it can't read are
+listed rather than silently dropped. Questions are part of your backup and
+cloud backup, and "Erase everything" removes them too.
+
 ## Bible Trivia
 
 A trivia section built to teach you things you don't already know — obscure

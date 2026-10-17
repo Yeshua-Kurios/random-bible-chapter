@@ -7,6 +7,7 @@ const SYNC_SECRET_KEY = "rbc:syncSecret";
 const FREEZES_KEY = "rbc:freezes";
 const LAST_BACKUP_KEY = "rbc:lastBackupAt";
 const TRIVIA_KEY = "rbc:trivia";
+const QUESTIONS_KEY = "rbc:questions";
 // The reading log lives as a JSON file in a private GitHub repo (rather
 // than a custom backend) because GitHub's API is reachable from almost any
 // sandboxed environment — including the one running the AI Bible
@@ -87,6 +88,24 @@ const els = {
   triviaSrc: document.getElementById("trivia-src"),
   triviaNext: document.getElementById("trivia-next"),
   triviaEnd: document.getElementById("trivia-end"),
+  readerDetails: document.getElementById("reader"),
+  readerSummary: document.getElementById("reader-summary"),
+  readerText: document.getElementById("reader-text"),
+  readerMarkRow: document.getElementById("reader-mark-row"),
+  markBtn2: document.getElementById("mark-btn-2"),
+  questionsDetails: document.getElementById("questions"),
+  questionsCount: document.getElementById("questions-count"),
+  qForm: document.getElementById("q-form"),
+  qPassage: document.getElementById("q-passage"),
+  qVersion: document.getElementById("q-version"),
+  qVersionOther: document.getElementById("q-version-other"),
+  qText: document.getElementById("q-text"),
+  qList: document.getElementById("q-list"),
+  qIncludeText: document.getElementById("q-include-text"),
+  qCopy: document.getElementById("q-copy"),
+  qPreview: document.getElementById("q-preview"),
+  qStatus: document.getElementById("q-status"),
+  qClear: document.getElementById("q-clear"),
   cloudRestoreBtn: document.getElementById("cloud-restore-btn"),
   cloudStatus: document.getElementById("cloud-status"),
   levelupModal: document.getElementById("levelup-modal"),
@@ -396,12 +415,13 @@ function handleSyncSave() {
 
 function buildBackupPayload() {
   return {
-    v: 4,
+    v: 5,
     log: loadReadLog(),
     achievements: loadAchievements(),
     lifetime: loadLifetime(),
     freezes: loadFreezes(),
     trivia: loadTrivia(),
+    questions: loadQuestions(),
   };
 }
 
@@ -420,6 +440,9 @@ function applyBackupPayload(payload) {
     grantedOn: Array.isArray(freezes.grantedOn) ? freezes.grantedOn : [],
   });
   saveTrivia(sanitizeTrivia(payload.trivia));
+  // Questions are the user's own writing: an older backup that predates
+  // them must not wipe the ones already on this device.
+  if (payload.questions !== undefined) saveQuestions(sanitizeQuestions(payload.questions));
   triviaSession = null;
   els.triviaQuiz.hidden = true;
   localStorage.removeItem(PENDING_KEY);
@@ -1148,6 +1171,437 @@ function renderTrivia() {
   els.triviaStart.textContent = due > 0 ? "Start trivia" : "Learn something new";
 }
 
+// --- KJV reader. The text is public domain (1769 King James Version) and
+// ships as one small JSON file per book under kjv/, fetched when you need it.
+// In the data, a leading "#" starts a new paragraph and [brackets] mark the
+// words the translators printed in italics.
+
+const kjvCache = new Map();
+
+function bookSlug(book) {
+  return book.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function loadKjvBook(book) {
+  const slug = bookSlug(book);
+  if (!kjvCache.has(slug)) {
+    const promise = fetch(`kjv/${slug}.json`).then((res) => {
+      if (!res.ok) throw new Error(`KJV ${slug}: ${res.status}`);
+      return res.json();
+    });
+    promise.catch(() => kjvCache.delete(slug)); // allow a retry after a failure
+    kjvCache.set(slug, promise);
+  }
+  return kjvCache.get(slug).then((data) => data.chapters);
+}
+
+async function kjvChapterVerses(book, chapter) {
+  const chapters = await loadKjvBook(book);
+  const verses = chapters[chapter - 1];
+  if (!verses) throw new Error(`No KJV text for ${book} ${chapter}`);
+  return verses;
+}
+
+// Appends text to `parent`, rendering [bracketed] words in italics.
+function appendWithItalics(parent, text) {
+  for (const part of text.split(/(\[[^\]]*\])/)) {
+    if (!part) continue;
+    if (part.startsWith("[") && part.endsWith("]")) {
+      const em = document.createElement("i");
+      em.textContent = part.slice(1, -1);
+      parent.appendChild(em);
+    } else {
+      parent.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+function plainVerse(raw) {
+  return raw.replace(/^#\s*/, "").replace(/[\[\]]/g, "");
+}
+
+let readerToken = 0;
+let readerKey = undefined;
+
+function updateReader(pending) {
+  els.readerMarkRow.hidden = pending === null;
+  if (pending === readerKey) return; // already showing this chapter
+  readerKey = pending;
+  renderReader(pending);
+}
+
+async function renderReader(pending) {
+  const token = ++readerToken;
+  els.readerText.textContent = "";
+  if (!pending) {
+    els.readerSummary.textContent = "Read it here · KJV";
+    const p = document.createElement("p");
+    p.className = "reader-status";
+    p.textContent = "Get a random chapter and its King James text will appear here.";
+    els.readerText.appendChild(p);
+    return;
+  }
+  els.readerSummary.textContent = `${pending} · KJV`;
+  const status = document.createElement("p");
+  status.className = "reader-status";
+  status.textContent = "Loading…";
+  els.readerText.appendChild(status);
+
+  const [book, chapter] = splitKey(pending);
+  let verses;
+  try {
+    verses = await kjvChapterVerses(book, chapter);
+  } catch {
+    if (token !== readerToken) return;
+    readerKey = undefined; // let the next render try again
+    status.textContent = "Couldn't load the text — check your connection and tap here to retry.";
+    status.style.cursor = "pointer";
+    status.addEventListener("click", () => updateReader(loadPending()));
+    return;
+  }
+  if (token !== readerToken) return; // a different chapter was requested meanwhile
+
+  els.readerText.textContent = "";
+  let para = null;
+  verses.forEach((raw, i) => {
+    let text = raw;
+    if (text.startsWith("#")) {
+      text = text.replace(/^#\s*/, "");
+      para = null;
+    }
+    if (!para) {
+      para = document.createElement("p");
+      para.className = "verse-para";
+      els.readerText.appendChild(para);
+    }
+    const num = document.createElement("sup");
+    num.className = "verse-num";
+    num.textContent = String(i + 1);
+    num.tabIndex = 0;
+    num.setAttribute("role", "button");
+    num.title = "Ask a question about this verse";
+    const ask = () => askAboutVerse(book, chapter, i + 1);
+    num.addEventListener("click", ask);
+    num.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        ask();
+      }
+    });
+    para.appendChild(num);
+    appendWithItalics(para, text + " ");
+  });
+}
+
+// --- Questions notebook: jot questions per passage and Bible version, then
+// copy them all as one prompt for an LLM.
+
+const BIBLE_VERSIONS = ["KJV", "NKJV", "ESV", "NIV", "NLT", "NASB", "CSB", "NRSV", "AMP", "MSG"];
+const OTHER_VERSION = "Other…";
+const BOOK_ALIASES = {
+  psalm: "Psalms",
+  "song of songs": "Song of Solomon",
+  "songs of solomon": "Song of Solomon",
+  "song of solomon": "Song of Solomon",
+};
+
+function emptyQuestions() {
+  return { items: [], lastVersion: "KJV" };
+}
+
+function sanitizeQuestions(raw) {
+  const q = emptyQuestions();
+  if (!raw || typeof raw !== "object") return q;
+  if (typeof raw.lastVersion === "string" && raw.lastVersion) q.lastVersion = raw.lastVersion;
+  if (Array.isArray(raw.items)) {
+    for (const it of raw.items) {
+      if (it && typeof it.text === "string" && it.text.trim()) {
+        q.items.push({
+          id: typeof it.id === "string" ? it.id : String(Math.random()).slice(2),
+          passage: typeof it.passage === "string" ? it.passage : "",
+          version: typeof it.version === "string" && it.version ? it.version : "KJV",
+          text: it.text,
+          t: typeof it.t === "number" ? it.t : 0,
+        });
+      }
+    }
+  }
+  return q;
+}
+
+function loadQuestions() {
+  try {
+    return sanitizeQuestions(JSON.parse(localStorage.getItem(QUESTIONS_KEY) || "null"));
+  } catch {
+    return emptyQuestions();
+  }
+}
+
+function saveQuestions(questions) {
+  localStorage.setItem(QUESTIONS_KEY, JSON.stringify(questions));
+}
+
+function currentVersionChoice() {
+  return els.qVersion.value === OTHER_VERSION ? els.qVersionOther.value.trim() || "Unspecified version" : els.qVersion.value;
+}
+
+function setVersionChoice(version) {
+  if (BIBLE_VERSIONS.includes(version)) {
+    els.qVersion.value = version;
+    els.qVersionOther.hidden = true;
+  } else {
+    els.qVersion.value = OTHER_VERSION;
+    els.qVersionOther.hidden = false;
+    els.qVersionOther.value = version;
+  }
+}
+
+let passageEdited = false;
+let lastPassageDefault = "";
+
+function renderQuestions(pending) {
+  const questions = loadQuestions();
+  els.questionsCount.textContent = questions.items.length > 0 ? `(${questions.items.length})` : "";
+
+  // Default the passage to the chapter being read, unless the user typed one.
+  const wanted = pending || "";
+  if (!passageEdited || els.qPassage.value === lastPassageDefault) {
+    els.qPassage.value = wanted;
+    passageEdited = false;
+  }
+  lastPassageDefault = wanted;
+
+  els.qList.innerHTML = "";
+  const groups = new Map();
+  for (const item of questions.items) {
+    const key = item.passage || "General";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  for (const [passage, items] of groups) {
+    const heading = document.createElement("li");
+    heading.className = "q-group";
+    heading.textContent = passage;
+    els.qList.appendChild(heading);
+    for (const item of items) {
+      const li = document.createElement("li");
+      const head = document.createElement("div");
+      head.className = "q-item-head";
+      const badge = document.createElement("span");
+      badge.className = "q-badge";
+      badge.textContent = item.version;
+      const actions = document.createElement("span");
+      actions.className = "q-item-actions";
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", () => editQuestion(item.id));
+      const del = document.createElement("button");
+      del.type = "button";
+      del.textContent = "Delete";
+      del.addEventListener("click", () => deleteQuestion(item.id));
+      actions.append(edit, del);
+      head.append(badge, actions);
+      const text = document.createElement("p");
+      text.className = "q-text";
+      text.textContent = item.text;
+      li.append(head, text);
+      els.qList.appendChild(li);
+    }
+  }
+}
+
+function askAboutVerse(book, chapter, verse) {
+  els.questionsDetails.open = true;
+  els.qPassage.value = `${book} ${chapter}:${verse}`;
+  passageEdited = true;
+  setVersionChoice("KJV"); // you're reading the KJV text here
+  els.qText.focus();
+  els.questionsDetails.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function handleAddQuestion(e) {
+  e.preventDefault();
+  const text = els.qText.value.trim();
+  if (!text) {
+    els.qStatus.textContent = "Write your question first.";
+    els.qText.focus();
+    return;
+  }
+  const questions = loadQuestions();
+  const version = currentVersionChoice();
+  questions.items.push({
+    id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+    passage: els.qPassage.value.trim() || loadPending() || "General",
+    version,
+    text,
+    t: Date.now(),
+  });
+  questions.lastVersion = version;
+  saveQuestions(questions);
+  els.qText.value = "";
+  els.qStatus.textContent = "Question saved.";
+  scheduleBackupSync();
+  renderQuestions(loadPending());
+}
+
+function editQuestion(id) {
+  const questions = loadQuestions();
+  const item = questions.items.find((q) => q.id === id);
+  if (!item) return;
+  const edited = prompt("Edit your question:", item.text);
+  if (edited === null) return;
+  if (!edited.trim()) return deleteQuestion(id);
+  item.text = edited.trim();
+  saveQuestions(questions);
+  scheduleBackupSync();
+  renderQuestions(loadPending());
+}
+
+function deleteQuestion(id) {
+  const questions = loadQuestions();
+  questions.items = questions.items.filter((q) => q.id !== id);
+  saveQuestions(questions);
+  scheduleBackupSync();
+  renderQuestions(loadPending());
+}
+
+function handleClearQuestions() {
+  const questions = loadQuestions();
+  if (questions.items.length === 0) return;
+  if (!confirm(`Delete all ${questions.items.length} saved questions? Copy them first if you still need them.`)) return;
+  questions.items = [];
+  saveQuestions(questions);
+  els.qPreview.hidden = true;
+  els.qStatus.textContent = "All questions cleared.";
+  scheduleBackupSync();
+  renderQuestions(loadPending());
+}
+
+// Turns "John 3:16-18", "Psalm 23", "1 John 4:8" into { book, chapter, from, to }.
+function parsePassage(text) {
+  const m = text.trim().match(/^((?:[123]\s*)?[A-Za-z][A-Za-z.\s]*?)\s*(\d+)(?::\s*(\d+)(?:\s*[-–—]\s*(\d+))?)?$/);
+  if (!m) return null;
+  const name = m[1].replace(/\./g, "").replace(/\s+/g, " ").trim().replace(/^([123])\s*/, "$1 ").toLowerCase();
+  const book = BOOK_ALIASES[name] || (BIBLE_BOOKS.find(([b]) => b.toLowerCase() === name) || [])[0];
+  if (!book) return null;
+  const chapter = Number(m[2]);
+  const total = BIBLE_BOOKS.find(([b]) => b === book)[1];
+  if (chapter < 1 || chapter > total) return null;
+  const from = m[3] ? Number(m[3]) : null;
+  const to = m[4] ? Number(m[4]) : from;
+  if (from !== null && to < from) return null;
+  return { book, chapter, from, to };
+}
+
+function passageLabel(p) {
+  if (p.from === null) return `${p.book} ${p.chapter}`;
+  return p.to === p.from ? `${p.book} ${p.chapter}:${p.from}` : `${p.book} ${p.chapter}:${p.from}–${p.to}`;
+}
+
+const PROMPT_INTRO = `I'm reading through the Bible and wrote down questions as I went. Please answer each one.
+
+How to answer:
+- Start with what the passage itself says in context, then add historical, cultural, or linguistic background where it helps.
+- Where a translation's wording matters, explain what the Hebrew or Greek behind it says and how other major translations render it.
+- Say plainly where scholars disagree or the text is unclear. Don't invent details, quotes, or sources.
+- Answer in order, label each answer with its question number, and keep each one focused.`;
+
+async function buildQuestionsPrompt(items, includeKjvText) {
+  const lines = [PROMPT_INTRO, "", "My questions (the Bible version I was reading is in brackets):", ""];
+  items.forEach((item, i) => {
+    lines.push(`${i + 1}. ${item.passage || "General"} [${item.version}]`);
+    for (const line of item.text.split("\n")) lines.push(`   ${line}`);
+    lines.push("");
+  });
+
+  if (includeKjvText) {
+    const seen = new Set();
+    const sections = [];
+    const skipped = [];
+    for (const item of items) {
+      const parsed = item.passage ? parsePassage(item.passage) : null;
+      if (!parsed) {
+        if (item.passage && item.passage !== "General") skipped.push(item.passage);
+        continue;
+      }
+      const label = passageLabel(parsed);
+      if (seen.has(label)) continue;
+      seen.add(label);
+      try {
+        const verses = await kjvChapterVerses(parsed.book, parsed.chapter);
+        const from = parsed.from ?? 1;
+        const to = parsed.to ?? verses.length;
+        const body = [];
+        for (let v = from; v <= Math.min(to, verses.length); v++) body.push(`${v} ${plainVerse(verses[v - 1])}`);
+        sections.push(`=== ${label} (KJV) ===\n${body.join("\n")}`);
+      } catch {
+        skipped.push(item.passage);
+      }
+    }
+    if (sections.length > 0) {
+      lines.push("For reference, here is the King James text of the passages above:", "", sections.join("\n\n"), "");
+    }
+    if (skipped.length > 0) {
+      lines.push(`(I couldn't include the text for: ${[...new Set(skipped)].join("; ")}.)`, "");
+    }
+  }
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+async function handleCopyPrompt() {
+  const { items } = loadQuestions();
+  if (items.length === 0) {
+    els.qStatus.textContent = "Add at least one question first.";
+    return;
+  }
+  els.qCopy.disabled = true;
+  els.qStatus.textContent = "Building your prompt…";
+  try {
+    const text = await buildQuestionsPrompt(items, els.qIncludeText.checked);
+    els.qPreview.value = text;
+    els.qPreview.hidden = false;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } catch {
+      els.qPreview.focus();
+      els.qPreview.select();
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+    }
+    els.qStatus.textContent = copied
+      ? `Copied ${items.length} question${items.length === 1 ? "" : "s"} — paste it into your LLM.`
+      : "Couldn't copy automatically. The prompt is selected below: tap and hold to copy it.";
+  } finally {
+    els.qCopy.disabled = false;
+  }
+}
+
+function initQuestionsUi() {
+  for (const v of [...BIBLE_VERSIONS, OTHER_VERSION]) {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    els.qVersion.appendChild(opt);
+  }
+  setVersionChoice(loadQuestions().lastVersion);
+  els.qVersion.addEventListener("change", () => {
+    els.qVersionOther.hidden = els.qVersion.value !== OTHER_VERSION;
+    if (!els.qVersionOther.hidden) els.qVersionOther.focus();
+  });
+  els.qPassage.addEventListener("input", () => {
+    passageEdited = true;
+  });
+  els.qForm.addEventListener("submit", handleAddQuestion);
+  els.qCopy.addEventListener("click", handleCopyPrompt);
+  els.qClear.addEventListener("click", handleClearQuestions);
+}
+
 // --- Rendering
 
 function render() {
@@ -1189,6 +1643,8 @@ function render() {
   els.getBtn.hidden = started;
   els.actionRow.hidden = pending === null;
 
+  updateReader(pending);
+  renderQuestions(pending);
   renderLevel(log);
   renderHabit(log, readSet);
   renderTrivia();
@@ -1284,12 +1740,20 @@ function buzz(pattern) {
   }
 }
 
+// The Mark-as-Read button appears twice (under the chapter title and below
+// the text), and both share one waiting state.
+function setMarkButtons(waiting) {
+  for (const btn of [els.markBtn, els.markBtn2]) {
+    btn.disabled = waiting;
+    btn.classList.toggle("waiting", waiting);
+  }
+}
+
 function updateReadTimer() {
   const pending = loadPending();
   if (!pending) {
     els.readTimer.hidden = true;
-    els.markBtn.disabled = false;
-    els.markBtn.classList.remove("waiting");
+    setMarkButtons(false);
     return;
   }
 
@@ -1299,14 +1763,12 @@ function updateReadTimer() {
 
   if (remaining <= 0) {
     els.readTimer.hidden = true;
-    els.markBtn.disabled = false;
-    els.markBtn.classList.remove("waiting");
+    setMarkButtons(false);
     return;
   }
 
   els.readTimer.hidden = false;
-  els.markBtn.disabled = true;
-  els.markBtn.classList.add("waiting");
+  setMarkButtons(true);
   const pct = ((MIN_READ_SECONDS - remaining) / MIN_READ_SECONDS) * 100;
   els.readTimerFill.style.width = `${pct}%`;
   els.readTimerLabel.textContent = `Take a moment to read — ${Math.ceil(remaining)}s`;
@@ -1503,7 +1965,7 @@ function handleSkip() {
 
 function handleReset() {
   const confirmed = confirm(
-    "This erases your entire reading history, achievements, and your lifetime level — including all Bible completions — and starts over from Level 1. If cloud backup is on, your cloud backup is erased too. This cannot be undone. Continue?"
+    "This erases your entire reading history, achievements, saved questions, and your lifetime level — including all Bible completions — and starts over from Level 1. If cloud backup is on, your cloud backup is erased too. This cannot be undone. Continue?"
   );
   if (!confirmed) return;
   localStorage.removeItem(STORAGE_KEY);
@@ -1513,6 +1975,7 @@ function handleReset() {
   localStorage.removeItem(LIFETIME_KEY);
   localStorage.removeItem(FREEZES_KEY);
   localStorage.removeItem(TRIVIA_KEY);
+  localStorage.removeItem(QUESTIONS_KEY);
   triviaSession = null;
   els.triviaQuiz.hidden = true;
   triviaSummary = "";
@@ -1573,6 +2036,8 @@ els.cloudRestoreBtn.addEventListener("click", handleCloudRestore);
 els.triviaStart.addEventListener("click", startTrivia);
 els.triviaNext.addEventListener("click", nextTriviaCard);
 els.triviaEnd.addEventListener("click", endTrivia);
+els.markBtn2.addEventListener("click", handleMark);
+initQuestionsUi();
 els.levelupDismiss.addEventListener("click", hideLevelUp);
 els.levelupModal.addEventListener("click", (e) => {
   if (e.target === els.levelupModal) hideLevelUp();
