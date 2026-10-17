@@ -6,6 +6,7 @@ const LIFETIME_KEY = "rbc:lifetime";
 const SYNC_SECRET_KEY = "rbc:syncSecret";
 const FREEZES_KEY = "rbc:freezes";
 const LAST_BACKUP_KEY = "rbc:lastBackupAt";
+const TRIVIA_KEY = "rbc:trivia";
 // The reading log lives as a JSON file in a private GitHub repo (rather
 // than a custom backend) because GitHub's API is reachable from almost any
 // sandboxed environment — including the one running the AI Bible
@@ -74,6 +75,16 @@ const els = {
   goalChip: document.getElementById("goal-chip"),
   nudge: document.getElementById("nudge"),
   freezeChip: document.getElementById("freeze-chip"),
+  triviaStatus: document.getElementById("trivia-status"),
+  triviaStart: document.getElementById("trivia-start"),
+  triviaQuiz: document.getElementById("trivia-quiz"),
+  triviaMeta: document.getElementById("trivia-meta"),
+  triviaQuestion: document.getElementById("trivia-question"),
+  triviaChoices: document.getElementById("trivia-choices"),
+  triviaFeedback: document.getElementById("trivia-feedback"),
+  triviaResult: document.getElementById("trivia-result"),
+  triviaExplain: document.getElementById("trivia-explain"),
+  triviaNext: document.getElementById("trivia-next"),
   cloudRestoreBtn: document.getElementById("cloud-restore-btn"),
   cloudStatus: document.getElementById("cloud-status"),
   levelupModal: document.getElementById("levelup-modal"),
@@ -291,7 +302,7 @@ function computeCycleXp(log, achievements) {
 }
 
 function computeLifetimeXp(log, achievements) {
-  return loadLifetime().bankedXp + computeCycleXp(log, achievements);
+  return loadLifetime().bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp;
 }
 
 // The daily cap looks at how many chapters have already been logged today
@@ -383,11 +394,12 @@ function handleSyncSave() {
 
 function buildBackupPayload() {
   return {
-    v: 3,
+    v: 4,
     log: loadReadLog(),
     achievements: loadAchievements(),
     lifetime: loadLifetime(),
     freezes: loadFreezes(),
+    trivia: loadTrivia(),
   };
 }
 
@@ -405,6 +417,9 @@ function applyBackupPayload(payload) {
     used: Array.isArray(freezes.used) ? freezes.used : [],
     grantedOn: Array.isArray(freezes.grantedOn) ? freezes.grantedOn : [],
   });
+  saveTrivia(sanitizeTrivia(payload.trivia));
+  triviaSession = null;
+  els.triviaQuiz.hidden = true;
   localStorage.removeItem(PENDING_KEY);
   localStorage.removeItem(PENDING_SINCE_KEY);
 }
@@ -414,7 +429,8 @@ function applyBackupPayload(payload) {
 function progressScore(payload) {
   const completions = Array.isArray(payload?.lifetime?.completions) ? payload.lifetime.completions.length : 0;
   const logLength = Array.isArray(payload?.log) ? payload.log.length : 0;
-  return completions * TOTAL_CHAPTERS + logLength;
+  const triviaCards = payload?.trivia?.cards && typeof payload.trivia.cards === "object" ? Object.keys(payload.trivia.cards).length : 0;
+  return completions * TOTAL_CHAPTERS + logLength + triviaCards;
 }
 
 function githubHeaders(token) {
@@ -850,6 +866,287 @@ function hideLevelUp() {
   }, 300);
 }
 
+// --- Bible Trivia: obscure facts (see trivia.js), taught one at a time and
+// brought back on a spaced-repetition schedule.
+//
+// XP is deliberately small next to reading: a new fact earns 2-6 XP (a
+// chapter earns 10). The big payoff is remembering a fact after a long gap —
+// the retention bonus grows with the time since you last saw it, up to 45 XP
+// at about six months. Anti-farming: only a few new facts per day, and a
+// fact can't be reviewed again until it's due.
+const TRIVIA_NEW_PER_DAY = 5;
+const TRIVIA_NEW_XP = [2, 3, 4, 5, 6]; // by the card's tier
+const TRIVIA_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120, 180, 365];
+const TRIVIA_MAX_BONUS = 45;
+const TRIVIA_MAX_REVIEWS_PER_SESSION = 15;
+const TRIVIA_TIER_NAMES = ["Warm-up", "Student", "Scholar", "Expert", "Master of Obscurity"];
+const DAY_MS = 86400000;
+
+function emptyTrivia() {
+  return { xp: 0, cards: {}, skill: { tier: 1, streak: 0, miss: 0 }, daily: { date: "", newCount: 0 } };
+}
+
+function sanitizeTrivia(raw) {
+  const t = emptyTrivia();
+  if (!raw || typeof raw !== "object") return t;
+  if (typeof raw.xp === "number") t.xp = raw.xp;
+  if (raw.cards && typeof raw.cards === "object") {
+    for (const [id, c] of Object.entries(raw.cards)) {
+      if (c && typeof c.level === "number" && typeof c.due === "number") {
+        t.cards[id] = {
+          level: c.level,
+          due: c.due,
+          last: typeof c.last === "number" ? c.last : c.due,
+          reps: typeof c.reps === "number" ? c.reps : 1,
+          lapses: typeof c.lapses === "number" ? c.lapses : 0,
+        };
+      }
+    }
+  }
+  if (raw.skill && typeof raw.skill === "object") {
+    const tier = Number(raw.skill.tier);
+    t.skill.tier = tier >= 1 && tier <= TRIVIA_TIER_NAMES.length ? Math.floor(tier) : 1;
+    t.skill.streak = Number(raw.skill.streak) || 0;
+    t.skill.miss = Number(raw.skill.miss) || 0;
+  }
+  if (raw.daily && typeof raw.daily === "object") {
+    t.daily.date = typeof raw.daily.date === "string" ? raw.daily.date : "";
+    t.daily.newCount = Number(raw.daily.newCount) || 0;
+  }
+  return t;
+}
+
+function loadTrivia() {
+  try {
+    return sanitizeTrivia(JSON.parse(localStorage.getItem(TRIVIA_KEY) || "null"));
+  } catch {
+    return emptyTrivia();
+  }
+}
+
+function saveTrivia(trivia) {
+  localStorage.setItem(TRIVIA_KEY, JSON.stringify(trivia));
+}
+
+function triviaNewToday(trivia) {
+  return trivia.daily.date === localDateKey(new Date()) ? trivia.daily.newCount : 0;
+}
+
+function triviaDueIds(trivia, now = Date.now()) {
+  return Object.entries(trivia.cards)
+    .filter(([id, c]) => c.due <= now && TRIVIA_BY_ID.has(id))
+    .sort((a, b) => a[1].due - b[1].due)
+    .map(([id]) => id);
+}
+
+// The longer you go between correct recalls, the bigger the reward.
+function retentionBonus(elapsedDays) {
+  return Math.min(TRIVIA_MAX_BONUS, Math.round(6 * Math.log2(1 + Math.max(0, elapsedDays))));
+}
+
+function shuffled(items) {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// New facts come from the tier closest to the player's current skill tier.
+function pickNewCard(trivia) {
+  const unseen = TRIVIA_CARDS.filter((c) => !trivia.cards[c.id]);
+  if (unseen.length === 0) return null;
+  const best = Math.min(...unseen.map((c) => Math.abs(c.tier - trivia.skill.tier)));
+  const pool = unseen.filter((c) => Math.abs(c.tier - trivia.skill.tier) === best);
+  return pool[secureRandomInt(pool.length)];
+}
+
+// Three right in a row on new facts moves you up a tier; two misses in a
+// row moves you down one.
+function adaptSkill(skill, correct) {
+  if (correct) {
+    skill.streak++;
+    skill.miss = 0;
+    if (skill.streak >= 3 && skill.tier < TRIVIA_TIER_NAMES.length) {
+      skill.tier++;
+      skill.streak = 0;
+    }
+  } else {
+    skill.miss++;
+    skill.streak = 0;
+    if (skill.miss >= 2 && skill.tier > 1) {
+      skill.tier--;
+      skill.miss = 0;
+    }
+  }
+}
+
+function formatInterval(days) {
+  if (days >= 365) return "a year";
+  if (days >= 60) return `${Math.round(days / 30)} months`;
+  if (days >= 14) return `${Math.round(days / 7)} weeks`;
+  return days === 1 ? "tomorrow" : `${days} days`;
+}
+
+let triviaSession = null;
+let triviaSummary = "";
+
+function startTrivia() {
+  triviaSummary = "";
+  const due = triviaDueIds(loadTrivia()).slice(0, TRIVIA_MAX_REVIEWS_PER_SESSION);
+  triviaSession = { queue: due, retry: [], xp: 0, correct: 0, total: 0, current: null };
+  nextTriviaCard();
+}
+
+function nextTriviaCard() {
+  const s = triviaSession;
+  const trivia = loadTrivia();
+  let card = null;
+  let kind = null;
+  if (s.queue.length > 0) {
+    card = TRIVIA_BY_ID.get(s.queue.shift());
+    kind = "review";
+  } else if (triviaNewToday(trivia) < TRIVIA_NEW_PER_DAY) {
+    card = pickNewCard(trivia);
+    kind = "new";
+  }
+  if (!card && s.retry.length > 0) {
+    card = TRIVIA_BY_ID.get(s.retry.shift());
+    kind = "retry";
+  }
+  if (!card) {
+    endTrivia();
+    return;
+  }
+  s.current = { card, kind, choices: shuffled([card.answer, ...card.wrong]) };
+  renderTriviaQuestion();
+}
+
+function renderTriviaQuestion() {
+  const { card, kind, choices } = triviaSession.current;
+  const kindLabel = { new: "New fact", review: "Review", retry: "Try again" }[kind];
+  els.triviaMeta.textContent = `${kindLabel} · ${card.cat} · ${TRIVIA_TIER_NAMES[card.tier - 1]}`;
+  els.triviaQuestion.textContent = card.q;
+  els.triviaChoices.innerHTML = "";
+  for (const choice of choices) {
+    const btn = document.createElement("button");
+    btn.className = "trivia-choice";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => answerTrivia(choice));
+    els.triviaChoices.appendChild(btn);
+  }
+  els.triviaFeedback.hidden = true;
+  els.triviaQuiz.hidden = false;
+  els.triviaStart.hidden = true;
+}
+
+function answerTrivia(choice) {
+  const s = triviaSession;
+  const { card, kind } = s.current;
+  const correct = choice === card.answer;
+  const trivia = loadTrivia();
+  const now = Date.now();
+  const oldLevel = levelForXp(computeLifetimeXp(loadReadLog(), loadAchievements()));
+  const oldRank = getRank(oldLevel);
+  let xp = 0;
+  let result = "";
+  let nextDays = null;
+
+  if (kind === "new") {
+    xp = correct ? TRIVIA_NEW_XP[card.tier - 1] : 0;
+    nextDays = TRIVIA_INTERVALS_DAYS[0];
+    trivia.cards[card.id] = {
+      level: correct ? 1 : 0,
+      due: now + nextDays * DAY_MS,
+      last: now,
+      reps: 1,
+      lapses: correct ? 0 : 1,
+    };
+    const today = localDateKey(new Date());
+    trivia.daily = { date: today, newCount: triviaNewToday(trivia) + 1 };
+    adaptSkill(trivia.skill, correct);
+    result = correct ? `✅ Correct! +${xp} XP` : "❌ Not quite — now you know!";
+  } else if (kind === "review") {
+    const c = trivia.cards[card.id];
+    const elapsedDays = (now - c.last) / DAY_MS;
+    if (correct) {
+      xp = retentionBonus(elapsedDays);
+      c.level++;
+      c.reps++;
+      nextDays = TRIVIA_INTERVALS_DAYS[Math.min(c.level - 1, TRIVIA_INTERVALS_DAYS.length - 1)];
+      const ago = elapsedDays >= 1 ? ` after ${Math.round(elapsedDays)} day${Math.round(elapsedDays) === 1 ? "" : "s"}` : "";
+      result = `🧠 You remembered it${ago}! +${xp} XP retention bonus`;
+    } else {
+      c.lapses++;
+      c.level = Math.floor(c.level / 2);
+      nextDays = TRIVIA_INTERVALS_DAYS[0];
+      result = "❌ Forgotten — it will come back soon so it sticks.";
+    }
+    c.due = now + nextDays * DAY_MS;
+    c.last = now;
+  } else {
+    result = correct ? "✅ Got it this time." : "❌ Still tricky — it's scheduled to return soon.";
+  }
+
+  if (!correct && kind !== "retry") s.retry.push(card.id);
+  s.total++;
+  if (correct) s.correct++;
+  s.xp += xp;
+  trivia.xp += xp;
+  saveTrivia(trivia);
+  scheduleBackupSync();
+
+  for (const btn of els.triviaChoices.children) {
+    btn.disabled = true;
+    if (btn.textContent === card.answer) btn.classList.add("correct");
+    else if (btn.textContent === choice) btn.classList.add("wrong");
+  }
+  els.triviaResult.textContent = result;
+  els.triviaExplain.textContent = card.ref ? `${card.why} (${card.ref})` : card.why;
+  if (nextDays !== null) {
+    els.triviaExplain.textContent += ` — You'll see this again ${formatInterval(nextDays) === "tomorrow" ? "tomorrow" : "in " + formatInterval(nextDays)}.`;
+  }
+  els.triviaFeedback.hidden = false;
+  els.triviaNext.focus();
+
+  const newLevel = levelForXp(computeLifetimeXp(loadReadLog(), loadAchievements()));
+  render();
+  if (newLevel > oldLevel) showLevelUp(newLevel, oldRank, getRank(newLevel));
+}
+
+function endTrivia() {
+  const s = triviaSession;
+  triviaSession = null;
+  els.triviaQuiz.hidden = true;
+  triviaSummary =
+    s.total > 0
+      ? `Session done: ${s.correct}/${s.total} correct, +${s.xp} XP.`
+      : "";
+  renderTrivia();
+}
+
+function renderTrivia() {
+  if (triviaSession) return; // don't disturb a question in progress
+  const trivia = loadTrivia();
+  const due = triviaDueIds(trivia).length;
+  const unseen = TRIVIA_CARDS.filter((c) => !trivia.cards[c.id]).length;
+  const newLeft = Math.min(unseen, Math.max(0, TRIVIA_NEW_PER_DAY - triviaNewToday(trivia)));
+  const seen = TRIVIA_CARDS.length - unseen;
+  const tier = trivia.skill.tier;
+
+  const lines = [];
+  if (triviaSummary) lines.push(triviaSummary);
+  lines.push(`${due} due for review · ${newLeft} new fact${newLeft === 1 ? "" : "s"} today`);
+  lines.push(`Difficulty: ${TRIVIA_TIER_NAMES[tier - 1]} (${tier}/${TRIVIA_TIER_NAMES.length}) · ${seen}/${TRIVIA_CARDS.length} facts learned`);
+  if (due === 0 && newLeft === 0) {
+    lines.push(unseen === 0 ? "You've seen every fact — reviews will return on schedule." : "All caught up — come back tomorrow for more.");
+  }
+  els.triviaStatus.textContent = lines.join("\n");
+  els.triviaStart.hidden = due === 0 && newLeft === 0;
+  els.triviaStart.textContent = due > 0 ? "Start trivia" : "Learn something new";
+}
+
 // --- Rendering
 
 function render() {
@@ -893,6 +1190,7 @@ function render() {
 
   renderLevel(log);
   renderHabit(log, readSet);
+  renderTrivia();
   renderToday(log);
   renderTrend(log, readSet);
   renderHistory(readSet);
@@ -906,7 +1204,7 @@ function render() {
 function renderLevel(log) {
   const achievements = loadAchievements();
   const lifetime = loadLifetime();
-  const xp = lifetime.bankedXp + computeCycleXp(log, achievements);
+  const xp = lifetime.bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp;
   const level = levelForXp(xp);
   const rank = getRank(level);
   const xpInLevel = xpIntoLevel(xp);
@@ -1178,7 +1476,7 @@ function handleMark() {
   if (newReadSet.size === TOTAL_CHAPTERS) {
     const lifetime = bankCycleCompletion(log, achievements);
     scheduleBackupSync();
-    const newLevel = levelForXp(lifetime.bankedXp);
+    const newLevel = levelForXp(lifetime.bankedXp + loadTrivia().xp);
     savePending(pickRandomUnread(new Set()));
     render();
     showToasts(newBadges);
@@ -1213,6 +1511,10 @@ function handleReset() {
   localStorage.removeItem(ACHIEVEMENTS_KEY);
   localStorage.removeItem(LIFETIME_KEY);
   localStorage.removeItem(FREEZES_KEY);
+  localStorage.removeItem(TRIVIA_KEY);
+  triviaSession = null;
+  els.triviaQuiz.hidden = true;
+  triviaSummary = "";
   render();
   // Overwrite the cloud copy too, otherwise it would resurrect on restore.
   backupChain = backupChain.then(() => pushBackup({ force: true })).catch(() => {});
@@ -1267,6 +1569,8 @@ els.backupBtn.addEventListener("click", handleBackup);
 els.restoreBtn.addEventListener("click", handleRestore);
 els.syncSaveBtn.addEventListener("click", handleSyncSave);
 els.cloudRestoreBtn.addEventListener("click", handleCloudRestore);
+els.triviaStart.addEventListener("click", startTrivia);
+els.triviaNext.addEventListener("click", nextTriviaCard);
 els.levelupDismiss.addEventListener("click", hideLevelUp);
 els.levelupModal.addEventListener("click", (e) => {
   if (e.target === els.levelupModal) hideLevelUp();
