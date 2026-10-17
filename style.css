@@ -935,3 +935,13 @@ footer a {
   color: var(--muted);
   font-style: italic;
 }
+
+.trivia-end {
+  display: block;
+  margin: 0.9rem auto 0;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  flex: none;
+  background: transparent;
+  color: var(--muted);
+}

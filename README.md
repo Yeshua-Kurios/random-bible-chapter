@@ -116,8 +116,13 @@ shows, whether you got it right or not.
   10). The big reward is remembering: a correct review earns a retention
   bonus that grows with the time since you last saw the fact — about 18 XP
   after a week, 30 after a month, and the 45 XP maximum at around six months.
-- **Not farmable.** Only 5 new facts a day, reviews are offered only when
-  they're due, and retries earn nothing.
+- **No daily limit.** Learn as many new facts as you like in a sitting; tap
+  "Finish for now" to stop. Facts you miss come back a few questions later in
+  the same session.
+- **Not farmable.** A fact pays its base XP only the first time you ever
+  answer it, so total new-fact XP is capped by the size of the bank (about
+  840 XP for all 195 facts, versus 10 XP for every chapter you read).
+  Reviews are offered only when they're due, and retries earn nothing.
 
 The fact bank is split by theme: `trivia.js` (core), `trivia-prophecy.js`
 (oracles set beside the extrabiblical records and excavations that bear on
