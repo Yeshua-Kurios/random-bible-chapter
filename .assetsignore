@@ -1,0 +1,8 @@
+# Files in the repo root that shouldn't be published as part of the site.
+wrangler.jsonc
+.assetsignore
+.github
+.git
+README.md
+node_modules
+.wrangler

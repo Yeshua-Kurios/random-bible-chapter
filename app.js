@@ -64,6 +64,9 @@ const els = {
   xpText: document.getElementById("xp-text"),
   xpCapNote: document.getElementById("xp-cap-note"),
   completionsLine: document.getElementById("completions-line"),
+  streakChip: document.getElementById("streak-chip"),
+  goalChip: document.getElementById("goal-chip"),
+  nudge: document.getElementById("nudge"),
   levelupModal: document.getElementById("levelup-modal"),
   levelupKicker: document.getElementById("levelup-kicker"),
   levelupLevel: document.getElementById("levelup-level"),
@@ -105,6 +108,22 @@ const XP_PER_CHAPTER_REDUCED = 3;
 const DAILY_FULL_XP_CAP = 15;
 const MIN_READ_SECONDS = 25;
 const XP_PER_LEVEL = 100;
+
+// --- Habit loop: a daily streak and a small daily goal. Both reward showing
+// up consistently rather than binging, so they sit alongside (and don't
+// weaken) the anti-farming rules above — streak bonuses are one-time per
+// milestone, and the goal is purely a celebration, not extra XP.
+const DAILY_GOAL = 3;
+const STREAK_MILESTONES = [
+  { days: 3, xp: 15 },
+  { days: 7, xp: 30 },
+  { days: 14, xp: 50 },
+  { days: 30, xp: 100 },
+  { days: 60, xp: 150 },
+  { days: 100, xp: 250 },
+  { days: 180, xp: 400 },
+  { days: 365, xp: 1000 },
+];
 
 const RANKS = [
   { min: 1, name: "Seeker" },
@@ -395,6 +414,60 @@ function computeTrend(dayCounts, remaining) {
   return { done: false, avgPerDay, daysLeft, finishDate };
 }
 
+// Consecutive days with at least one chapter read. A streak is still "alive"
+// if you haven't read yet today but did yesterday — it only breaks once a
+// whole day passes with nothing read.
+function computeStreak(dayCounts) {
+  const day = new Date();
+  const readToday = (dayCounts.get(localDateKey(day)) || 0) > 0;
+  if (!readToday) day.setDate(day.getDate() - 1);
+  let current = 0;
+  while ((dayCounts.get(localDateKey(day)) || 0) > 0) {
+    current++;
+    day.setDate(day.getDate() - 1);
+  }
+
+  const keys = [...dayCounts.keys()].sort();
+  let best = 0;
+  let run = 0;
+  let prev = null;
+  for (const key of keys) {
+    const [y, m, d] = key.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    if (prev && Math.round((date - prev) / 86400000) === 1) run++;
+    else run = 1;
+    best = Math.max(best, run);
+    prev = date;
+  }
+  return { current, best: Math.max(best, current), readToday };
+}
+
+// The most compelling "just a little more" hook: a book you're close to
+// finishing, else how far the next chapter-count milestone is.
+function computeNudge(readSet, todayCount) {
+  const bookCounts = computeBookCounts(readSet);
+  let closest = null;
+  for (const [book, total] of BIBLE_BOOKS) {
+    const read = bookCounts.get(book) || 0;
+    const left = total - read;
+    if (read > 0 && left > 0 && (!closest || left < closest.left)) closest = { book, left };
+  }
+  if (closest && closest.left <= 3) {
+    const { book, left } = closest;
+    return `📖 Only ${left} chapter${left === 1 ? "" : "s"} left to finish ${book}!`;
+  }
+  const next = MILESTONES.find((m) => m > readSet.size);
+  if (next) {
+    const left = next - readSet.size;
+    if (left <= 10) return `🎯 ${left} more chapter${left === 1 ? "" : "s"} to reach ${next}!`;
+  }
+  if (todayCount > 0 && todayCount < DAILY_GOAL) {
+    const left = DAILY_GOAL - todayCount;
+    return `🔥 ${left} more to hit today's goal — you're on a roll!`;
+  }
+  return "";
+}
+
 // --- Achievements
 
 function loadAchievements() {
@@ -417,7 +490,7 @@ function milestoneLabel(n) {
   return `${n} chapters read!`;
 }
 
-function computeNewBadges(newReadSet, markedKey) {
+function computeNewBadges(newReadSet, markedKey, streakDays) {
   const unlocked = new Set(loadAchievements().map((a) => a.id));
   const newBadges = [];
   const n = newReadSet.size;
@@ -426,6 +499,13 @@ function computeNewBadges(newReadSet, markedKey) {
     if (n === m) {
       const id = `milestone-${m}`;
       if (!unlocked.has(id)) newBadges.push({ id, label: milestoneLabel(m), xp: milestoneXp(m) });
+    }
+  }
+
+  for (const m of STREAK_MILESTONES) {
+    if (streakDays === m.days) {
+      const id = `streak-${m.days}`;
+      if (!unlocked.has(id)) newBadges.push({ id, label: `${m.days}-day reading streak! 🔥`, xp: m.xp });
     }
   }
 
@@ -549,6 +629,7 @@ function render() {
   els.actionRow.hidden = pending === null;
 
   renderLevel(log);
+  renderHabit(log, readSet);
   renderToday(log);
   renderTrend(log, readSet);
   renderHistory(readSet);
@@ -587,6 +668,51 @@ function renderLevel(log) {
     els.completionsLine.textContent = `🏆 ${completions} full ${completions === 1 ? "journey" : "journeys"} through the entire Bible`;
   } else {
     els.completionsLine.hidden = true;
+  }
+}
+
+function renderHabit(log, readSet) {
+  const todayCount = computeTodayEntries(log).length;
+  const streak = computeStreak(computeDayCounts(log));
+
+  if (streak.current > 0) {
+    els.streakChip.textContent = `🔥 ${streak.current}-day streak`;
+    els.streakChip.classList.toggle("at-risk", !streak.readToday);
+    els.streakChip.title = streak.readToday
+      ? `Best: ${streak.best} days`
+      : `Read a chapter today to keep your ${streak.current}-day streak alive! Best: ${streak.best} days`;
+  } else {
+    els.streakChip.textContent = "🔥 Start a streak today";
+    els.streakChip.classList.remove("at-risk");
+    els.streakChip.title = "";
+  }
+
+  const goalMet = todayCount >= DAILY_GOAL;
+  els.goalChip.classList.toggle("met", goalMet);
+  els.goalChip.textContent = goalMet
+    ? `✅ Daily goal done · ${todayCount} today`
+    : `${"●".repeat(todayCount)}${"○".repeat(DAILY_GOAL - todayCount)} ${todayCount}/${DAILY_GOAL} today`;
+
+  const nudge = streak.current > 0 && !streak.readToday
+    ? `⏳ Read today to keep your ${streak.current}-day streak!`
+    : computeNudge(readSet, todayCount);
+  els.nudge.hidden = !nudge;
+  els.nudge.textContent = nudge;
+}
+
+function showXpPop(xp) {
+  const pop = document.createElement("div");
+  pop.className = "xp-pop";
+  pop.textContent = `+${xp} XP`;
+  els.chapter.parentElement.appendChild(pop);
+  setTimeout(() => pop.remove(), 1200);
+}
+
+function buzz(pattern) {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // Haptics are a nicety; ignore where unsupported.
   }
 }
 
@@ -765,8 +891,15 @@ function handleMark() {
   syncReadChapter(pending, markedAt);
 
   const newReadSet = readKeysSet(log);
-  const newBadges = computeNewBadges(newReadSet, pending);
-  persistAchievements(newBadges);
+  const oldTodayCount = computeTodayEntries(oldLog).length;
+  const streakDays = computeStreak(computeDayCounts(log)).current;
+  const newBadges = computeNewBadges(newReadSet, pending, streakDays);
+  if (oldTodayCount + 1 === DAILY_GOAL) {
+    newBadges.unshift({ id: `goal-${localDateKey(new Date())}`, label: `🎯 Daily goal reached — ${DAILY_GOAL} chapters today!`, xp: 0, transient: true });
+  }
+  persistAchievements(newBadges.filter((b) => !b.transient));
+  showXpPop(xpEarned);
+  buzz(newBadges.length > 0 ? [30, 40, 60] : 20);
   const achievements = loadAchievements();
 
   if (newReadSet.size === TOTAL_CHAPTERS) {
