@@ -86,6 +86,7 @@ const els = {
   triviaExplain: document.getElementById("trivia-explain"),
   triviaSrc: document.getElementById("trivia-src"),
   triviaNext: document.getElementById("trivia-next"),
+  triviaEnd: document.getElementById("trivia-end"),
   cloudRestoreBtn: document.getElementById("cloud-restore-btn"),
   cloudStatus: document.getElementById("cloud-status"),
   levelupModal: document.getElementById("levelup-modal"),
@@ -873,10 +874,12 @@ function hideLevelUp() {
 // XP is deliberately small next to reading: a new fact earns 2-6 XP (a
 // chapter earns 10). The big payoff is remembering a fact after a long gap —
 // the retention bonus grows with the time since you last saw it, up to 45 XP
-// at about six months. Anti-farming: only a few new facts per day, and a
-// fact can't be reviewed again until it's due.
+// at about six months. Anti-farming: a fact pays its base XP only the first
+// time you ever answer it, so total new-fact XP is capped by the size of the
+// fact bank however fast you go, and a fact can't be reviewed again until
+// it's due.
 const TRIVIA_BY_ID = new Map(TRIVIA_CARDS.map((c) => [c.id, c]));
-const TRIVIA_NEW_PER_DAY = 5;
+const TRIVIA_RETRY_GAP = 4; // questions before a missed fact is asked again
 const TRIVIA_NEW_XP = [2, 3, 4, 5, 6]; // by the card's tier
 const TRIVIA_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120, 180, 365];
 const TRIVIA_MAX_BONUS = 45;
@@ -885,7 +888,7 @@ const TRIVIA_TIER_NAMES = ["Warm-up", "Student", "Scholar", "Expert", "Master of
 const DAY_MS = 86400000;
 
 function emptyTrivia() {
-  return { xp: 0, cards: {}, skill: { tier: 1, streak: 0, miss: 0 }, daily: { date: "", newCount: 0 } };
+  return { xp: 0, cards: {}, skill: { tier: 1, streak: 0, miss: 0 } };
 }
 
 function sanitizeTrivia(raw) {
@@ -911,10 +914,6 @@ function sanitizeTrivia(raw) {
     t.skill.streak = Number(raw.skill.streak) || 0;
     t.skill.miss = Number(raw.skill.miss) || 0;
   }
-  if (raw.daily && typeof raw.daily === "object") {
-    t.daily.date = typeof raw.daily.date === "string" ? raw.daily.date : "";
-    t.daily.newCount = Number(raw.daily.newCount) || 0;
-  }
   return t;
 }
 
@@ -928,10 +927,6 @@ function loadTrivia() {
 
 function saveTrivia(trivia) {
   localStorage.setItem(TRIVIA_KEY, JSON.stringify(trivia));
-}
-
-function triviaNewToday(trivia) {
-  return trivia.daily.date === localDateKey(new Date()) ? trivia.daily.newCount : 0;
 }
 
 function triviaDueIds(trivia, now = Date.now()) {
@@ -1006,15 +1001,20 @@ function nextTriviaCard() {
   const trivia = loadTrivia();
   let card = null;
   let kind = null;
-  if (s.queue.length > 0) {
+  // A fact missed earlier this session comes back after a few other questions.
+  const readyIdx = s.retry.findIndex((r) => r.at <= s.total);
+  if (readyIdx >= 0) {
+    card = TRIVIA_BY_ID.get(s.retry.splice(readyIdx, 1)[0].id);
+    kind = "retry";
+  } else if (s.queue.length > 0) {
     card = TRIVIA_BY_ID.get(s.queue.shift());
     kind = "review";
-  } else if (triviaNewToday(trivia) < TRIVIA_NEW_PER_DAY) {
+  } else {
     card = pickNewCard(trivia);
     kind = "new";
   }
   if (!card && s.retry.length > 0) {
-    card = TRIVIA_BY_ID.get(s.retry.shift());
+    card = TRIVIA_BY_ID.get(s.retry.shift().id);
     kind = "retry";
   }
   if (!card) {
@@ -1065,8 +1065,6 @@ function answerTrivia(choice) {
       reps: 1,
       lapses: correct ? 0 : 1,
     };
-    const today = localDateKey(new Date());
-    trivia.daily = { date: today, newCount: triviaNewToday(trivia) + 1 };
     adaptSkill(trivia.skill, correct);
     result = correct ? `✅ Correct! +${xp} XP` : "❌ Not quite — now you know!";
   } else if (kind === "review") {
@@ -1091,7 +1089,7 @@ function answerTrivia(choice) {
     result = correct ? "✅ Got it this time." : "❌ Still tricky — it's scheduled to return soon.";
   }
 
-  if (!correct && kind !== "retry") s.retry.push(card.id);
+  if (!correct && kind !== "retry") s.retry.push({ id: card.id, at: s.total + 1 + TRIVIA_RETRY_GAP });
   s.total++;
   if (correct) s.correct++;
   s.xp += xp;
@@ -1135,19 +1133,18 @@ function renderTrivia() {
   const trivia = loadTrivia();
   const due = triviaDueIds(trivia).length;
   const unseen = TRIVIA_CARDS.filter((c) => !trivia.cards[c.id]).length;
-  const newLeft = Math.min(unseen, Math.max(0, TRIVIA_NEW_PER_DAY - triviaNewToday(trivia)));
   const seen = TRIVIA_CARDS.length - unseen;
   const tier = trivia.skill.tier;
 
   const lines = [];
   if (triviaSummary) lines.push(triviaSummary);
-  lines.push(`${due} due for review · ${newLeft} new fact${newLeft === 1 ? "" : "s"} today`);
+  lines.push(`${due} due for review · ${unseen} new fact${unseen === 1 ? "" : "s"} to learn`);
   lines.push(`Difficulty: ${TRIVIA_TIER_NAMES[tier - 1]} (${tier}/${TRIVIA_TIER_NAMES.length}) · ${seen}/${TRIVIA_CARDS.length} facts learned`);
-  if (due === 0 && newLeft === 0) {
-    lines.push(unseen === 0 ? "You've seen every fact — reviews will return on schedule." : "All caught up — come back tomorrow for more.");
+  if (due === 0 && unseen === 0) {
+    lines.push("You've seen every fact — reviews will return on schedule.");
   }
   els.triviaStatus.textContent = lines.join("\n");
-  els.triviaStart.hidden = due === 0 && newLeft === 0;
+  els.triviaStart.hidden = due === 0 && unseen === 0;
   els.triviaStart.textContent = due > 0 ? "Start trivia" : "Learn something new";
 }
 
@@ -1575,6 +1572,7 @@ els.syncSaveBtn.addEventListener("click", handleSyncSave);
 els.cloudRestoreBtn.addEventListener("click", handleCloudRestore);
 els.triviaStart.addEventListener("click", startTrivia);
 els.triviaNext.addEventListener("click", nextTriviaCard);
+els.triviaEnd.addEventListener("click", endTrivia);
 els.levelupDismiss.addEventListener("click", hideLevelUp);
 els.levelupModal.addEventListener("click", (e) => {
   if (e.target === els.levelupModal) hideLevelUp();
