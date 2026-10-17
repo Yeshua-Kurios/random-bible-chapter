@@ -122,7 +122,7 @@ shows, whether you got it right or not.
 The fact bank is split by theme: `trivia.js` (core), `trivia-prophecy.js`
 (oracles set beside the extrabiblical records and excavations that bear on
 them), `trivia-archaeology.js`, `trivia-language.js` (rare words, loanwords,
-manuscripts), and `trivia-ane.js` (Near Eastern background). Each card can
+manuscripts), `trivia-ane.js` (Near Eastern background), and `trivia-discoveries.js` (major finds and how they were made, including celebrated claims that did not hold up). Each card can
 carry an `src` field naming the inscription, text, or excavation behind it,
 shown as "Evidence" after you answer.
 
