@@ -4,6 +4,8 @@ const PENDING_SINCE_KEY = "rbc:pendingSince";
 const ACHIEVEMENTS_KEY = "rbc:achievements";
 const LIFETIME_KEY = "rbc:lifetime";
 const SYNC_SECRET_KEY = "rbc:syncSecret";
+const FREEZES_KEY = "rbc:freezes";
+const LAST_BACKUP_KEY = "rbc:lastBackupAt";
 // The reading log lives as a JSON file in a private GitHub repo (rather
 // than a custom backend) because GitHub's API is reachable from almost any
 // sandboxed environment — including the one running the AI Bible
@@ -13,6 +15,10 @@ const SYNC_REPO_OWNER = "yeshuakurios";
 const SYNC_REPO_NAME = "ai-bible-commentary";
 const SYNC_REPO_PATH = "reading-log.json";
 const SYNC_API_URL = `https://api.github.com/repos/${SYNC_REPO_OWNER}/${SYNC_REPO_NAME}/contents/${SYNC_REPO_PATH}`;
+// A full snapshot of the app's state (not just the append-only read log), so
+// progress survives the browser wiping this site's storage.
+const BACKUP_REPO_PATH = "app-backup.json";
+const BACKUP_API_URL = `https://api.github.com/repos/${SYNC_REPO_OWNER}/${SYNC_REPO_NAME}/contents/${BACKUP_REPO_PATH}`;
 
 // Achievement labels contain emoji, which plain btoa()/atob() can't handle
 // (they only support Latin1) — encode/decode via UTF-8 bytes instead.
@@ -67,6 +73,9 @@ const els = {
   streakChip: document.getElementById("streak-chip"),
   goalChip: document.getElementById("goal-chip"),
   nudge: document.getElementById("nudge"),
+  freezeChip: document.getElementById("freeze-chip"),
+  cloudRestoreBtn: document.getElementById("cloud-restore-btn"),
+  cloudStatus: document.getElementById("cloud-status"),
   levelupModal: document.getElementById("levelup-modal"),
   levelupKicker: document.getElementById("levelup-kicker"),
   levelupLevel: document.getElementById("levelup-level"),
@@ -114,6 +123,11 @@ const XP_PER_LEVEL = 100;
 // weaken) the anti-farming rules above — streak bonuses are one-time per
 // milestone, and the goal is purely a celebration, not extra XP.
 const DAILY_GOAL = 3;
+// Streak freezes: read 7 days in a row to earn one (hold up to 2). A freeze
+// is spent automatically on a missed day so a single slip doesn't erase a
+// long streak. A frozen day keeps the streak alive but doesn't add to it.
+const FREEZE_EARN_EVERY_DAYS = 7;
+const MAX_FREEZES = 2;
 const STREAK_MILESTONES = [
   { days: 3, xp: 15 },
   { days: 7, xp: 30 },
@@ -342,6 +356,168 @@ function handleSyncSave() {
   saveSyncSecret(secret);
   els.syncSecretInput.value = "";
   els.syncStatus.textContent = secret ? "Sync key saved on this device." : "Sync key cleared.";
+  renderCloudStatus();
+  if (secret) checkCloudOnLoad();
+}
+
+// --- Cloud backup: a full snapshot of progress (log, achievements, lifetime
+// XP, streak freezes) pushed to app-backup.json in the same private repo after
+// every chapter. The sync token itself is stored in localStorage, so if the
+// browser wipes this site's data the token goes too — recovery is: paste the
+// token again, then tap "Restore from cloud".
+
+function buildBackupPayload() {
+  return {
+    v: 3,
+    log: loadReadLog(),
+    achievements: loadAchievements(),
+    lifetime: loadLifetime(),
+    freezes: loadFreezes(),
+  };
+}
+
+function applyBackupPayload(payload) {
+  saveReadLog(payload.log);
+  saveAchievements(Array.isArray(payload.achievements) ? payload.achievements : []);
+  const lifetime = payload.lifetime && typeof payload.lifetime === "object" ? payload.lifetime : {};
+  saveLifetime({
+    bankedXp: typeof lifetime.bankedXp === "number" ? lifetime.bankedXp : 0,
+    completions: Array.isArray(lifetime.completions) ? lifetime.completions : [],
+  });
+  const freezes = payload.freezes && typeof payload.freezes === "object" ? payload.freezes : {};
+  saveFreezes({
+    available: typeof freezes.available === "number" ? freezes.available : 0,
+    used: Array.isArray(freezes.used) ? freezes.used : [],
+    grantedOn: Array.isArray(freezes.grantedOn) ? freezes.grantedOn : [],
+  });
+  localStorage.removeItem(PENDING_KEY);
+  localStorage.removeItem(PENDING_SINCE_KEY);
+}
+
+// Total chapters read across every completed cycle plus the current one —
+// used to make sure an emptied browser never overwrites a fuller backup.
+function progressScore(payload) {
+  const completions = Array.isArray(payload?.lifetime?.completions) ? payload.lifetime.completions.length : 0;
+  const logLength = Array.isArray(payload?.log) ? payload.log.length : 0;
+  return completions * TOTAL_CHAPTERS + logLength;
+}
+
+function githubHeaders(token) {
+  return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
+}
+
+// Resolves to { sha, payload } (both null if there's no backup yet), or
+// throws if GitHub couldn't be reached / refused the request.
+async function fetchCloudBackup(token) {
+  const res = await fetch(BACKUP_API_URL, { headers: githubHeaders(token), cache: "no-store" });
+  if (res.status === 404) return { sha: null, payload: null };
+  if (!res.ok) throw new Error(`GitHub responded ${res.status}`);
+  const data = await res.json();
+  let payload = null;
+  try {
+    payload = JSON.parse(fromBase64(data.content.replace(/\s/g, "")));
+  } catch {
+    // A corrupt remote file is treated as "no usable backup".
+  }
+  return { sha: data.sha, payload };
+}
+
+function setCloudStatus(text) {
+  els.cloudStatus.textContent = text;
+}
+
+function renderCloudStatus() {
+  if (!loadSyncSecret()) {
+    setCloudStatus("Save a sync token above to turn on automatic cloud backup.");
+    return;
+  }
+  const at = Number(localStorage.getItem(LAST_BACKUP_KEY));
+  setCloudStatus(at ? `☁️ Last cloud backup: ${new Date(at).toLocaleString()}` : "☁️ Cloud backup is on — it saves after your next chapter.");
+}
+
+let backupTimer = null;
+let backupChain = Promise.resolve();
+
+// Debounced so a burst of actions makes one write; serialized so two
+// overlapping pushes can't race on the file's sha.
+function scheduleBackupSync() {
+  if (!loadSyncSecret()) return;
+  clearTimeout(backupTimer);
+  backupTimer = setTimeout(() => {
+    backupChain = backupChain.then(() => pushBackup()).catch(() => {});
+  }, 1500);
+}
+
+async function pushBackup({ force = false } = {}) {
+  const token = loadSyncSecret();
+  if (!token) return;
+  try {
+    const local = buildBackupPayload();
+    const { sha, payload: remote } = await fetchCloudBackup(token);
+    if (!force && remote && progressScore(remote) > progressScore(local)) {
+      setCloudStatus("⚠️ Your cloud backup has more progress than this device, so it was not overwritten. Tap \"Restore from cloud\" to recover it.");
+      return;
+    }
+    const putRes = await fetch(BACKUP_API_URL, {
+      method: "PUT",
+      headers: { ...githubHeaders(token), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Back up app state",
+        content: toBase64(JSON.stringify(local)),
+        ...(sha ? { sha } : {}),
+      }),
+    });
+    if (!putRes.ok) throw new Error(`GitHub responded ${putRes.status}`);
+    localStorage.setItem(LAST_BACKUP_KEY, String(Date.now()));
+    renderCloudStatus();
+  } catch {
+    setCloudStatus("⚠️ Cloud backup failed — it will retry after your next chapter.");
+  }
+}
+
+async function handleCloudRestore() {
+  const token = loadSyncSecret();
+  if (!token) {
+    setCloudStatus("Save your sync token first, then tap Restore from cloud.");
+    return;
+  }
+  setCloudStatus("Checking for a cloud backup…");
+  let remote;
+  try {
+    remote = (await fetchCloudBackup(token)).payload;
+  } catch {
+    setCloudStatus("Couldn't reach the cloud backup — check your token and connection.");
+    return;
+  }
+  if (!remote || !Array.isArray(remote.log)) {
+    setCloudStatus("No cloud backup was found yet.");
+    return;
+  }
+  const hasLocal = progressScore(buildBackupPayload()) > 0;
+  if (hasLocal && !confirm("This replaces your current reading history, achievements, level, and freezes with your cloud backup. Continue?")) {
+    renderCloudStatus();
+    return;
+  }
+  applyBackupPayload(remote);
+  render();
+  setCloudStatus("✅ Restored from your cloud backup!");
+}
+
+// If this browser has no progress (e.g. storage was wiped) but a sync token
+// is present, tell the user a backup is waiting rather than letting them
+// start over by accident.
+async function checkCloudOnLoad() {
+  const token = loadSyncSecret();
+  if (!token || progressScore(buildBackupPayload()) > 0) return;
+  try {
+    const { payload } = await fetchCloudBackup(token);
+    if (payload && progressScore(payload) > 0) {
+      showToasts([{ label: "☁️ A cloud backup was found — open Reading log sync to restore it." }]);
+      setCloudStatus("☁️ A cloud backup is available — tap \"Restore from cloud\".");
+    }
+  } catch {
+    // Best-effort only.
+  }
 }
 
 // Uniform random integer in [0, max) using the Web Crypto API (rejection
@@ -417,29 +593,95 @@ function computeTrend(dayCounts, remaining) {
 // Consecutive days with at least one chapter read. A streak is still "alive"
 // if you haven't read yet today but did yesterday — it only breaks once a
 // whole day passes with nothing read.
-function computeStreak(dayCounts) {
+function computeStreak(dayCounts, frozen = new Set()) {
+  const isRead = (key) => (dayCounts.get(key) || 0) > 0;
   const day = new Date();
-  const readToday = (dayCounts.get(localDateKey(day)) || 0) > 0;
+  const readToday = isRead(localDateKey(day));
   if (!readToday) day.setDate(day.getDate() - 1);
   let current = 0;
-  while ((dayCounts.get(localDateKey(day)) || 0) > 0) {
-    current++;
+  for (;;) {
+    const key = localDateKey(day);
+    if (isRead(key)) current++;
+    else if (!frozen.has(key)) break;
     day.setDate(day.getDate() - 1);
   }
 
-  const keys = [...dayCounts.keys()].sort();
+  // Best run over every read-or-frozen day (frozen days bridge, not count).
+  const keys = [...new Set([...dayCounts.keys(), ...frozen])].sort();
   let best = 0;
   let run = 0;
   let prev = null;
   for (const key of keys) {
     const [y, m, d] = key.split("-").map(Number);
     const date = new Date(y, m - 1, d);
-    if (prev && Math.round((date - prev) / 86400000) === 1) run++;
-    else run = 1;
+    const consecutive = prev && Math.round((date - prev) / 86400000) === 1;
+    if (isRead(key)) run = consecutive ? run + 1 : 1;
+    else run = consecutive ? run : 0;
     best = Math.max(best, run);
     prev = date;
   }
   return { current, best: Math.max(best, current), readToday };
+}
+
+// --- Streak freezes
+
+function loadFreezes() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(FREEZES_KEY) || "{}");
+    return {
+      available: typeof parsed.available === "number" ? parsed.available : 0,
+      used: Array.isArray(parsed.used) ? parsed.used : [],
+      grantedOn: Array.isArray(parsed.grantedOn) ? parsed.grantedOn : [],
+    };
+  } catch {
+    return { available: 0, used: [], grantedOn: [] };
+  }
+}
+
+function saveFreezes(freezes) {
+  localStorage.setItem(FREEZES_KEY, JSON.stringify(freezes));
+}
+
+function frozenSet() {
+  return new Set(loadFreezes().used);
+}
+
+// Spends freezes on the days missed since the last day that was read (or
+// frozen), but only if there are enough to cover the whole gap — otherwise
+// the streak is lost anyway and the freezes are kept. Today is never
+// "missed": there's still time to read. Returns the days it froze.
+function applyFreezes(log) {
+  const freezes = loadFreezes();
+  if (freezes.available <= 0) return [];
+  const dayCounts = computeDayCounts(log);
+  const frozen = new Set(freezes.used);
+  const covered = (key) => (dayCounts.get(key) || 0) > 0 || frozen.has(key);
+
+  const day = new Date();
+  day.setDate(day.getDate() - 1);
+  const missed = [];
+  while (!covered(localDateKey(day)) && missed.length <= MAX_FREEZES) {
+    missed.push(localDateKey(day));
+    day.setDate(day.getDate() - 1);
+  }
+  if (missed.length === 0 || missed.length > freezes.available || !covered(localDateKey(day))) return [];
+
+  freezes.available -= missed.length;
+  freezes.used.push(...missed);
+  saveFreezes(freezes);
+  return missed;
+}
+
+// Earn one freeze each time the streak hits a multiple of 7 days.
+function maybeGrantFreeze(streakDays) {
+  if (streakDays <= 0 || streakDays % FREEZE_EARN_EVERY_DAYS !== 0) return false;
+  const freezes = loadFreezes();
+  const today = localDateKey(new Date());
+  if (freezes.grantedOn.includes(today) || freezes.available >= MAX_FREEZES) return false;
+  freezes.available++;
+  freezes.grantedOn.push(today);
+  saveFreezes(freezes);
+  return true;
 }
 
 // The most compelling "just a little more" hook: a book you're close to
@@ -596,6 +838,12 @@ function hideLevelUp() {
 // --- Rendering
 
 function render() {
+  const frozenDays = applyFreezes(loadReadLog());
+  if (frozenDays.length > 0) {
+    showToasts([{ label: `🧊 Streak freeze saved your streak (${frozenDays.length} day${frozenDays.length === 1 ? "" : "s"} covered)` }]);
+    scheduleBackupSync();
+  }
+
   let log = loadReadLog();
   let readSet = readKeysSet(log);
 
@@ -637,6 +885,7 @@ function render() {
   renderBookMap(readSet);
   updateReadTimer();
   els.syncStatus.textContent = loadSyncSecret() ? "Sync key saved on this device." : "";
+  if (!els.cloudStatus.textContent) renderCloudStatus();
 }
 
 function renderLevel(log) {
@@ -673,7 +922,7 @@ function renderLevel(log) {
 
 function renderHabit(log, readSet) {
   const todayCount = computeTodayEntries(log).length;
-  const streak = computeStreak(computeDayCounts(log));
+  const streak = computeStreak(computeDayCounts(log), frozenSet());
 
   if (streak.current > 0) {
     els.streakChip.textContent = `🔥 ${streak.current}-day streak`;
@@ -686,6 +935,11 @@ function renderHabit(log, readSet) {
     els.streakChip.classList.remove("at-risk");
     els.streakChip.title = "";
   }
+
+  const freezesLeft = loadFreezes().available;
+  els.freezeChip.textContent = `🧊 ${freezesLeft}/${MAX_FREEZES} freezes`;
+  els.freezeChip.title = `Read ${FREEZE_EARN_EVERY_DAYS} days in a row to earn a freeze. It's spent automatically on a missed day.`;
+  els.freezeChip.classList.toggle("empty", freezesLeft === 0);
 
   const goalMet = todayCount >= DAILY_GOAL;
   els.goalChip.classList.toggle("met", goalMet);
@@ -892,18 +1146,23 @@ function handleMark() {
 
   const newReadSet = readKeysSet(log);
   const oldTodayCount = computeTodayEntries(oldLog).length;
-  const streakDays = computeStreak(computeDayCounts(log)).current;
+  const streakDays = computeStreak(computeDayCounts(log), frozenSet()).current;
   const newBadges = computeNewBadges(newReadSet, pending, streakDays);
+  if (maybeGrantFreeze(streakDays)) {
+    newBadges.unshift({ id: `freeze-${localDateKey(new Date())}`, label: "🧊 Streak freeze earned — it protects you if you miss a day!", xp: 0, transient: true });
+  }
   if (oldTodayCount + 1 === DAILY_GOAL) {
     newBadges.unshift({ id: `goal-${localDateKey(new Date())}`, label: `🎯 Daily goal reached — ${DAILY_GOAL} chapters today!`, xp: 0, transient: true });
   }
   persistAchievements(newBadges.filter((b) => !b.transient));
+  scheduleBackupSync();
   showXpPop(xpEarned);
   buzz(newBadges.length > 0 ? [30, 40, 60] : 20);
   const achievements = loadAchievements();
 
   if (newReadSet.size === TOTAL_CHAPTERS) {
     const lifetime = bankCycleCompletion(log, achievements);
+    scheduleBackupSync();
     const newLevel = levelForXp(lifetime.bankedXp);
     savePending(pickRandomUnread(new Set()));
     render();
@@ -930,7 +1189,7 @@ function handleSkip() {
 
 function handleReset() {
   const confirmed = confirm(
-    "This erases your entire reading history, achievements, and your lifetime level — including all Bible completions — and starts over from Level 1. This cannot be undone. Continue?"
+    "This erases your entire reading history, achievements, and your lifetime level — including all Bible completions — and starts over from Level 1. If cloud backup is on, your cloud backup is erased too. This cannot be undone. Continue?"
   );
   if (!confirmed) return;
   localStorage.removeItem(STORAGE_KEY);
@@ -938,18 +1197,14 @@ function handleReset() {
   localStorage.removeItem(PENDING_SINCE_KEY);
   localStorage.removeItem(ACHIEVEMENTS_KEY);
   localStorage.removeItem(LIFETIME_KEY);
+  localStorage.removeItem(FREEZES_KEY);
   render();
+  // Overwrite the cloud copy too, otherwise it would resurrect on restore.
+  backupChain = backupChain.then(() => pushBackup({ force: true })).catch(() => {});
 }
 
 function handleBackup() {
-  const code = toBase64(
-    JSON.stringify({
-      v: 2,
-      log: loadReadLog(),
-      achievements: loadAchievements(),
-      lifetime: loadLifetime(),
-    })
-  );
+  const code = toBase64(JSON.stringify(buildBackupPayload()));
   els.backupOutput.value = code;
   els.backupOutput.select();
   if (navigator.clipboard) {
@@ -982,15 +1237,8 @@ function handleRestore() {
   }
   if (!confirm("This replaces your current reading history, achievements, and level with the backup. Continue?")) return;
 
-  saveReadLog(payload.log);
-  saveAchievements(Array.isArray(payload.achievements) ? payload.achievements : []);
-  const lifetime = payload.lifetime && typeof payload.lifetime === "object" ? payload.lifetime : {};
-  saveLifetime({
-    bankedXp: typeof lifetime.bankedXp === "number" ? lifetime.bankedXp : 0,
-    completions: Array.isArray(lifetime.completions) ? lifetime.completions : [],
-  });
-  localStorage.removeItem(PENDING_KEY);
-  localStorage.removeItem(PENDING_SINCE_KEY);
+  applyBackupPayload(payload);
+  scheduleBackupSync();
   els.restoreInput.value = "";
   els.backupStatus.textContent = "Restored from backup!";
   render();
@@ -1003,6 +1251,7 @@ els.resetBtn.addEventListener("click", handleReset);
 els.backupBtn.addEventListener("click", handleBackup);
 els.restoreBtn.addEventListener("click", handleRestore);
 els.syncSaveBtn.addEventListener("click", handleSyncSave);
+els.cloudRestoreBtn.addEventListener("click", handleCloudRestore);
 els.levelupDismiss.addEventListener("click", hideLevelUp);
 els.levelupModal.addEventListener("click", (e) => {
   if (e.target === els.levelupModal) hideLevelUp();
@@ -1022,3 +1271,4 @@ if (navigator.storage?.persist) {
 }
 
 render();
+checkCloudOnLoad();
