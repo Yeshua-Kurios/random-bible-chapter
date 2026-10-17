@@ -41,6 +41,39 @@
       </div>
     </div>
 
+    <details id="reader" class="card reader" open>
+      <summary id="reader-summary">Read it here · KJV</summary>
+      <div id="reader-text" class="reader-text" aria-live="polite"></div>
+      <div id="reader-mark-row" class="reader-mark-row" hidden>
+        <button id="mark-btn-2" class="primary">Mark as Read</button>
+      </div>
+    </details>
+
+    <details id="questions" class="card questions">
+      <summary>My questions <span id="questions-count"></span></summary>
+      <p class="hint">
+        Jot down questions as you read, in any Bible version. Tap a verse
+        number in the text above to start one. When you're done, copy them
+        all as a prompt for an LLM.
+      </p>
+      <form id="q-form" class="q-form" autocomplete="off">
+        <label for="q-passage">Passage</label>
+        <input id="q-passage" class="code-box q-input" type="text" placeholder="e.g. John 3:16 or Psalm 23" />
+        <label for="q-version">Version</label>
+        <select id="q-version" class="q-input"></select>
+        <input id="q-version-other" class="code-box q-input" type="text" placeholder="Which version?" hidden />
+        <label for="q-text">Question</label>
+        <textarea id="q-text" class="code-box" rows="3" placeholder="What did you wonder about?"></textarea>
+        <button type="submit" class="primary">Add question</button>
+      </form>
+      <ul id="q-list" class="q-list"></ul>
+      <label class="q-check"><input type="checkbox" id="q-include-text" /> Also include the KJV text of each passage</label>
+      <button id="q-copy" class="primary">Copy all as an LLM prompt</button>
+      <textarea id="q-preview" class="code-box" rows="10" readonly hidden></textarea>
+      <p id="q-status" class="hint" aria-live="polite"></p>
+      <button id="q-clear" class="q-clear">Clear all questions</button>
+    </details>
+
     <div class="card level-card">
       <div class="level-card-main">
         <div id="level-ring" class="level-ring">
