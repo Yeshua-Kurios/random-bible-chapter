@@ -76,10 +76,28 @@ To make coming back every day feel good:
   100, 180, and 365 days) unlock a one-time achievement with bonus XP.
 - **Daily goal.** Read 3 chapters in a day for a celebration. It's purely a
   celebration — no extra XP — so it can't be farmed.
+- **Streak freezes.** Read 7 days in a row to earn a freeze (hold up to 2).
+  If you miss a day, a freeze is spent automatically and your streak
+  survives. A frozen day keeps the streak alive but doesn't add to it, and
+  freezes are only spent if they cover the whole gap — a longer break loses
+  the streak but keeps your freezes.
 - **"Almost there" nudges.** The app points out when you're 1–3 chapters from
   finishing a book or a few chapters from the next milestone.
 - **Instant feedback.** A floating "+XP" pop and a light haptic buzz (where
   supported) on every chapter you mark as read.
+
+## Cloud backup
+
+If you save a sync token (see "Reading log sync & cloud backup" in the app),
+a full snapshot of your progress — history, achievements, lifetime level, and
+streak freezes — is saved to `app-backup.json` in your private repo after
+every chapter. If the browser ever wipes this site's data, paste your token
+again and tap **Restore from cloud**.
+
+- A backup is never overwritten by a device with *less* progress than it, so
+  opening the app on a freshly wiped browser can't clobber your history.
+- "Erase everything & start over" also erases the cloud copy.
+- The token itself is never included in the backup.
 
 ## How random is it?
 

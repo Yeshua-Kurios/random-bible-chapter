@@ -846,3 +846,8 @@ footer a {
   .streak-chip.at-risk, .xp-pop { animation: none; }
   .xp-pop { opacity: 1; }
 }
+
+.freeze-chip.empty {
+  color: var(--muted);
+  opacity: 0.8;
+}

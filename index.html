@@ -61,6 +61,7 @@
       <div class="habit-row">
         <span id="streak-chip" class="habit-chip streak-chip">🔥 Start a streak today</span>
         <span id="goal-chip" class="habit-chip goal-chip">○○○ 0/3 today</span>
+        <span id="freeze-chip" class="habit-chip freeze-chip">🧊 0/2 freezes</span>
       </div>
       <p id="completions-line" class="completions-line" hidden></p>
     </div>
@@ -114,7 +115,7 @@
     </details>
 
     <details>
-      <summary>Reading log sync</summary>
+      <summary>Reading log sync &amp; cloud backup</summary>
       <p class="hint">
         Paste a GitHub personal access token (fine-grained, scoped only to
         your private reading-log repo's Contents permission) to send each
@@ -126,6 +127,16 @@
       <input id="sync-secret-input" class="code-box" type="password" autocomplete="off" placeholder="Paste your GitHub token here" />
       <button id="sync-save-btn">Save sync key</button>
       <p id="sync-status" class="hint" aria-live="polite"></p>
+
+      <p class="hint">
+        With a token saved, your full progress — history, level, achievements,
+        and streak freezes — is also backed up to your private repo after every
+        chapter. If this browser ever loses its data, paste your token again
+        above and tap Restore from cloud. A backup is never overwritten by a
+        device that has less progress than it.
+      </p>
+      <button id="cloud-restore-btn">Restore from cloud</button>
+      <p id="cloud-status" class="hint" aria-live="polite"></p>
     </details>
 
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
