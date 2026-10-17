@@ -162,7 +162,10 @@ shows, whether you got it right or not.
 - **Not farmable.** A fact pays its base XP only the first time you ever
   answer it, so total new-fact XP is capped by the size of the bank (about
   840 XP for all 195 facts, versus 10 XP for every chapter you read).
-  Reviews are offered only when they're due, and retries earn nothing.
+  Reviews are offered only when they're due, and retries earn nothing. Once
+  the bank passes 200 facts, every trivia payout is scaled by
+  `sqrt(200 / bank size)`, so growing the bank can't turn trivia into the main
+  source of XP. `TRIVIA_COVERAGE.md` has the plan for growing it.
 
 The fact bank is split by theme: `trivia.js` (core), `trivia-prophecy.js`
 (oracles set beside the extrabiblical records and excavations that bear on

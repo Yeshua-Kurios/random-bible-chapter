@@ -906,6 +906,10 @@ const TRIVIA_RETRY_GAP = 4; // questions before a missed fact is asked again
 const TRIVIA_NEW_XP = [2, 3, 4, 5, 6]; // by the card's tier
 const TRIVIA_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120, 180, 365];
 const TRIVIA_MAX_BONUS = 45;
+// Trivia XP per answer shrinks as the fact bank grows past this size, so a huge
+// bank can't out-earn reading Scripture. Total possible XP still grows, but
+// only with the square root of the bank size.
+const TRIVIA_XP_FULL_BANK = 200;
 const TRIVIA_MAX_REVIEWS_PER_SESSION = 15;
 const TRIVIA_TIER_NAMES = ["Warm-up", "Student", "Scholar", "Expert", "Master of Obscurity"];
 const DAY_MS = 86400000;
@@ -962,6 +966,14 @@ function triviaDueIds(trivia, now = Date.now()) {
 // The longer you go between correct recalls, the bigger the reward.
 function retentionBonus(elapsedDays) {
   return Math.min(TRIVIA_MAX_BONUS, Math.round(6 * Math.log2(1 + Math.max(0, elapsedDays))));
+}
+
+function triviaXpScale() {
+  return Math.min(1, Math.sqrt(TRIVIA_XP_FULL_BANK / Math.max(1, TRIVIA_CARDS.length)));
+}
+
+function scaleTriviaXp(xp) {
+  return xp > 0 ? Math.max(1, Math.round(xp * triviaXpScale())) : 0;
 }
 
 function shuffled(items) {
@@ -1079,7 +1091,7 @@ function answerTrivia(choice) {
   let nextDays = null;
 
   if (kind === "new") {
-    xp = correct ? TRIVIA_NEW_XP[card.tier - 1] : 0;
+    xp = correct ? scaleTriviaXp(TRIVIA_NEW_XP[card.tier - 1]) : 0;
     nextDays = TRIVIA_INTERVALS_DAYS[0];
     trivia.cards[card.id] = {
       level: correct ? 1 : 0,
@@ -1094,7 +1106,7 @@ function answerTrivia(choice) {
     const c = trivia.cards[card.id];
     const elapsedDays = (now - c.last) / DAY_MS;
     if (correct) {
-      xp = retentionBonus(elapsedDays);
+      xp = scaleTriviaXp(retentionBonus(elapsedDays));
       c.level++;
       c.reps++;
       nextDays = TRIVIA_INTERVALS_DAYS[Math.min(c.level - 1, TRIVIA_INTERVALS_DAYS.length - 1)];
