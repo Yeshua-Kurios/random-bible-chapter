@@ -11,6 +11,10 @@
 //   wrong   exactly three plausible wrong answers.
 //   why     the teaching text.
 //   ref     optional scripture reference.
+//   src     the extrabiblical text/inscription/excavation that corroborates it
+//           (shown as "Evidence"). Required for prophecy cards.
+//
+// More cards live in trivia-*.js; each appends to TRIVIA_CARDS.
 const TRIVIA_CARDS = [
   // --- Tier 1: warm-up
   {
@@ -147,7 +151,7 @@ const TRIVIA_CARDS = [
     id: "mene-tekel-weights", tier: 3, cat: "Aramaic", ref: "Daniel 5:25-28",
     q: "The words on Belshazzar's wall (mene, tekel, parsin) are probably what?",
     answer: "Units of weight and money: mina, shekel, half-mina",
-    wrong: ["The names of three kings", "The names of three gods", "Three months of the year"],
+    wrong: ["Names of three Babylonian kings who ruled in turn", "Names of three gods of the Chaldean pantheon", "Three months of the Babylonian calendar year"],
     why: "The writing reads like an inventory: a mina, a shekel, half-minas. Daniel turns each into a wordplay: numbered, weighed, divided — and parsin also puns on “Persians,” the people about to take Babylon.",
   },
   {
@@ -161,7 +165,7 @@ const TRIVIA_CARDS = [
     id: "siloam-inscription", tier: 3, cat: "Archaeology", ref: "2 Kings 20:20",
     q: "The Siloam Inscription (found 1880) in Hezekiah's Tunnel describes what?",
     answer: "Two teams digging toward each other and meeting",
-    wrong: ["Hezekiah's tribute to Assyria", "A list of Judah's kings", "A treaty with Egypt"],
+    wrong: ["Hezekiah's tribute payment to the king of Assyria", "A list of the kings who had ruled Judah", "A treaty of alliance between Judah and Egypt"],
     why: "The tunnel is about 533 metres (1,750 ft) long and winds in an S-curve to bring water from the Gihon Spring inside the city walls. The inscription says the crews heard each other's picks and finally broke through.",
   },
   {
@@ -189,7 +193,7 @@ const TRIVIA_CARDS = [
     id: "ketef-hinnom", tier: 3, cat: "Archaeology", ref: "Numbers 6:24-26",
     q: "The tiny silver scrolls from Ketef Hinnom (7th–6th century BCE) contain what text?",
     answer: "The Priestly Blessing (“The Lord bless you and keep you”)",
-    wrong: ["The Ten Commandments", "The Shema", "Psalm 23"],
+    wrong: ["The Ten Commandments (“You shall have no other gods”)", "The Shema (“Hear, O Israel”)", "Psalm 23 (“The Lord is my shepherd”)"],
     why: "Found in a burial cave in 1979, they are the earliest known quotation of biblical text — about 400 years before the Dead Sea Scrolls — and include the divine name YHWH. The thin silver had to be unrolled with great care.",
   },
   {
@@ -203,21 +207,21 @@ const TRIVIA_CARDS = [
     id: "raca-aramaic-insult", tier: 3, cat: "Aramaic", ref: "Matthew 5:22",
     q: "When Jesus warns against calling a brother “Raca,” what is raca?",
     answer: "An Aramaic insult, probably meaning “empty-head”",
-    wrong: ["A Greek oath", "A Hebrew curse name", "A Latin slur"],
+    wrong: ["A Greek oath sworn by the temple altar", "A Hebrew curse formula used by priests", "A Latin slur used for conquered peoples"],
     why: "Matthew leaves the Aramaic insult untranslated. It is probably from reqa, “empty.” Jesus' point is that contempt and anger belong in the same category as murder.",
   },
   {
     id: "caiaphas-ossuary", tier: 3, cat: "Archaeology",
     q: "A Jerusalem burial box inscribed “Yehosef bar Qayafa” is widely thought to belong to whom?",
     answer: "The high priest who presided at Jesus' trial",
-    wrong: ["Herod's steward", "Nicodemus", "Annas, Caiaphas' father-in-law"],
+    wrong: ["Herod's chief steward in Jerusalem", "Nicodemus, the Pharisee who visited Jesus", "Annas, Caiaphas' father-in-law and predecessor"],
     why: "Found in 1990 in the Peace Forest, it matches Josephus, who calls the high priest “Joseph, called Caiaphas.” Most scholars accept the identification, though a few debate it.",
   },
   {
     id: "sargon-khorsabad", tier: 3, cat: "Archaeology", ref: "Isaiah 20:1",
     q: "Sargon II is named only once in the Bible. Critics doubted him until what was discovered?",
     answer: "His palace at Khorsabad (1843)",
-    wrong: ["The Rosetta Stone", "The Cyrus Cylinder", "The Lachish ostraca"],
+    wrong: ["The Rosetta Stone, found in Egypt (1799)", "The Cyrus Cylinder, found at Babylon (1879)", "The Lachish ostraca, found at Tell ed-Duweir (1935)"],
     why: "Paul-Émile Botta uncovered Sargon's palace in 1843, with annals describing his conquest of Samaria (722/721 BCE). A king named once in the Bible turned out to be one of the best-documented Assyrian rulers.",
   },
   {
@@ -260,8 +264,8 @@ const TRIVIA_CARDS = [
   {
     id: "belshazzar-coregent", tier: 4, cat: "Ancient Near East", ref: "Daniel 5:16",
     q: "What do Babylonian records show that explains Belshazzar offering Daniel “third ruler in the kingdom”?",
-    answer: "He co-ruled while his father Nabonidus lived in Tayma, Arabia",
-    wrong: ["Three satraps divided Babylon", "Babylon had three joint kings", "He was the son of Nebuchadnezzar and a Persian"],
+    answer: "He co-ruled while his father Nabonidus lived in Tayma",
+    wrong: ["Three Persian satraps divided Babylon's rule", "Babylon had three joint kings at the time", "He was Nebuchadnezzar's son by a Persian wife"],
     why: "Nabonidus spent about ten years at Tayma while Belshazzar commanded in Babylon. That makes Belshazzar second in rule, so “third” is the highest position he could offer — a detail Greek historians didn't preserve.",
   },
   {
@@ -275,21 +279,21 @@ const TRIVIA_CARDS = [
     id: "arrabon-semitic", tier: 4, cat: "Greek", ref: "2 Corinthians 1:22",
     q: "Paul calls the Spirit an arrabōn (“down payment”). Where does this Greek word come from?",
     answer: "A Semitic word for a pledge (Hebrew ʿerabon)",
-    wrong: ["Latin arra, “marriage gift”", "Egyptian merchant slang", "Persian royal law"],
+    wrong: ["A Latin word for a marriage gift (arra)", "Egyptian merchants' slang for a deposit", "A Persian term from royal tax law"],
     why: "ʿErabon is the pledge Judah left with Tamar — his seal, cord, and staff (Gen 38:17–20). Greek borrowed it for a deposit that guarantees the full payment; Modern Greek arravona now means an engagement ring.",
   },
   {
     id: "nero-666-616", tier: 4, cat: "Greek", ref: "Revelation 13:18",
     q: "Some early manuscripts read 616 instead of 666. A leading explanation is what?",
-    answer: "Hebrew spellings of “Nero Caesar,” with or without the final letter nun",
-    wrong: ["Roman numeral miscounting by scribes", "The beast is a different emperor in each version", "The numbers of Jerusalem's gates"],
+    answer: "Hebrew spellings of “Nero Caesar” with or without a final nun",
+    wrong: ["Roman numeral miscounting by tired scribes copying Greek", "A deliberate change ordered by the Roman censors", "Spelling differences in the Latin name of Jerusalem"],
     why: "Nero Caesar spelled in Hebrew letters (nrwn qsr) adds to 666; dropping the final nun, as the Latin form does, gives 616. The 616 reading appears in Papyrus 115, a 3rd/4th-century manuscript.",
   },
   {
     id: "gezer-calendar", tier: 4, cat: "Archaeology",
     q: "The Gezer Calendar (10th century BCE) is a small limestone tablet in early Hebrew script. What does it list?",
     answer: "The agricultural seasons of the year",
-    wrong: ["Kings of Israel", "Temple tax rates", "A legal code"],
+    wrong: ["The kings of Israel, in order", "Temple tax rates, month by month", "A legal code on property and debt"],
     why: "It names periods like olive harvest, planting grain, and harvesting flax, in one of the oldest examples of Hebrew writing. It may be a schoolboy's exercise rather than an official record.",
   },
   {
@@ -324,14 +328,14 @@ const TRIVIA_CARDS = [
     id: "gallio-delphi", tier: 4, cat: "Archaeology", ref: "Acts 18:12",
     q: "Which inscription helps anchor Paul's timeline by dating Gallio's term as proconsul of Achaia to about AD 51–52?",
     answer: "A letter of Emperor Claudius found at Delphi",
-    wrong: ["The Pilate Stone", "The Erastus pavement", "The Res Gestae"],
+    wrong: ["The Pilate Stone, found at Caesarea", "The Erastus pavement, found at Corinth", "The Res Gestae of Augustus, at Ankara"],
     why: "Acts 18 has Paul brought before Gallio in Corinth. The Delphi inscription gives the timing, which is one of the few firm dates in New Testament chronology.",
   },
   {
     id: "politarchs-thessalonica", tier: 4, cat: "Archaeology", ref: "Acts 17:6",
     q: "Luke calls Thessalonica's magistrates “politarchs,” a title missing from classical literature. How was it later confirmed?",
-    answer: "Inscriptions naming politarchs, including one at Thessalonica's Vardar Gate",
-    wrong: ["A papyrus in Egypt", "Coins minted in Macedonia", "A passage in Josephus"],
+    answer: "Inscriptions naming politarchs, one at Thessalonica's Vardar Gate",
+    wrong: ["A papyrus from Egypt listing the city's local magistrates", "A passage in Strabo's Geography about Macedonian cities", "A decree of the Roman Senate about Thessalonica's status"],
     why: "Dozens of inscriptions from Macedonia use the title, mostly from the Roman period. Luke's unusual term turned out to be exactly right for that region.",
   },
 
@@ -340,7 +344,7 @@ const TRIVIA_CARDS = [
     id: "epiousios-hapax", tier: 5, cat: "Greek", ref: "Matthew 6:11",
     q: "What is notable about epiousios, translated “daily” in “Give us this day our daily bread”?",
     answer: "No certain use of it is known outside the Lord's Prayer",
-    wrong: ["It is Latin, not Greek", "Only Paul uses it elsewhere", "It literally means “tomorrow's”"],
+    wrong: ["It is a Latin word that Greek borrowed late", "Only Paul uses it anywhere else in his letters", "It unambiguously means “tomorrow's”"],
     why: "The early scholar Origen thought the evangelists coined it. Because no sure example exists elsewhere, its meaning — “daily,” “needed for today,” or “for the coming day” — is still debated.",
   },
   {
@@ -380,4 +384,3 @@ const TRIVIA_CARDS = [
   },
 ];
 
-const TRIVIA_BY_ID = new Map(TRIVIA_CARDS.map((c) => [c.id, c]));

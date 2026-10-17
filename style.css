@@ -927,3 +927,11 @@ footer a {
 .trivia-card .primary {
   width: 100%;
 }
+
+.trivia-src {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted);
+  font-style: italic;
+}
