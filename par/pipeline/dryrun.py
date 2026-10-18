@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""KJV27 dry run: modernize one KJV chapter, gate it, have checkers review it, revise once.
+"""KJV27 dry run: modernize one KJV chapter, gate it, have one checker review it, revise once.
 
-KJV27 is a light modernization of the KJV (see par/STYLE.md), not a new translation.
+KJV27 is the KJV in clear modern English with poor renderings corrected (see par/STYLE.md), not a fresh translation.
 Standard library only. Providers whose key env var is unset are skipped.
 Keys are never printed.
 
@@ -24,29 +24,29 @@ ROOT = HERE.parent.parent
 CHUNK = 12  # verses per model call
 
 DRAFT_SYSTEM = (
-    "You modernize the English of the King James Version according to the style guide below. "
-    "You are not retranslating: keep the meaning, verse order and sentence rhythm of the KJV. "
+    "You turn the King James Version into clear modern English with no archaic wording, and correct clear mistranslations, "
+    "according to the style guide below. Keep the meaning, verse order and sentence rhythm of the KJV except where a correction is needed. "
     "Each input line is a verse number and its KJV text. A leading '#' marks a paragraph break; keep it. "
-    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>"}]} with one entry per input verse.'
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modern verse>","note":"<only when you corrected the KJV rendering: what and why, one line>"}]} '
+    "with one entry per input verse. Omit note otherwise."
     "\n\nSTYLE GUIDE\n%s"
 )
 REVISE_SYSTEM = (
-    "You revise modernized KJV verses according to the style guide below. For each verse you get the KJV, "
+    "You revise modern-English KJV verses according to the style guide below. For each verse you get the KJV, "
     "the current modernization and reviewers' issues. Fix what the issues describe and change nothing else. "
     'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>"}]} for the listed verses only.'
     "\n\nSTYLE GUIDE\n%s"
 )
 CHECK_FOCUS = {
-    "fidelity": "Check that each modernized verse keeps the full meaning of the KJV verse: nothing dropped, added or reinterpreted, and theologically weighty vocabulary kept.",
-    "style": "Check each verse against the style guide: leftover archaic forms, words that should have stayed (LORD, only begotten...), and paraphrase or smoothing that the guide forbids.",
+    "review": "In one pass check each verse for (1) meaning: nothing dropped, added or reinterpreted beyond a correction the verse's note explains, and any correction is right; (2) style: leftover archaic English, or paraphrase and smoothing the guide forbids.",
 }
 CHECK_SYSTEM = (
-    "You review a light modernization of the King James Version. %s "
+    "You review a modern-English rendering of the King James Version. %s "
     'Reply with JSON only: {"verdict":"pass"|"fail","issues":[{"verse":<n>,"problem":"...","suggestion":"..."}]}. '
     "Report only real problems."
     "\n\nSTYLE GUIDE\n%s"
 )
-ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily|lest)\b", re.I)
+ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily|lest|wherefore|whoso|whosoever|yea|nay|behold|begat|brethren|spake|hearken|peradventure|whence|whither|thence|hither|thither|howbeit|forasmuch)\b", re.I)
 ETH = re.compile(r"\b[a-z]{3,}eth\b")  # lowercase only, so names like Elizabeth pass
 ETH_OK = {"teeth", "beneath", "nineteenth", "sixteenth", "seventeenth", "eighteenth"}  # -est verbs are left to the style checker
 
@@ -247,7 +247,7 @@ def draft(cfg, verses):
                 except Exception as e:
                     log("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]))
                     break
-                done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": str(v["text"]).strip()} for v in out]
+                done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": str(v["text"]).strip(), "note": str(v.get("note") or "").strip() or None} for v in out]
                 used.add("%s (%s)" % (name, prov[2]))
                 ok = True
                 break
@@ -259,10 +259,10 @@ def draft(cfg, verses):
     return sorted(used), done
 
 
-def check(cfg, kind, drafted):
+def check(cfg, kind, drafted, only=None):
     """Run one checker; on an error or unparseable reply fall back to cfg["checker_fallbacks"] in order."""
-    rows = [v for v in drafted if v["text"]]
-    user = "\n\n".join("Verse %d\nKJV: %s\nModern: %s" % (v["n"], v["kjv"], v["text"]) for v in rows)
+    rows = [v for v in drafted if v["text"] and (only is None or v["n"] in only)]
+    user = "\n\n".join("Verse %d\nKJV: %s\nModern: %s%s" % (v["n"], v["kjv"], v["text"], "\nNote: " + v["note"] if v.get("note") else "") for v in rows)
     names = [cfg["checkers"][kind]] + [n for n in cfg.get("checker_fallbacks", []) if n != cfg["checkers"][kind]]
     err = None
     for name in names:
@@ -311,10 +311,12 @@ def revise(cfg, drafted, checks):
 
 
 def render(title, used, drafted, rounds, revised):
-    lines = ["# %s (KJV27 dry run)" % title, "", "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
+    lines = ["# %s (KJV27)" % title, "", "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
              "| v | KJV | KJV27 |", "|---|---|---|"]
     for v in drafted:
         t = v["text"] if v["text"] else "_not drafted_"
+        if v.get("note"):
+            t += " _(correction: %s)_" % v["note"]
         if v.get("first"):
             t += " _(revised; first draft: %s)_" % v["first"]
         lines.append("| %s | %s | %s |" % (v["n"], v["kjv"], t))
@@ -339,7 +341,7 @@ def run_chapter(cfg, slug, chapter):
         if any(c["issues"] for c in rounds[0]):
             drafted, revised = revise(cfg, drafted, rounds[0])
             if revised:
-                rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
+                rounds.append([check(cfg, k, drafted, set(revised)) for k in cfg["checkers"]])  # re-check only what changed
     return {"book": book, "slug": slug, "chapter": chapter, "drafters": used, "verses": drafted,
             "rounds": rounds, "revised": revised, "complete": all(v["text"] for v in drafted),
             "md": render("%s %d" % (book, chapter), used, drafted, rounds, revised)}

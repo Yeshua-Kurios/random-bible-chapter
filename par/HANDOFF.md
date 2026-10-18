@@ -3,7 +3,7 @@
 Last updated 2026-10-18.
 
 ## Project
-KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is a light modernization of the KJV English (see `par/STYLE.md`). It is NOT a new translation from Hebrew or Greek. Free models draft the modernization, other models cross-check, and a person is the final reviewer.
+KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is the KJV in clear modern English: NO archaic English at all, and poor KJV renderings corrected (see `par/STYLE.md`). It is still not a fresh translation from Hebrew or Greek. Free models draft, one checker reviews, and a person is the final reviewer. Owner's goal (2026-10-18): a solid translation without wasting tokens.
 
 ## Direction change (2026-10-18)
 The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and parked. What the experiment showed, in case it is revisited:
@@ -14,9 +14,9 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 
 ## Design rules
 - Keep verse count, verse order and the `#` paragraph markers exactly as in `kjv/`.
-- Keep the weighty KJV vocabulary the style guide lists; do not paraphrase.
+- No archaic English (the gate rejects thee/thou/-eth/wherefore/behold/yea etc.). Keep theological words that are still living English; fix clear mistranslations, and report each one in the verse's `note` so the review file shows it. Do not paraphrase.
 - Deterministic gate (in `par/pipeline/dryrun.py`): same verses in order, paragraph markers kept, no `[bracketed]` words, no thee/thou/hath/-eth forms left. All five hand-made pilot chapters pass it.
-- LLM checkers: fidelity (meaning kept) and style (STYLE.md rules). One revision pass on flagged verses, then re-check.
+- Token frugality: ONE reviewer call per chapter (meaning + style together, `review` in config), one revision pass on flagged verses only, and the re-check sends only the revised verses.
 - Judgment calls go in `par/NOTES.md`. A person reviews before anything is published.
 - One chapter per file (a very large write was content-filtered once). Split Psalm 119.
 

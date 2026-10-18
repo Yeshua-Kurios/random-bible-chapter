@@ -137,7 +137,7 @@ def main():
     lines = ["KJV27 chapters for %s: %d of %d drafted. %d of %d chapters done in all." % (
         today, len(drafted), args.count, len(done), len(canon())), ""]
     for key in drafted:
-        v = {k: x for k, x in done[key].items() if k in ("fidelity", "style")}
+        v = {k: x for k, x in done[key].items() if k in ("review", "fidelity", "style")}
         lines.append("- %s: %s%s" % (key, ", ".join("%s %s" % kv for kv in v.items()),
                                      ", revised verses %s" % done[key]["revised"] if done[key]["revised"] else ""))
     lines += notes + ["", "Review KJV against KJV27 in `par/review/`. Merging this PR is the approval: the app shows these chapters "

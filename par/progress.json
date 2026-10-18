@@ -5,36 +5,32 @@
    "drafters": [
     "nvidia (nvidia/nemotron-3-super-120b-a12b)"
    ],
-   "fidelity": "error",
-   "revised": [],
-   "style": "error"
+   "review": "hand-polished",
+   "revised": []
   },
   "2-kings-16": {
    "date": "2026-10-18",
    "drafters": [
     "groq (openai/gpt-oss-120b)"
    ],
-   "fidelity": "error",
-   "revised": [],
-   "style": "error"
+   "review": "hand-polished",
+   "revised": []
   },
   "ezekiel-31": {
    "date": "2026-10-18",
    "drafters": [
     "groq (openai/gpt-oss-120b)"
    ],
-   "fidelity": "error",
-   "revised": [],
-   "style": "error"
+   "review": "hand-polished",
+   "revised": []
   },
   "proverbs-12": {
    "date": "2026-10-18",
    "drafters": [
     "groq (openai/gpt-oss-120b)"
    ],
-   "fidelity": "error",
-   "revised": [],
-   "style": "error"
+   "review": "hand-polished",
+   "revised": []
   }
  },
  "failed": {
