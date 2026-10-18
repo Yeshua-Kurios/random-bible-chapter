@@ -36,6 +36,14 @@ TRANSLATE_SYSTEM = (
     "Bible wording that the glosses do not support. Keep every verse, in order. "
     'Reply with JSON only: {"verses":[{"n":<verse number>,"translation":"<English>"}]}.'
 )
+REVISE_SYSTEM = (
+    "You revise English verses built from word glosses of biblical Hebrew. You never see the Hebrew or any "
+    "English Bible. For each verse you get its glosses, the current English, and reviewers' issues. Fix the "
+    "problems the issues describe. An issue may show that a gloss was misread (for example a conjunction or a "
+    "subject); follow the issue's reading of the Hebrew, and change nothing else. "
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"translation":"<English>"}]} for the listed verses only.'
+)
+CHUNK = 6  # verses per model call
 CHECK_FOCUS = {
     "lexical": "Check that each Hebrew word is rendered with a defensible sense, and that no word is dropped or invented.",
     "meaning": "Check that the English conveys the meaning of the Hebrew clause, including syntax, tense and idiom.",
@@ -77,7 +85,7 @@ def provider(cfg, name):
     return base.rstrip("/"), key, p["model"]
 
 
-def http(url, key, body=None, timeout=120, retries=3):
+def http(url, key, body=None, timeout=240, retries=3):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, headers={
         "Authorization": "Bearer " + key,
@@ -93,6 +101,11 @@ def http(url, key, body=None, timeout=120, retries=3):
                 time.sleep(5 * 2 ** attempt)  # rate limits on free tiers
                 continue
             raise RuntimeError("HTTP %d from %s: %s" % (e.code, url, e.read()[:300].decode("utf-8", "replace")))
+        except (TimeoutError, urllib.error.URLError) as e:
+            if attempt < retries:
+                time.sleep(5)
+                continue
+            raise RuntimeError("no response from %s: %s" % (url, e))
 
 
 USAGE = {}  # provider -> token counts for this run
@@ -203,28 +216,73 @@ def gate_glosses(words, out):
     return glosses
 
 
-def draft(cfg, verses, words):
-    """Two steps: gloss each Hebrew word, then build English from the glosses alone."""
+def chunks(verses, size=CHUNK):
+    return [verses[i:i + size] for i in range(0, len(verses), size)]
+
+
+def draft_chunk(cfg, part, words, skip=()):
+    """Gloss, gate, then translate one chunk of verses; try each drafter in turn."""
+    cw = {n: words[n] for n, _ in part}
     for name in cfg["drafters"]:
         prov = provider(cfg, name)
-        if not prov:
+        if not prov or name in skip:
             print("drafter %s: skipped" % name, file=sys.stderr)
             continue
         try:
-            glosses = gate_glosses(words, parse_json(chat(name, prov, GLOSS_SYSTEM, word_lines(words))))
+            glosses = gate_glosses(cw, parse_json(chat(name, prov, GLOSS_SYSTEM, word_lines(cw))))
             gloss_text = "\n".join("%d: %s" % (n, " | ".join(glosses["%d.%d" % (n, i + 1)] for i, _ in enumerate(ws)))
-                                   for n, ws in words.items())
+                                   for n, ws in cw.items())
             out = parse_json(chat(name, prov, TRANSLATE_SYSTEM, gloss_text))
             got = [int(v["n"]) for v in out["verses"]]
-            if got != [n for n, _ in verses]:
+            if got != [n for n, _ in part]:
                 raise ValueError("verse numbers %s do not match the source" % got)
-            drafted = [{"n": int(v["n"]),
-                        "gloss": " | ".join(glosses["%d.%d" % (v["n"], i + 1)] for i, _ in enumerate(words[int(v["n"])])),
-                        "translation": v["translation"]} for v in out["verses"]]
-            return name, prov[2], drafted
+            return name, prov[2], [{"n": int(v["n"]),
+                                    "gloss": " | ".join(glosses["%d.%d" % (v["n"], i + 1)] for i, _ in enumerate(cw[int(v["n"])])),
+                                    "translation": v["translation"]} for v in out["verses"]]
         except Exception as e:
-            print("drafter %s failed: %s" % (name, str(e)[:300]), file=sys.stderr)
+            print("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]), file=sys.stderr)
     return None
+
+
+def draft(cfg, verses, words):
+    """Draft the chapter chunk by chunk. Returns (providers used, [verse dicts]) or None."""
+    drafted, used = [], []
+    for part in chunks(verses):
+        res = draft_chunk(cfg, part, words)
+        if not res:
+            return None
+        used.append("%s (%s)" % res[:2])
+        drafted += res[2]
+    return sorted(set(used)), drafted
+
+
+def revise(cfg, drafted, checks):
+    """One revision pass: give each flagged verse's glosses and issues back to a drafter."""
+    issues = {}
+    for c in checks:
+        for i in c["issues"]:
+            try:
+                issues.setdefault(int(i.get("verse")), []).append("%s: %s -> %s" % (c["checker"], i.get("problem"), i.get("suggestion")))
+            except (TypeError, ValueError):
+                pass
+    flagged = [v for v in drafted if v["n"] in issues]
+    if not flagged:
+        return drafted, []
+    user = "\n\n".join("Verse %d\nGlosses: %s\nCurrent English: %s\nIssues:\n- %s" % (
+        v["n"], v["gloss"], v["translation"], "\n- ".join(issues[v["n"]])) for v in flagged)
+    for name in cfg["drafters"]:
+        prov = provider(cfg, name)
+        if not prov:
+            continue
+        try:
+            out = {int(v["n"]): v["translation"] for v in parse_json(chat(name, prov, REVISE_SYSTEM, user))["verses"]}
+            if not set(out) <= set(issues):
+                raise ValueError("revised verses %s were not flagged" % sorted(out))
+            return [dict(v, translation=out.get(v["n"], v["translation"]), first=v["translation"] if v["n"] in out else None)
+                    for v in drafted], sorted(out)
+        except Exception as e:
+            print("reviser %s failed: %s" % (name, str(e)[:300]), file=sys.stderr)
+    return drafted, []
 
 
 def check(cfg, kind, verses, drafted):
@@ -241,20 +299,24 @@ def check(cfg, kind, verses, drafted):
         return {"checker": kind, "provider": name, "verdict": "error", "issues": [], "error": str(e)[:200]}
 
 
-def render(book, chapter, verses, drafter, drafted, checks):
+def render(book, chapter, verses, used, drafted, rounds, revised):
     src = dict(verses)
     lines = ["# %s %s (dry run)" % (book, chapter), "",
-             "Drafter: %s" % (("%s (%s)" % (drafter[0], drafter[1])) if drafter else "none (all skipped)"), "",
+             "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
              "Hebrew psalm numbering: titles count as verse 1.", "",
              "| v | Hebrew | Gloss | Translation |", "|---|---|---|---|"]
     for v in drafted:
-        lines.append("| %s | %s | %s | %s |" % (v["n"], src.get(int(v["n"]), ""), v.get("gloss", ""), v.get("translation", "")))
-    lines += ["", "## Checks", ""]
-    for c in checks:
-        lines.append("- **%s** (%s): %s%s" % (c["checker"], c["provider"], c["verdict"],
-                                             " - " + c["error"] if c.get("error") else ""))
-        for i in c["issues"]:
-            lines.append("  - v%s: %s -> %s" % (i.get("verse"), i.get("problem"), i.get("suggestion")))
+        t = v.get("translation", "")
+        if v.get("first"):
+            t += " _(revised; first draft: %s)_" % v["first"]
+        lines.append("| %s | %s | %s | %s |" % (v["n"], src.get(int(v["n"]), ""), v.get("gloss", ""), t))
+    for k, checks in enumerate(rounds, 1):
+        lines += ["", "## Checks, round %d%s" % (k, "" if k == 1 else " (after revising verses %s)" % ", ".join(map(str, revised))), ""]
+        for c in checks:
+            lines.append("- **%s** (%s): %s%s" % (c["checker"], c["provider"], c["verdict"],
+                                                 " - " + c["error"] if c.get("error") else ""))
+            for i in c["issues"]:
+                lines.append("  - v%s: %s -> %s" % (i.get("verse"), i.get("problem"), i.get("suggestion")))
     lines += ["", "_Agreement among models is evidence, not proof. A person reviews before this is called a translation._"]
     return "\n".join(lines) + "\n"
 
@@ -274,18 +336,24 @@ def main():
         return
 
     verses, words = fetch_chapter(args.book, args.chapter)
-    drafter = draft(cfg, verses, words)
-    drafted = drafter[2] if drafter else []
-    checks = [check(cfg, k, verses, drafted) for k in cfg["checkers"]] if drafter else []
-    md = render(args.book, args.chapter, verses, drafter, drafted, checks)
+    res = draft(cfg, verses, words)
+    used, drafted = res if res else ([], [])
+    rounds, revised = [], []
+    if drafted:
+        rounds.append([check(cfg, k, verses, drafted) for k in cfg["checkers"]])
+        if any(c["issues"] for c in rounds[0]):
+            drafted, revised = revise(cfg, drafted, rounds[0])
+            if revised:
+                rounds.append([check(cfg, k, verses, drafted) for k in cfg["checkers"]])
+    md = render(args.book, args.chapter, verses, used, drafted, rounds, revised)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     stem = "%s-%s" % (args.book, args.chapter)
     (out / (stem + ".md")).write_text(md, encoding="utf-8")
     (out / (stem + ".json")).write_text(json.dumps(
-        {"book": args.book, "chapter": args.chapter, "source": verses,
-         "drafter": drafter[:2] if drafter else None, "verses": drafted, "checks": checks},
+        {"book": args.book, "chapter": args.chapter, "source": verses, "drafters": used,
+         "verses": drafted, "revised": revised, "checks": rounds},
         ensure_ascii=False, indent=2), encoding="utf-8")
     if USAGE:
         save_usage(args.usage)

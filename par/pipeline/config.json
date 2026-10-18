@@ -1,5 +1,5 @@
 {
-  "_note": "Base URLs verified by --list-models on 2026-10-18 (Workers AI has no /models; its model ID is unverified). Model IDs come from those lists.",
+  "_note": "Base URLs verified by --list-models on 2026-10-18 (Workers AI has no /models; its model ID is unverified). Model IDs come from those lists. Cerebras and SambaNova need billing, Z.ai has no balance: left out of the drafter and checker lists.",
   "providers": {
     "nvidia": {
       "base_url": "https://integrate.api.nvidia.com/v1",
@@ -48,13 +48,13 @@
     }
   },
   "drafters": [
-    "cerebras",
     "groq",
-    "sambanova"
+    "nvidia",
+    "scaleway"
   ],
   "checkers": {
     "lexical": "nvidia",
     "meaning": "gemini",
-    "style": "zai"
+    "style": "scaleway"
   }
 }
