@@ -1,6 +1,0 @@
-<html><body style="margin:0;background:#cfe3ee"><svg id=s style="width:1100px;height:720px"></svg>
-<script src="/map-data.js"></script><script>
-const M=MAP_BASE;const W=(M.lon1-M.lon0)*M.kx*M.scale,H=(M.lat1-M.lat0)*M.scale;
-const s=document.getElementById('s');s.setAttribute('viewBox',`0 ${(M.lat1-M.lat1)*M.scale} ${W} ${H}`);
-s.innerHTML=`<path d="${M.land}" fill="#efe6d2" stroke="#b9a98a" stroke-width="1" fill-rule="evenodd"/><path d="${M.lakes}" fill="#cfe3ee" stroke="#8fb3c8"/>`+M.rivers.map(r=>`<path d="${r}" fill="none" stroke="#8fb3c8" stroke-width="1.5"/>`).join('');
-</script></body></html>
