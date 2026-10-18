@@ -13,6 +13,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -69,18 +70,22 @@ def provider(cfg, name):
     return base.rstrip("/"), key, p["model"]
 
 
-def http(url, key, body=None, timeout=120):
+def http(url, key, body=None, timeout=120, retries=3):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, headers={
         "Authorization": "Bearer " + key,
         "Content-Type": "application/json",
         "User-Agent": "par-dryrun",
     })
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.load(r)
-    except urllib.error.HTTPError as e:
-        raise RuntimeError("HTTP %d from %s: %s" % (e.code, url, e.read()[:300].decode("utf-8", "replace")))
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 504) and attempt < retries:
+                time.sleep(5 * 2 ** attempt)  # rate limits on free tiers
+                continue
+            raise RuntimeError("HTTP %d from %s: %s" % (e.code, url, e.read()[:300].decode("utf-8", "replace")))
 
 
 USAGE = {}  # provider -> token counts for this run
