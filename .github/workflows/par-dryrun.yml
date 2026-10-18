@@ -1,0 +1,48 @@
+name: KJV27 dry run
+
+on:
+  push:
+    branches: [par-pilot, claude/read-handoff-8s8tjl]
+    paths: ["par/**", "kjv/**"]
+  workflow_dispatch:
+    inputs:
+      book:
+        description: kjv/ file stem (psalms, john, 1-john, ...)
+        default: psalms
+      chapter:
+        description: Chapter number
+        default: "23"
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { book: psalms, chapter: "23" }
+          - { book: john, chapter: "3" }
+    env:
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Modernize ${{ matrix.book }} ${{ matrix.chapter }}
+        if: github.event_name == 'push'
+        run: python par/pipeline/dryrun.py --book "${{ matrix.book }}" --chapter "${{ matrix.chapter }}" --out par-out
+      - name: Modernize ${{ inputs.book }} ${{ inputs.chapter }}
+        if: github.event_name == 'workflow_dispatch' && matrix.book == 'psalms'
+        run: python par/pipeline/dryrun.py --book "${{ inputs.book }}" --chapter "${{ inputs.chapter }}" --out par-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: par-${{ matrix.book }}-${{ matrix.chapter }}
+          path: |
+            par-out
+            par/usage.json

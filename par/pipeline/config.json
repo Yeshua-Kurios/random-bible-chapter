@@ -1,0 +1,62 @@
+{
+  "_note": "Base URLs verified by --list-models on 2026-10-18 (Workers AI has no /models; its model ID is unverified). Cerebras and SambaNova need billing, Z.ai has no balance, Scaleway is quota-locked, Mistral rate-limits: all left out. NVIDIA is slow (60-90s a call), so it is the last drafter only.",
+  "providers": {
+    "nvidia": {
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "key_env": "NVIDIA_API_KEY",
+      "model": "nvidia/nemotron-3-super-120b-a12b"
+    },
+    "groq": {
+      "base_url": "https://api.groq.com/openai/v1",
+      "key_env": "GROQ_API_KEY",
+      "model": "openai/gpt-oss-120b"
+    },
+    "cerebras": {
+      "base_url": "https://api.cerebras.ai/v1",
+      "key_env": "CEREBRAS_API_KEY",
+      "model": "gpt-oss-120b"
+    },
+    "gemini": {
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "key_env": "GEMINI_API_KEY",
+      "model": "gemini-3.5-flash"
+    },
+    "mistral": {
+      "base_url": "https://api.mistral.ai/v1",
+      "key_env": "MISTRAL_API_KEY",
+      "model": "mistral-small-latest"
+    },
+    "workersai": {
+      "base_url": "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      "key_env": "WORKERSAI_API_KEY",
+      "model": "@cf/openai/gpt-oss-120b"
+    },
+    "sambanova": {
+      "base_url": "https://api.sambanova.ai/v1",
+      "key_env": "SAMBANOVA_API_KEY",
+      "model": "DeepSeek-V3.2"
+    },
+    "zai": {
+      "base_url": "https://api.z.ai/api/paas/v4",
+      "key_env": "ZAI_API_KEY",
+      "model": "glm-4.5-air"
+    },
+    "scaleway": {
+      "base_url": "https://api.scaleway.ai/v1",
+      "key_env": "SCALEWAY_API_KEY",
+      "model": "gpt-oss-120b"
+    }
+  },
+  "drafters": [
+    "groq",
+    "gemini",
+    "nvidia"
+  ],
+  "checkers": {
+    "fidelity": "gemini",
+    "style": "groq"
+  },
+  "checker_fallbacks": [
+    "nvidia"
+  ]
+}

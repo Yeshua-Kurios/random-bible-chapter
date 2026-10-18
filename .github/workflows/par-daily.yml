@@ -1,0 +1,71 @@
+name: KJV27 daily
+
+# 5 am US Eastern. GitHub cron is UTC, so it runs at 09:00 and 10:00 UTC (5 am EDT and 5 am EST)
+# and the first step lets through only the run that lands in the 5-6 am Eastern window, once per day.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      count:
+        description: Chapters to modernize
+        default: "5"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      # Optional: lets the run skip chapters you have already read. Unset = start at the head of the queue.
+      READING_LOG_TOKEN: ${{ secrets.READING_LOG_TOKEN }}
+      READING_LOG_URL: https://api.github.com/repos/yeshuakurios/ai-bible-commentary/contents/reading-log.json
+    steps:
+      - name: Is it time?
+        id: when
+        run: |
+          day=$(TZ=America/New_York date +%F)
+          hour=$(TZ=America/New_York date +%H)
+          branch="par/daily-$day"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "05" ] && [ "$hour" != "06" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not 5 am Eastern (hour $hour); skipping."
+          elif git ls-remote --exit-code --heads "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" "$branch" >/dev/null 2>&1 \
+               && [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "$branch already exists; skipping."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.when.outputs.run == 'true'
+      - uses: actions/setup-python@v5
+        if: steps.when.outputs.run == 'true'
+        with:
+          python-version: "3.12"
+      - name: Modernize the next chapters
+        if: steps.when.outputs.run == 'true'
+        run: python par/pipeline/daily.py --count "${{ inputs.count || '5' }}"
+      - name: Open a PR for review
+        if: steps.when.outputs.run == 'true'
+        run: |
+          branch="${{ steps.when.outputs.branch }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add par/text par/review par/progress.json par/usage.json
+          git commit -m "KJV27: modernize the next chapters ($(date +%F))"
+          git push origin "$branch"
+          gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+            --title "KJV27: chapters for $(TZ=America/New_York date +%F)" --body-file par-out/summary.md \
+            || echo "::warning::Pushed $branch but could not open the PR; open it from the GitHub branch page."
+      - name: Summary
+        if: always() && steps.when.outputs.run == 'true'
+        run: cat par-out/summary.md >> "$GITHUB_STEP_SUMMARY" || true

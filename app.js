@@ -90,6 +90,8 @@ const els = {
   triviaEnd: document.getElementById("trivia-end"),
   readerDetails: document.getElementById("reader"),
   readerSummary: document.getElementById("reader-summary"),
+  readerVersionRow: document.getElementById("reader-version-row"),
+  readerVersionBtn: document.getElementById("reader-version-btn"),
   readerText: document.getElementById("reader-text"),
   readerMarkRow: document.getElementById("reader-mark-row"),
   markBtn2: document.getElementById("mark-btn-2"),
@@ -597,6 +599,58 @@ function pickRandomUnread(readSet, excludeKey) {
     if (withoutExclude.length > 0) unread = withoutExclude;
   }
   return unread[secureRandomInt(unread.length)];
+}
+
+// --- The shared random order. par/queue.json is one fixed shuffle of every chapter;
+// the app hands out the next unread chapter in it, and the KJV27 pipeline modernizes
+// chapters in the same order, so modernized text is ready for what you read next.
+// Skipping sends a chapter to the back of the line. After a first full read-through
+// (or if the file can't be loaded) it's the old behaviour: a random unread chapter.
+
+const SKIPPED_KEY = "rbc:skipped";
+let queueOrder = null;
+
+async function loadQueue() {
+  try {
+    const res = await fetch("par/queue.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const order = (await res.json()).order;
+    const valid = new Set(allChapterKeys());
+    if (Array.isArray(order) && order.length === valid.size && order.every((k) => valid.has(k))) queueOrder = order;
+  } catch {
+    // no queue: random unread chapters, as before
+  }
+}
+
+function loadSkipped() {
+  try {
+    const list = JSON.parse(localStorage.getItem(SKIPPED_KEY) || "[]");
+    return new Set(Array.isArray(list) ? list : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSkipped(set) {
+  try {
+    localStorage.setItem(SKIPPED_KEY, JSON.stringify([...set]));
+  } catch {
+    // skipped chapters just come back sooner
+  }
+}
+
+function pickNextChapter(readSet, excludeKey) {
+  if (queueOrder && loadLifetime().completions.length === 0) {
+    const skipped = loadSkipped();
+    const first = (skip) => queueOrder.find((k) => !readSet.has(k) && !skip.has(k) && k !== excludeKey);
+    let key = first(skipped);
+    if (!key && skipped.size) {
+      saveSkipped(new Set()); // every unread chapter has been skipped once: start the line again
+      key = first(new Set());
+    }
+    if (key) return key;
+  }
+  return pickRandomUnread(readSet, excludeKey);
 }
 
 function computeBookCounts(readSet) {
@@ -1214,6 +1268,51 @@ async function kjvChapterVerses(book, chapter) {
   return verses;
 }
 
+// --- KJV27 (a light modernization of the KJV, drafted by the pipeline in par/).
+// par/progress.json lists the chapters that have KJV27 text on main; every other
+// chapter is simply shown in the KJV. A reader can flip a chapter back to the KJV.
+
+const READER_VERSION_KEY = "rbc:readerVersion";
+let parProgress = null; // Promise of the set of chapter keys that have KJV27 text
+
+function loadParProgress() {
+  if (!parProgress) {
+    parProgress = fetch("par/progress.json", { cache: "no-cache" })
+      .then((res) => (res.ok ? res.json() : { chapters: {} }))
+      .then((data) => new Set(Object.keys(data.chapters || {})))
+      .catch(() => new Set()); // offline or missing: KJV everywhere
+  }
+  return parProgress;
+}
+
+function preferredVersion() {
+  try {
+    return localStorage.getItem(READER_VERSION_KEY) === "kjv" ? "kjv" : "par";
+  } catch {
+    return "par";
+  }
+}
+
+// Resolves to {version: "par"|"kjv", verses, parAvailable}. KJV27 is used only when the
+// chapter has it and the reader hasn't chosen the KJV; any problem falls back to the KJV.
+async function chapterText(book, chapter) {
+  const key = `${bookSlug(book)}-${chapter}`;
+  let hasPar = (await loadParProgress()).has(key);
+  if (hasPar && preferredVersion() === "par") {
+    try {
+      const res = await fetch(`par/text/${key}.json`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      if (Array.isArray(data.verses) && data.verses.length && data.verses.every((v) => typeof v === "string")) {
+        return { version: "par", verses: data.verses, parAvailable: true };
+      }
+    } catch {
+      hasPar = false; // listed but unreadable: show the KJV and no toggle
+    }
+  }
+  return { version: "kjv", verses: await kjvChapterVerses(book, chapter), parAvailable: hasPar };
+}
+
 // Appends text to `parent`, rendering [bracketed] words in italics.
 function appendWithItalics(parent, text) {
   for (const part of text.split(/(\[[^\]]*\])/)) {
@@ -1254,15 +1353,17 @@ async function renderReader(pending) {
     return;
   }
   els.readerSummary.textContent = `${pending} · KJV`;
+  els.readerVersionRow.hidden = true;
   const status = document.createElement("p");
   status.className = "reader-status";
   status.textContent = "Loading…";
   els.readerText.appendChild(status);
 
   const [book, chapter] = splitKey(pending);
-  let verses;
+  let verses, text;
   try {
-    verses = await kjvChapterVerses(book, chapter);
+    text = await chapterText(book, chapter);
+    verses = text.verses;
   } catch {
     if (token !== readerToken) return;
     readerKey = undefined; // let the next render try again
@@ -1272,6 +1373,19 @@ async function renderReader(pending) {
     return;
   }
   if (token !== readerToken) return; // a different chapter was requested meanwhile
+
+  els.readerSummary.textContent = `${pending} · ${text.version === "par" ? "KJV27" : "KJV"}`;
+  els.readerVersionRow.hidden = !text.parAvailable;
+  els.readerVersionBtn.textContent = text.version === "par" ? "Show the KJV" : "Show KJV27";
+  els.readerVersionBtn.onclick = () => {
+    try {
+      localStorage.setItem(READER_VERSION_KEY, text.version === "par" ? "kjv" : "par");
+    } catch {
+      // the choice just won't be remembered
+    }
+    readerKey = undefined;
+    updateReader(loadPending());
+  };
 
   els.readerText.textContent = "";
   let para = null;
@@ -1642,7 +1756,7 @@ function render() {
   // chapter queued up — without this, the Get button would stay hidden
   // (since `started` is true) with no way left to fetch a new chapter.
   if (pending === null && readSet.size > 0) {
-    pending = pickRandomUnread(readSet);
+    pending = pickNextChapter(readSet);
     savePending(pending);
   }
 
@@ -1912,7 +2026,7 @@ function renderBookMap(readSet) {
 
 function handleGet() {
   const readSet = readKeysSet(loadReadLog());
-  savePending(pickRandomUnread(readSet));
+  savePending(pickNextChapter(readSet));
   render();
 }
 
@@ -1959,7 +2073,7 @@ function handleMark() {
     return;
   }
 
-  savePending(pickRandomUnread(newReadSet));
+  savePending(pickNextChapter(newReadSet));
   const newLevel = levelForXp(computeLifetimeXp(log, achievements));
   render();
   showToasts(newBadges);
@@ -1971,7 +2085,12 @@ function handleMark() {
 function handleSkip() {
   const pending = loadPending();
   const readSet = readKeysSet(loadReadLog());
-  savePending(pickRandomUnread(readSet, pending));
+  if (pending) {
+    const skipped = loadSkipped();
+    skipped.add(pending);
+    saveSkipped(skipped);
+  }
+  savePending(pickNextChapter(readSet, pending));
   render();
 }
 
@@ -1986,6 +2105,7 @@ function handleReset() {
   localStorage.removeItem(ACHIEVEMENTS_KEY);
   localStorage.removeItem(LIFETIME_KEY);
   localStorage.removeItem(FREEZES_KEY);
+  localStorage.removeItem(SKIPPED_KEY);
   localStorage.removeItem(TRIVIA_KEY);
   localStorage.removeItem(QUESTIONS_KEY);
   triviaSession = null;
@@ -2068,5 +2188,92 @@ if (navigator.storage?.persist) {
   navigator.storage.persist();
 }
 
+// Settings > LLM Usage: a meter over the token ledger the KJV27 pipeline
+// writes to par/usage.json (the app itself makes no LLM calls).
+const USAGE_BUDGET_KEY = "rbc:usageBudget";
+const DEFAULT_USAGE_BUDGET = 5000000; // a full translation pass is ~3-5M tokens
+
+function usageBudget() {
+  try {
+    const n = Number(localStorage.getItem(USAGE_BUDGET_KEY));
+    return n > 0 ? n : DEFAULT_USAGE_BUDGET;
+  } catch (e) {
+    return DEFAULT_USAGE_BUDGET;
+  }
+}
+
+function showSettings(open) {
+  document.body.classList.toggle("settings-open", open);
+  document.getElementById("settings-view").hidden = !open;
+  document.getElementById("llm-usage").hidden = true;
+  document.getElementById("settings-menu").hidden = false;
+  if (open) window.scrollTo(0, 0);
+}
+
+function renderUsage(ledger) {
+  const budget = usageBudget();
+  const total = Number(ledger?.total_tokens) || 0;
+  const meter = document.getElementById("usage-meter");
+  meter.setAttribute("aria-valuenow", String(total));
+  meter.setAttribute("aria-valuemax", String(budget));
+  const pct = Math.min(100, (total / budget) * 100);
+  const fill = document.getElementById("usage-fill");
+  fill.style.width = pct + "%";
+  fill.classList.toggle("over", total > budget);
+  document.getElementById("usage-total").textContent =
+    `${total.toLocaleString()} of ${budget.toLocaleString()} tokens (${pct.toFixed(1)}%)`;
+  document.getElementById("usage-budget").value = budget;
+
+  const list = document.getElementById("usage-providers");
+  list.textContent = "";
+  Object.entries(ledger?.providers || {})
+    .sort((a, b) => b[1].total_tokens - a[1].total_tokens)
+    .forEach(([name, t]) => {
+      const li = document.createElement("li");
+      const share = total ? (t.total_tokens / total) * 100 : 0;
+      const label = document.createElement("span");
+      label.textContent = `${name}: ${t.total_tokens.toLocaleString()} tokens, ${t.calls} call${t.calls === 1 ? "" : "s"}`;
+      const track = document.createElement("div");
+      track.className = "usage-meter small";
+      const bar = document.createElement("div");
+      bar.className = "usage-fill";
+      bar.style.width = share + "%";
+      track.appendChild(bar);
+      li.append(label, track);
+      list.appendChild(li);
+    });
+  document.getElementById("usage-status").textContent = ledger?.updated
+    ? `Last updated ${new Date(ledger.updated).toLocaleString()}.`
+    : "No usage recorded yet.";
+}
+
+async function openLlmUsage() {
+  document.getElementById("settings-menu").hidden = true;
+  document.getElementById("llm-usage").hidden = false;
+  renderUsage(null);
+  try {
+    const res = await fetch("par/usage.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    renderUsage(await res.json());
+  } catch (e) {
+    document.getElementById("usage-status").textContent = "Couldn't load par/usage.json.";
+  }
+}
+
+document.getElementById("settings-btn").addEventListener("click", () => showSettings(true));
+document.getElementById("settings-back").addEventListener("click", () => {
+  const sub = !document.getElementById("llm-usage").hidden;
+  showSettings(!sub ? false : true);
+});
+document.getElementById("llm-usage-link").addEventListener("click", openLlmUsage);
+document.getElementById("usage-budget").addEventListener("change", (e) => {
+  const n = Number(e.target.value);
+  try {
+    if (n > 0) localStorage.setItem(USAGE_BUDGET_KEY, String(Math.round(n)));
+  } catch (err) {}
+  openLlmUsage();
+});
+
+loadQueue();
 render();
 checkCloudOnLoad();

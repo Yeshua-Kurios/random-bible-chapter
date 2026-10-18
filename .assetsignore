@@ -7,3 +7,6 @@ README.md
 node_modules
 .wrangler
 TRIVIA_COVERAGE.md
+par/pipeline
+par/HANDOFF.md
+par/review
