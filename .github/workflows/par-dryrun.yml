@@ -1,0 +1,45 @@
+name: PAR dry run
+
+on:
+  push:
+    branches: [par-pilot]
+    paths: ["par/pipeline/**"]
+  workflow_dispatch:
+    inputs:
+      book:
+        description: morphhb file stem (Ps, Gen, ...)
+        default: Ps
+      chapter:
+        description: Chapter number
+        default: "23"
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    env:
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      WORKERSAI_API_KEY: ${{ secrets.WORKERSAI_API_KEY }}
+      SAMBANOVA_API_KEY: ${{ secrets.SAMBANOVA_API_KEY }}
+      ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+      SCALEWAY_API_KEY: ${{ secrets.SCALEWAY_API_KEY }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: List models
+        run: python par/pipeline/dryrun.py --list-models
+      - name: Dry run
+        run: python par/pipeline/dryrun.py --book "${{ inputs.book || 'Ps' }}" --chapter "${{ inputs.chapter || '23' }}" --out par-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: par-dryrun
+          path: par-out

@@ -1,0 +1,20 @@
+{
+  "_note": "Base URLs and model IDs are from memory and UNVERIFIED. Run dryrun.py --list-models and fix the model IDs.",
+  "providers": {
+    "nvidia":    {"base_url": "https://integrate.api.nvidia.com/v1", "key_env": "NVIDIA_API_KEY", "model": "meta/llama-3.3-70b-instruct"},
+    "groq":      {"base_url": "https://api.groq.com/openai/v1", "key_env": "GROQ_API_KEY", "model": "llama-3.3-70b-versatile"},
+    "cerebras":  {"base_url": "https://api.cerebras.ai/v1", "key_env": "CEREBRAS_API_KEY", "model": "llama-3.3-70b"},
+    "gemini":    {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai", "key_env": "GEMINI_API_KEY", "model": "gemini-2.0-flash"},
+    "mistral":   {"base_url": "https://api.mistral.ai/v1", "key_env": "MISTRAL_API_KEY", "model": "mistral-large-latest"},
+    "workersai": {"base_url": "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1", "key_env": "WORKERSAI_API_KEY", "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"},
+    "sambanova": {"base_url": "https://api.sambanova.ai/v1", "key_env": "SAMBANOVA_API_KEY", "model": "Meta-Llama-3.3-70B-Instruct"},
+    "zai":       {"base_url": "https://api.z.ai/api/paas/v4", "key_env": "ZAI_API_KEY", "model": "glm-4.5-flash"},
+    "scaleway":  {"base_url": "https://api.scaleway.ai/v1", "key_env": "SCALEWAY_API_KEY", "model": "llama-3.3-70b-instruct"}
+  },
+  "drafters": ["cerebras", "groq", "sambanova"],
+  "checkers": {
+    "lexical": "nvidia",
+    "meaning": "gemini",
+    "style": "mistral"
+  }
+}
