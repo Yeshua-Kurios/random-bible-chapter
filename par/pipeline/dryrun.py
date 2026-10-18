@@ -8,6 +8,7 @@ Keys are never printed.
   python par/pipeline/dryrun.py --book Ps --chapter 23
 """
 import argparse
+import datetime
 import json
 import os
 import re
@@ -82,13 +83,43 @@ def http(url, key, body=None, timeout=120):
         raise RuntimeError("HTTP %d from %s: %s" % (e.code, url, e.read()[:300].decode("utf-8", "replace")))
 
 
-def chat(prov, system, user):
+USAGE = {}  # provider -> token counts for this run
+
+
+def record_usage(name, res):
+    u = res.get("usage") or {}
+    t = USAGE.setdefault(name, {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+    t["calls"] += 1
+    t["prompt_tokens"] += int(u.get("prompt_tokens") or 0)
+    t["completion_tokens"] += int(u.get("completion_tokens") or 0)
+    t["total_tokens"] += int(u.get("total_tokens") or 0) or int(u.get("prompt_tokens") or 0) + int(u.get("completion_tokens") or 0)
+
+
+def save_usage(path):
+    """Add this run's tokens to the running ledger the app's LLM Usage page reads."""
+    path = Path(path)
+    try:
+        ledger = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        ledger = {}
+    provs = ledger.setdefault("providers", {})
+    for name, t in USAGE.items():
+        cur = provs.setdefault(name, {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+        for k, v in t.items():
+            cur[k] += v
+    ledger["total_tokens"] = sum(p["total_tokens"] for p in provs.values())
+    ledger["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+
+
+def chat(name, prov, system, user):
     base, key, model = prov
     res = http(base + "/chat/completions", key, {
         "model": model,
         "temperature": 0.2,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
     })
+    record_usage(name, res)
     return res["choices"][0]["message"]["content"]
 
 
@@ -148,7 +179,7 @@ def draft(cfg, verses):
             print("drafter %s: skipped" % name, file=sys.stderr)
             continue
         try:
-            out = parse_json(chat(prov, DRAFT_SYSTEM, source_block(verses)))
+            out = parse_json(chat(name, prov, DRAFT_SYSTEM, source_block(verses)))
             got = [int(v["n"]) for v in out["verses"]]
             if got != [n for n, _ in verses]:
                 raise ValueError("verse numbers %s do not match the source" % got)
@@ -165,7 +196,7 @@ def check(cfg, kind, verses, drafted):
         return {"checker": kind, "provider": name, "verdict": "skipped", "issues": []}
     user = "HEBREW:\n%s\n\nDRAFT:\n%s" % (source_block(verses), json.dumps(drafted, ensure_ascii=False))
     try:
-        out = parse_json(chat(prov, CHECK_SYSTEM.format(focus=CHECK_FOCUS[kind]), user))
+        out = parse_json(chat(name, prov, CHECK_SYSTEM.format(focus=CHECK_FOCUS[kind]), user))
         return {"checker": kind, "provider": name, "model": prov[2],
                 "verdict": out.get("verdict", "unknown"), "issues": out.get("issues", [])}
     except Exception as e:
@@ -196,6 +227,7 @@ def main():
     ap.add_argument("--book", default="Ps", help="morphhb file stem, e.g. Ps, Gen")
     ap.add_argument("--chapter", type=int, default=23)
     ap.add_argument("--out", default="par-out")
+    ap.add_argument("--usage", default=str(HERE.parent / "usage.json"), help="token ledger to update")
     args = ap.parse_args()
     cfg = load_config()
 
@@ -217,6 +249,8 @@ def main():
         {"book": args.book, "chapter": args.chapter, "source": verses,
          "drafter": drafter[:2] if drafter else None, "verses": drafted, "checks": checks},
         ensure_ascii=False, indent=2), encoding="utf-8")
+    if USAGE:
+        save_usage(args.usage)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:

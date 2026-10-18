@@ -2068,5 +2068,91 @@ if (navigator.storage?.persist) {
   navigator.storage.persist();
 }
 
+// Settings > LLM Usage: a meter over the token ledger the PAR pipeline
+// writes to par/usage.json (the app itself makes no LLM calls).
+const USAGE_BUDGET_KEY = "rbc:usageBudget";
+const DEFAULT_USAGE_BUDGET = 5000000; // a full translation pass is ~3-5M tokens
+
+function usageBudget() {
+  try {
+    const n = Number(localStorage.getItem(USAGE_BUDGET_KEY));
+    return n > 0 ? n : DEFAULT_USAGE_BUDGET;
+  } catch (e) {
+    return DEFAULT_USAGE_BUDGET;
+  }
+}
+
+function showSettings(open) {
+  document.body.classList.toggle("settings-open", open);
+  document.getElementById("settings-view").hidden = !open;
+  document.getElementById("llm-usage").hidden = true;
+  document.getElementById("settings-menu").hidden = false;
+  if (open) window.scrollTo(0, 0);
+}
+
+function renderUsage(ledger) {
+  const budget = usageBudget();
+  const total = Number(ledger?.total_tokens) || 0;
+  const meter = document.getElementById("usage-meter");
+  meter.setAttribute("aria-valuenow", String(total));
+  meter.setAttribute("aria-valuemax", String(budget));
+  const pct = Math.min(100, (total / budget) * 100);
+  const fill = document.getElementById("usage-fill");
+  fill.style.width = pct + "%";
+  fill.classList.toggle("over", total > budget);
+  document.getElementById("usage-total").textContent =
+    `${total.toLocaleString()} of ${budget.toLocaleString()} tokens (${pct.toFixed(1)}%)`;
+  document.getElementById("usage-budget").value = budget;
+
+  const list = document.getElementById("usage-providers");
+  list.textContent = "";
+  Object.entries(ledger?.providers || {})
+    .sort((a, b) => b[1].total_tokens - a[1].total_tokens)
+    .forEach(([name, t]) => {
+      const li = document.createElement("li");
+      const share = total ? (t.total_tokens / total) * 100 : 0;
+      const label = document.createElement("span");
+      label.textContent = `${name}: ${t.total_tokens.toLocaleString()} tokens, ${t.calls} call${t.calls === 1 ? "" : "s"}`;
+      const track = document.createElement("div");
+      track.className = "usage-meter small";
+      const bar = document.createElement("div");
+      bar.className = "usage-fill";
+      bar.style.width = share + "%";
+      track.appendChild(bar);
+      li.append(label, track);
+      list.appendChild(li);
+    });
+  document.getElementById("usage-status").textContent = ledger?.updated
+    ? `Last updated ${new Date(ledger.updated).toLocaleString()}.`
+    : "No usage recorded yet.";
+}
+
+async function openLlmUsage() {
+  document.getElementById("settings-menu").hidden = true;
+  document.getElementById("llm-usage").hidden = false;
+  renderUsage(null);
+  try {
+    const res = await fetch("par/usage.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    renderUsage(await res.json());
+  } catch (e) {
+    document.getElementById("usage-status").textContent = "Couldn't load par/usage.json.";
+  }
+}
+
+document.getElementById("settings-btn").addEventListener("click", () => showSettings(true));
+document.getElementById("settings-back").addEventListener("click", () => {
+  const sub = !document.getElementById("llm-usage").hidden;
+  showSettings(!sub ? false : true);
+});
+document.getElementById("llm-usage-link").addEventListener("click", openLlmUsage);
+document.getElementById("usage-budget").addEventListener("change", (e) => {
+  const n = Number(e.target.value);
+  try {
+    if (n > 0) localStorage.setItem(USAGE_BUDGET_KEY, String(Math.round(n)));
+  } catch (err) {}
+  openLlmUsage();
+});
+
 render();
 checkCloudOnLoad();

@@ -1121,3 +1121,58 @@ select.q-input {
   background: transparent;
   color: var(--muted);
 }
+
+.settings-btn {
+  float: right;
+  font-size: 0.85rem;
+}
+
+body.settings-open main > :not(#settings-view):not(h1) {
+  display: none !important;
+}
+
+body.settings-open .subtitle {
+  display: none !important;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.usage-meter {
+  height: 18px;
+  border-radius: 9px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 12px 0 6px;
+}
+
+.usage-meter.small {
+  height: 8px;
+  margin: 4px 0 10px;
+}
+
+.usage-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.usage-fill.over {
+  background: #b3382c;
+}
+
+.usage-total {
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.usage-providers {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}

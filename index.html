@@ -22,6 +22,7 @@
 </head>
 <body>
   <main>
+    <button id="settings-btn" class="settings-btn" type="button" aria-label="Settings">⚙ Settings</button>
     <h1>Random Bible Chapter</h1>
     <p class="subtitle">Read through the whole Bible, one random chapter at a time, with no repeats.</p>
 
@@ -189,6 +190,26 @@
       <button id="cloud-restore-btn">Restore from cloud</button>
       <p id="cloud-status" class="hint" aria-live="polite"></p>
     </details>
+
+    <section id="settings-view" class="settings-view" hidden>
+      <button id="settings-back" type="button">← Back</button>
+      <h2>Settings</h2>
+      <div id="settings-menu">
+        <button id="llm-usage-link" class="settings-row" type="button">LLM Usage <span aria-hidden="true">›</span></button>
+      </div>
+      <div id="llm-usage" class="card" hidden>
+        <h3>LLM Usage</h3>
+        <p class="hint">Tokens the free models have used drafting and checking translations, as recorded in par/usage.json.</p>
+        <div class="usage-meter" role="meter" id="usage-meter" aria-valuemin="0" aria-valuenow="0" aria-valuemax="1" aria-label="Total LLM tokens used">
+          <div id="usage-fill" class="usage-fill"></div>
+        </div>
+        <p id="usage-total" class="usage-total"></p>
+        <label for="usage-budget">Token budget</label>
+        <input id="usage-budget" class="code-box q-input" type="number" min="1" step="100000" />
+        <ul id="usage-providers" class="usage-providers"></ul>
+        <p id="usage-status" class="hint" aria-live="polite"></p>
+      </div>
+    </section>
 
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 

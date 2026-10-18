@@ -2,7 +2,7 @@ name: PAR dry run
 
 on:
   push:
-    branches: [par-pilot]
+    branches: [par-pilot, claude/read-handoff-8s8tjl]
     paths: ["par/pipeline/**"]
   workflow_dispatch:
     inputs:
@@ -42,4 +42,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: par-dryrun
-          path: par-out
+          path: |
+            par-out
+            par/usage.json
