@@ -27,6 +27,13 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 - Optional, for the daily job to skip chapters already read: add an org/repo secret `READING_LOG_TOKEN` (a fine-grained, read-only token with Contents access to the private repo the app syncs its reading log to). Without it the job starts at the head of the queue, so chapters read before the first PR merges may get KJV27 text nobody sees.
 - App: the reader shows KJV27 for chapters listed in `par/progress.json` and the KJV for all others, with a per-reader toggle back to the KJV (remembered in the browser).
 
+## Standing instruction (2026-10-18, from the owner)
+Whenever the owner asks for an app update, FIRST review the KJV27 queue and optimize what the free LLMs produced, THEN do the requested update. Concretely:
+1. Fetch main; list the chapters in `par/text/` (and `failed` in `par/progress.json`) that have not been human-polished.
+2. Read each against its KJV (`par/review/<book>-<n>.md`) and `par/STYLE.md`: fix awkward or ungrammatical wording, meaning drift, and any style-guide misses. Keep verse count, order and `#` markers; keep the weighty KJV vocabulary.
+3. Run the deterministic gate from `par/pipeline/dryrun.py` on every edited chapter; log judgment calls in `par/NOTES.md`.
+4. Mention in the PR what was polished, then proceed with the update. Chapters with `fidelity`/`style` = `error` in `par/progress.json` were never LLM-checked, so give those the closest read.
+
 ## Open decisions (ask the owner)
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
 2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
