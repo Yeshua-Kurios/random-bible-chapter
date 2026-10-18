@@ -1,6 +1,6 @@
 # KJV27 handoff
 
-Last updated 2026-10-18.
+Last updated 2026-10-18 (end of session).
 
 ## Project
 KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is the KJV in clear modern English: NO archaic English at all, and poor KJV renderings corrected (see `par/STYLE.md`). It is still not a fresh translation from Hebrew or Greek. Free models draft, one checker reviews, and a person is the final reviewer. Owner's goal (2026-10-18): a solid translation without wasting tokens.
@@ -15,7 +15,7 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 ## Design rules
 - Keep verse count, verse order and the `#` paragraph markers exactly as in `kjv/`.
 - No archaic English (the gate rejects thee/thou/-eth/wherefore/behold/yea etc.). Keep theological words that are still living English; fix clear mistranslations, and report each one in the verse's `note` so the review file shows it. Do not paraphrase.
-- Deterministic gate (in `par/pipeline/dryrun.py`): same verses in order, paragraph markers kept, no `[bracketed]` words, no thee/thou/hath/-eth forms left. All five hand-made pilot chapters pass it.
+- Deterministic gate (`gate()` in `par/pipeline/dryrun.py`, which calls `rules.py`): same verses in order, paragraph markers kept, no `[bracketed]` words, no archaic forms. The four chapters in `par/text/` pass it with 0 errors and 0 warnings; the five older hand-made pilots predate it (they still contain "Behold" etc.).
 - Deterministic rules (`par/pipeline/rules.py`, tests in `test_rules.py`, run before any model reviews a verse): auto-fixes (British to American spelling, curly quotes, Holy Ghost, publican, candlestick, unicorn, cockatrice, each auto-noted); hard errors sent back to the drafter (archaic words, brackets, paragraph markers, unbalanced quotes, LORD/GOD changed, a number dropped, length blown up or summarized, known-bad KJV words like Easter/charity/God forbid); warnings for the reviewer and the review file (unexplained heavy rewording, missing names, shall/meat/corn/hell/conversation kept). Extend the lists in rules.py when a reviewer catches something a rule could have caught.
 - Token frugality: ONE reviewer call per chapter (meaning + style together, `review` in config), one revision pass on flagged verses only, and the re-check sends only the revised verses.
 - Judgment calls go in `par/NOTES.md`. A person reviews before anything is published.
@@ -34,7 +34,9 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 2. Read each against its KJV (`par/review/<book>-<n>.md`) and `par/STYLE.md`: fix awkward or ungrammatical wording, meaning drift, and any style-guide misses. Keep verse count, order and `#` markers; keep the weighty KJV vocabulary.
 3. Run the deterministic gate from `par/pipeline/dryrun.py` on every edited chapter; log judgment calls in `par/NOTES.md`.
 4. When a chapter is polished, add study notes for it in `par/notes/` where you are confident (see the reader features section), and run `notes_check.py`.
-5. Mention in the PR what was polished, then proceed with the update. Chapters with `fidelity`/`style` = `error` in `par/progress.json` were never LLM-checked, so give those the closest read.
+5. Mention in the PR what was polished, then proceed with the update. Chapters with `review` (or old `fidelity`/`style`) = `error` in `par/progress.json` were never LLM-checked, and chapters without `review: hand-polished` have not been read by a person or Claude, so give those the closest read. If nothing new is in the queue, say so in the PR and move on.
+
+(Working style the owner uses: PRs are opened as drafts; "merge" / "merge all" means mark ready and squash-merge every open PR. Keep the final summary short and say what was and was not tested.)
 
 ## Reader features added 2026-10-18 (owner's request)
 - Tap a verse number: a small box opens at the verse to type a question and save it to the notebook (saved as KJV or KJV27), so you stay where you are. "Open notebook" jumps to the full notebook.
@@ -47,13 +49,14 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
 2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
 
-## State
-- Pilot: `par/pilot-{genesis-1,psalms-23,isaiah-53,john-3,romans-8}.json` plus `par/STYLE.md` and `par/NOTES.md`, copied from the par-pilot branch (PR #19).
-- Pipeline: `par/pipeline/{config.json,dryrun.py,daily.py}`. `dryrun.py` modernizes one chapter; `daily.py` picks the next chapters from `par/queue.json`, writes `par/text/<book>-<n>.json` (what the app reads), `par/review/<book>-<n>.md` and `par/progress.json`.
-- Workflows: `par-dryrun.yml` (manual test, one job per chapter) and `par-daily.yml` (the schedule). Scheduled workflows only run from the default branch, so the daily job starts once this is merged to main. It runs at 09:00 and 10:00 UTC and lets through only the run that lands in 5-6 am Eastern, once per day. The PR step needs Actions to be allowed to create pull requests (repo or org setting); if not, it pushes the branch and warns.
-- A run stops after 3 failed chapters (a provider outage), so an outage cannot burn through the queue.
-- App: Settings > LLM Usage shows the token meter; the ledger is `par/usage.json`, updated by `dryrun.py`.
-- No model-drafted chapter has been accepted yet.
+## State (end of 2026-10-18 session; PRs #20-#25 are merged to main; PR #26 holds the reader features below and this handoff)
+- Pipeline: `par/pipeline/{config.json,dryrun.py,rules.py,daily.py,test_rules.py,make_queue.py}`. `dryrun.py` modernizes one chapter (draft in chunks of 12 verses, `rules.py` gate with retry, ONE `review` call, one revision pass on flagged verses, re-check of revised verses only). `daily.py` picks the next chapters from `par/queue.json`, writes `par/text/<book>-<n>.json` (what the app reads), `par/review/<book>-<n>.md` (KJV beside KJV27, correction notes, `check:` warnings) and `par/progress.json`. Run `python par/pipeline/test_rules.py` after touching the rules.
+- Accepted chapters (hand-polished by Claude, `review: hand-polished`): 1 Peter 2, 2 Kings 16, Ezekiel 31, Proverbs 12. Verses resting on uncertain Hebrew are flagged in their notes and in `par/NOTES.md`. These are the only KJV27 chapters in the app; the five pilots are not published.
+- Failed once each (`failed` in `par/progress.json`): 1 Chronicles 28, Jeremiah 3, Psalms 62. A chapter is set aside after 3 failures.
+- First manual run of `KJV27 daily` (2026-10-18) took 40 minutes and produced 4 chapters, but every fidelity/style check errored (cause never found). The pipeline has since changed to ONE `review` call with groq, then gemini and nvidia as fallbacks, and the deterministic rules; none of that has run against real models yet. The first scheduled run is the real test: check its PR for `review: error` entries and for `check:` flags in `par/review/`, and read the run log if the reviewer errors again.
+- That run's PR was not opened by Actions (it pushed `par/daily-2026-10-18` and warned), so Claude opened PR #21 by hand. Actions probably is not allowed to create pull requests: repo Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests". Until then, each daily run needs its PR opened by hand.
+- Workflows: `par-dryrun.yml` (manual test, one job per chapter), `par-daily.yml` (09:00 and 10:00 UTC; only the run landing in 5-6 am Eastern goes ahead, once per day; a manual run always goes ahead), `deploy.yml` (GitHub Pages; stamps the build for the update prompt). A run stops after 3 failed chapters. Do not start two manual runs at once: both use the branch `par/daily-<date>` and the second fails at the push.
+- App (all in `app.js`, `index.html`, `style.css`): the reader shows KJV27 for chapters in `par/progress.json` (toggle back to the KJV); a homepage "KJV27 queue" card shows how many of the next 20 unread queued chapters have KJV27 (skips go to the back, as in the app); Settings > LLM Usage shows the token meter from `par/usage.json`; a "new version available, Reload / Later" banner appears when a newer deploy exists (works only after one manual reload on devices that loaded the app before it shipped).
 
 ## Providers (OpenAI-compatible; org secrets, repo needs access to each)
 Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvidia/nemotron-3-super-120b-a12b`, slow). Keys: GROQ_API_KEY, GEMINI_API_KEY, NVIDIA_API_KEY. The other providers' keys and `CLOUDFLARE_ACCOUNT_ID` are set but unused. Run `dryrun.py --list-models` to re-check IDs.
@@ -65,6 +68,7 @@ Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvi
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.
 
 ## TODO
-1. Merge to main, then run `KJV27 daily` once by hand (Actions > KJV27 daily > Run workflow) and check the PR it opens.
-2. Compare the first batches to the hand-made pilots and tune STYLE.md and the prompts.
-3. Decide the open items above.
+1. After the first scheduled 5 am Eastern run: open its PR (or enable Actions to create PRs), read `par/review/` for the new chapters, check the reviewer errors and `check:` flags, and fix prompts, `STYLE.md` or `rules.py` accordingly. Merging that PR is the owner's approval.
+2. Per the standing instruction, polish the new chapters (and add study notes for them) before the next app update.
+3. Optional: add the `READING_LOG_TOKEN` secret so the daily job skips chapters already read.
+4. Decide the open items above (publish the pilots? what to do with chapters set aside after 3 failures?).
