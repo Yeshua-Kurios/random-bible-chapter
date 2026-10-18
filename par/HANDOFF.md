@@ -1,6 +1,6 @@
 # KJV27 handoff
 
-Last updated 2026-10-18 (end of session).
+Last updated 2026-10-18 (end of session, after PR #26).
 
 ## Project
 KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is the KJV in clear modern English: NO archaic English at all, and poor KJV renderings corrected (see `par/STYLE.md`). It is still not a fresh translation from Hebrew or Greek. Free models draft, one checker reviews, and a person is the final reviewer. Owner's goal (2026-10-18): a solid translation without wasting tokens.
@@ -49,7 +49,7 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
 2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
 
-## State (end of 2026-10-18 session; PRs #20-#25 are merged to main; PR #26 holds the reader features below and this handoff)
+## State (end of 2026-10-18 session; PRs #20-#26 are all merged to main)
 - Pipeline: `par/pipeline/{config.json,dryrun.py,rules.py,daily.py,test_rules.py,make_queue.py}`. `dryrun.py` modernizes one chapter (draft in chunks of 12 verses, `rules.py` gate with retry, ONE `review` call, one revision pass on flagged verses, re-check of revised verses only). `daily.py` picks the next chapters from `par/queue.json`, writes `par/text/<book>-<n>.json` (what the app reads), `par/review/<book>-<n>.md` (KJV beside KJV27, correction notes, `check:` warnings) and `par/progress.json`. Run `python par/pipeline/test_rules.py` after touching the rules.
 - Accepted chapters (hand-polished by Claude, `review: hand-polished`): 1 Peter 2, 2 Kings 16, Ezekiel 31, Proverbs 12. Verses resting on uncertain Hebrew are flagged in their notes and in `par/NOTES.md`. These are the only KJV27 chapters in the app; the five pilots are not published.
 - Failed once each (`failed` in `par/progress.json`): 1 Chronicles 28, Jeremiah 3, Psalms 62. A chapter is set aside after 3 failures.
@@ -68,7 +68,9 @@ Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvi
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.
 
 ## TODO
-1. After the first scheduled 5 am Eastern run: open its PR (or enable Actions to create PRs), read `par/review/` for the new chapters, check the reviewer errors and `check:` flags, and fix prompts, `STYLE.md` or `rules.py` accordingly. Merging that PR is the owner's approval.
-2. Per the standing instruction, polish the new chapters (and add study notes for them) before the next app update.
-3. Optional: add the `READING_LOG_TOKEN` secret so the daily job skips chapters already read.
-4. Decide the open items above (publish the pilots? what to do with chapters set aside after 3 failures?).
+1. Open the live app, reload once by hand (so the update prompt starts working), and try the new reader: tap a verse number, scroll away and use the "Back to verse" pill, tap the bold study-note words and a map pin on 1 Peter 2, 2 Kings 16, Ezekiel 31 and Proverbs 12. Fix anything that feels wrong on a real phone (all testing so far was in headless Chromium).
+2. Spot-check the 52 study notes in `par/notes/` (written from memory, not looked up), especially the archaeology, extrabiblical and prophecy ones, and correct or delete any you cannot stand behind.
+3. After the first scheduled 5 am Eastern run: open its PR (or enable Actions to create PRs), read `par/review/` for the new chapters, check the reviewer errors and `check:` flags, and fix prompts, `STYLE.md` or `rules.py` accordingly. Merging that PR is the owner's approval.
+4. Per the standing instruction, polish the new chapters (and add study notes for them) before the next app update.
+5. Optional: add the `READING_LOG_TOKEN` secret so the daily job skips chapters already read.
+6. Decide the open items above (publish the pilots? what to do with chapters set aside after 3 failures? whether to generate study notes automatically).
