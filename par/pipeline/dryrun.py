@@ -46,7 +46,7 @@ CHECK_SYSTEM = (
     "Report only real problems."
     "\n\nSTYLE GUIDE\n%s"
 )
-ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily)\b", re.I)
+ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily|lest)\b", re.I)
 ETH = re.compile(r"\b[a-z]{3,}eth\b")  # lowercase only, so names like Elizabeth pass
 ETH_OK = {"teeth", "beneath", "nineteenth", "sixteenth", "seventeenth", "eighteenth"}  # -est verbs are left to the style checker
 
@@ -228,7 +228,7 @@ def chunks(verses, size=CHUNK):
 
 
 def draft(cfg, verses):
-    """Modernize chunk by chunk; each chunk falls through the drafter chain on any failure or gate miss."""
+    """Modernize chunk by chunk. A gate miss gets one retry with the reason; then the next drafter takes the chunk."""
     system = DRAFT_SYSTEM % style_guide()
     done, used = [], set()
     for part in chunks(verses):
@@ -236,13 +236,23 @@ def draft(cfg, verses):
             prov = provider(cfg, name)
             if not prov:
                 continue
-            try:
-                out = gate(part, parse_json(chat(name, prov, system, kjv_block(part))))
+            user, ok = kjv_block(part), False
+            for attempt in range(2):
+                try:
+                    out = gate(part, parse_json(chat(name, prov, system, user)))
+                except ValueError as e:  # the gate said no: tell the drafter why and let it fix its own draft
+                    log("drafter %s, verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:200]))
+                    user = kjv_block(part) + "\n\nYour previous answer was rejected: %s. Redo all the verses and fix that." % e
+                    continue
+                except Exception as e:
+                    log("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]))
+                    break
                 done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": str(v["text"]).strip()} for v in out]
                 used.add("%s (%s)" % (name, prov[2]))
+                ok = True
                 break
-            except Exception as e:
-                log("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]))
+            if ok:
+                break
         else:
             log("no drafter could do verses %d-%d; keeping the finished chunks" % (part[0][0], part[-1][0]))
             done += [{"n": n, "kjv": t, "text": None} for n, t in part]

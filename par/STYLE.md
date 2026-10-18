@@ -9,6 +9,7 @@ PAR is a light modernization of the KJV English. It is not a new translation fro
 - -eth/-est verb endings become plain modern forms (maketh becomes makes).
 - Modernize archaic grammar as well as words: inverted negatives (`believeth not` becomes `does not believe`, `giveth not` becomes `does not give`), `whence`/`whither` (from where / where), `wrought` (worked or done), `this my joy` (this joy of mine).
 - Archaic words are replaced with their modern sense (meat becomes food, quicken becomes give life to, mortify becomes put to death, creature becomes creation where the context is Romans 8).
+- Never use "lest". Say "so that ... not", "for fear that" or "in case", whichever fits (`lest his deeds should be reproved` becomes `so that his deeds will not be exposed`).
 - Verily, verily becomes Truly, truly.
 - Keep LORD (small caps convention) for the divine name, and Son of Man capitalized.
 - Keep theologically weighty vocabulary the KJV tradition carries (e.g. only begotten, justified, predestined, firstborn) rather than paraphrasing it.
