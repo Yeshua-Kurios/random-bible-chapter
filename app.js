@@ -325,7 +325,7 @@ function computeCycleXp(log, achievements) {
 }
 
 function computeLifetimeXp(log, achievements) {
-  return loadLifetime().bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp;
+  return loadLifetime().bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp + loadMemory().xp;
 }
 
 // The daily cap looks at how many chapters have already been logged today
@@ -2293,7 +2293,7 @@ function render() {
 function renderLevel(log) {
   const achievements = loadAchievements();
   const lifetime = loadLifetime();
-  const xp = lifetime.bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp;
+  const xp = lifetime.bankedXp + computeCycleXp(log, achievements) + loadTrivia().xp + loadMemory().xp;
   const level = levelForXp(xp);
   const rank = getRank(level);
   const xpInLevel = xpIntoLevel(xp);
@@ -2571,7 +2571,7 @@ function handleMark() {
   if (newReadSet.size === TOTAL_CHAPTERS) {
     const lifetime = bankCycleCompletion(log, achievements);
     scheduleBackupSync();
-    const newLevel = levelForXp(lifetime.bankedXp + loadTrivia().xp);
+    const newLevel = levelForXp(lifetime.bankedXp + loadTrivia().xp + loadMemory().xp);
     savePending(pickRandomUnread(new Set()));
     render();
     showToasts(newBadges);
@@ -2838,14 +2838,18 @@ async function checkForUpdate() {
   }
 }
 
-document.getElementById("update-reload").addEventListener("click", async () => {
+async function reloadApp() {
   try {
     await fetch(location.pathname, { cache: "reload" }); // refresh the cached page so the reload gets the new scripts
   } catch {
     // reload anyway
   }
   location.reload();
-});
+}
+
+document.getElementById("update-reload").addEventListener("click", reloadApp);
+document.getElementById("reload-app").addEventListener("click", reloadApp);
+document.getElementById("build-label").textContent = `Version ${RUNNING_BUILD && !RUNNING_BUILD.startsWith("__") ? RUNNING_BUILD.slice(0, 7) : "local"} ·`;
 document.getElementById("update-later").addEventListener("click", () => {
   const banner = document.getElementById("update-banner");
   dismissedBuild = banner.dataset.build || null;

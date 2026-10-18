@@ -104,7 +104,8 @@
           Highlight any words in the reader above and tap “Memorize”, or tap a
           verse number and choose “Memorize verse”. You can also add a passage
           by reference. Practice starts with blanks and ends with typing it from
-          memory; verses you know come back less often.
+          memory; verses you know come back less often. Passing a review
+          that's due earns XP (up to 20 a day); practicing early doesn't.
         </p>
         <form id="mem-form" class="q-form" autocomplete="off">
           <label for="mem-passage">Add a passage</label>
@@ -287,6 +288,9 @@
 
     <footer>
       Progress is stored only in this browser (localStorage) — no account, no server.
+      <br />
+      <span id="build-label"></span>
+      <button id="reload-app" class="link-btn" type="button">Reload app</button>
     </footer>
   </main>
 

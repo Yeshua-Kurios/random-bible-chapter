@@ -6,11 +6,20 @@ const MEMORY_KEY = "rbc:memory";
 const MEMORY_DAYS = [0, 1, 3, 7, 14, 30, 60]; // days until the next review, by box (0 = missed or new)
 const MEMORY_MAX_BOX = MEMORY_DAYS.length - 1;
 const MEMORY_PASS = 0.9; // share of the words you must type right
+// XP for passing a review, by the box the item reaches (a longer gap is a bigger feat), scaled up
+// for longer passages. Only reviews that are due pay out, a retry after a miss pays nothing, and
+// total memory XP is capped per day, so repeating a drill can't farm levels.
+const MEMORY_XP = [0, 2, 3, 4, 6, 8, 10];
+const MEMORY_XP_DAILY_CAP = 20;
 const MEM_DAY_MS = 86400000;
 
 function sanitizeMemory(raw) {
-  const m = { items: [] };
-  if (!raw || typeof raw !== "object" || !Array.isArray(raw.items)) return m;
+  const m = { items: [], xp: 0, day: "", earned: 0 };
+  if (!raw || typeof raw !== "object") return m;
+  if (typeof raw.xp === "number" && raw.xp > 0) m.xp = raw.xp;
+  if (typeof raw.day === "string") m.day = raw.day;
+  if (typeof raw.earned === "number" && raw.earned > 0) m.earned = raw.earned;
+  if (!Array.isArray(raw.items)) return m;
   for (const it of raw.items) {
     if (!it || typeof it.text !== "string" || !it.text.trim()) continue;
     m.items.push({
@@ -30,7 +39,7 @@ function loadMemory() {
   try {
     return sanitizeMemory(JSON.parse(localStorage.getItem(MEMORY_KEY) || "null"));
   } catch {
-    return { items: [] };
+    return sanitizeMemory(null);
   }
 }
 
@@ -252,30 +261,66 @@ function startDrill() {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  drill = { queue: pool.map((it) => it.id), i: 0, pass: 0, miss: 0, retried: new Set() };
+  drill = { queue: pool.map((it) => it.id), i: 0, pass: 0, miss: 0, xp: 0, retried: new Set(), practiceAhead: !memory.items.some((it) => it.due <= now) };
   document.getElementById("mem-home").hidden = true;
   showDrillCard();
 }
 
 function endDrill() {
   const box = document.getElementById("mem-drill");
-  const summary = drill ? `Session done: ${drill.pass} remembered, ${drill.miss} to review again.` : "";
+  const summary = drill
+    ? `Session done: ${drill.pass} remembered, ${drill.miss} to review again${drill.xp > 0 ? `, +${drill.xp} XP` : ""}.`
+    : "";
   drill = null;
   box.hidden = true;
   box.textContent = "";
   document.getElementById("mem-home").hidden = false;
   document.getElementById("mem-status").textContent = summary;
-  renderMemory();
+  render();
+}
+
+// Awards XP for a pass and returns how much was earned (0 for a retry, a practice-ahead or past the cap).
+function awardMemoryXp(memory, item, wasDue, retry) {
+  if (!wasDue || retry) return 0;
+  const today = localDateKey(new Date());
+  if (memory.day !== today) {
+    memory.day = today;
+    memory.earned = 0;
+  }
+  const words = memWords(item.text).length;
+  const want = Math.round(MEMORY_XP[item.box] * Math.min(3, Math.max(1, words / 25)));
+  const xp = Math.max(0, Math.min(want, MEMORY_XP_DAILY_CAP - memory.earned));
+  memory.earned += xp;
+  memory.xp += xp;
+  return xp;
 }
 
 function gradeItem(id, passed) {
   const memory = loadMemory();
   const item = memory.items.find((it) => it.id === id);
+  let xp = 0;
+  let levelUp = null;
   if (item) {
+    const wasDue = item.due <= Date.now();
     item.box = passed ? Math.min(MEMORY_MAX_BOX, item.box + 1) : 0;
     item.due = Date.now() + MEMORY_DAYS[item.box] * MEM_DAY_MS;
-    saveMemory(memory);
+    if (passed) {
+      const log = loadReadLog();
+      const oldLevel = levelForXp(computeLifetimeXp(log, loadAchievements()));
+      xp = awardMemoryXp(memory, item, wasDue, drill.retried.has(id));
+      saveMemory(memory);
+      const newLevel = levelForXp(computeLifetimeXp(log, loadAchievements()));
+      if (newLevel > oldLevel) levelUp = { oldRank: getRank(oldLevel), newLevel };
+    } else {
+      saveMemory(memory);
+    }
     scheduleBackupSync();
+  }
+  drill.xp += xp;
+  if (xp > 0) showXpPop(xp);
+  if (levelUp) {
+    render();
+    showLevelUp(levelUp.newLevel, levelUp.oldRank, getRank(levelUp.newLevel));
   }
   if (passed) drill.pass++;
   else {
@@ -304,7 +349,7 @@ function showDrillCard() {
   }
   const stage = item.box <= 0 ? "blanks-easy" : item.box === 1 ? "blanks-hard" : item.box === 2 ? "letters" : "type";
   const label = { "blanks-easy": "Fill in the blanks", "blanks-hard": "Fill in the blanks (harder)", letters: "First letters", type: "From memory" }[stage];
-  const progress = textEl("p", "hint", `${drill.i + 1} of ${drill.queue.length} · ${label}`);
+  const progress = textEl("p", "hint", `${drill.i + 1} of ${drill.queue.length} · ${label}${drill.practiceAhead ? " · practice only, no XP" : ""}`);
   const title = document.createElement("h3");
   title.className = "mem-ref";
   title.textContent = `${item.ref || "Highlight"} (${item.version})`;
