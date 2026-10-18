@@ -1,0 +1,154 @@
+{
+ "chapter": "ezekiel-31",
+ "notes": [
+  {
+   "v": 1,
+   "match": [
+    "In the eleventh year"
+   ],
+   "kind": "extrabiblical",
+   "title": "About 587 BC",
+   "text": "Ezekiel dates his oracles to the years of King Jehoiachin's exile (597 BC), so the eleventh year falls in 587 or 586 BC, shortly before the fall of Jerusalem. Babylonian records of Nebuchadnezzar's reign anchor this chronology.",
+   "refs": [
+    "Ezekiel 1:2",
+    "2 Kings 25:2"
+   ],
+   "source": "Babylonian Chronicles; Ezekiel's date formulas"
+  },
+  {
+   "v": 2,
+   "match": [
+    "Pharaoh king of Egypt"
+   ],
+   "kind": "extrabiblical",
+   "title": "Pharaoh Hophra",
+   "text": "The Pharaoh of these years was Apries (Hophra in Jeremiah 44:30), who reigned about 589-570 BC and was overthrown by his general Amasis, as Herodotus relates. A damaged Babylonian text (BM 33041) mentions a Babylonian campaign against Egypt in Nebuchadnezzar's 37th year (568/567 BC).",
+   "refs": [
+    "Jeremiah 44:30",
+    "Ezekiel 29:19"
+   ],
+   "source": "Herodotus 2.161-169; BM 33041"
+  },
+  {
+   "v": 3,
+   "match": [
+    "Consider Assyria",
+    "Behold, the Assyrian"
+   ],
+   "kind": "variant",
+   "title": "\"Assyria\" or \"a cypress\"?",
+   "text": "The Hebrew text reads \"Asshur\" (Assyria). Because the verse then calls this tree a cedar, some scholars propose a one-letter change to reach \"a cypress\" and drop Assyria from the verse. The Latin and Aramaic traditions read it as cedar and Assyria. This is a debated reading, not a settled one.",
+   "refs": [],
+   "source": "BHS apparatus; commentaries"
+  },
+  {
+   "v": 3,
+   "match": [
+    "cedar in Lebanon",
+    "cedar in Lebanon"
+   ],
+   "kind": "ane",
+   "title": "Cedars and kings",
+   "text": "The cedars of Lebanon were the prized timber of Egypt and Mesopotamia. Assyrian kings from Tiglath-pileser I onward boast in their inscriptions of cutting them, and the Egyptians imported cedar from Byblos. A towering cedar was a natural picture for imperial power.",
+   "refs": [
+    "Isaiah 37:24",
+    "Ezekiel 27:5"
+   ],
+   "source": "Assyrian royal inscriptions; Wenamun"
+  },
+  {
+   "v": 8,
+   "match": [
+    "the garden of God"
+   ],
+   "kind": "canon",
+   "title": "Eden",
+   "text": "\"The garden of God\" and \"the trees of Eden\" (vv. 8, 9, 16, 18) recall Genesis 2-3. Ezekiel also uses the Eden image for the king of Tyre in Ezekiel 28:13.",
+   "refs": [
+    "Genesis 2:8-9",
+    "Ezekiel 28:13",
+    "Ezekiel 36:35"
+   ],
+   "source": ""
+  },
+  {
+   "v": 8,
+   "match": [
+    "cypresses",
+    "fir trees"
+   ],
+   "kind": "word",
+   "title": "Tree names",
+   "text": "The Hebrew names (berosh, armon) are rendered differently by different translators: the KJV has fir and chestnut, modern versions cypress and plane tree.",
+   "refs": [],
+   "source": "HALOT"
+  },
+  {
+   "v": 12,
+   "match": [
+    "ravines",
+    "rivers of the land"
+   ],
+   "kind": "word",
+   "title": "apiqim",
+   "text": "Hebrew apiqim means streambeds or channels, and by extension ravines and valleys, not broad rivers.",
+   "refs": [],
+   "source": ""
+  },
+  {
+   "v": 15,
+   "match": [
+    "Sheol",
+    "the grave"
+   ],
+   "kind": "canon",
+   "title": "Descent to Sheol",
+   "text": "The fall of a great ruler to Sheol, where the dead kings stir to greet him, is also in Isaiah 14:9-15 (the king of Babylon). Ezekiel 32:17-32 gives Pharaoh the same end. This is the Old Testament's picture of the realm of the dead.",
+   "refs": [
+    "Isaiah 14:9-15",
+    "Ezekiel 32:17-32"
+   ],
+   "source": ""
+  },
+  {
+   "v": 16,
+   "match": [
+    "Sheol",
+    "hell"
+   ],
+   "kind": "word",
+   "title": "Sheol, not Gehenna",
+   "text": "The Hebrew is sheol, the place of the dead. The KJV renders it \"hell\" in some places, but it is not the Gehenna of the New Testament.",
+   "refs": [],
+   "source": ""
+  },
+  {
+   "v": 3,
+   "match": [
+    "Assyria"
+   ],
+   "kind": "extrabiblical",
+   "title": "The fall of Assyria",
+   "text": "Ezekiel holds up Assyria as a mighty tree that was cut down. The Babylonian Chronicle (the Fall of Nineveh Chronicle, BM 21901) records the capture and destruction of Nineveh in 612 BC by the Babylonians and Medes, and the last Assyrian remnant was defeated by about 609 BC.",
+   "refs": [
+    "Nahum 3",
+    "Zephaniah 2:13"
+   ],
+   "source": "Babylonian Chronicle ABC 3 (BM 21901)"
+  },
+  {
+   "v": 18,
+   "match": [
+    "the uncircumcised"
+   ],
+   "kind": "ane",
+   "title": "Egypt and circumcision",
+   "text": "The Egyptians practiced circumcision (Herodotus 2.36-37; a relief in the tomb of Ankhmahor at Saqqara, about 2300 BC, is often cited). Some therefore read \"uncircumcised\" here as dishonor in death, burial with foreigners slain by the sword, rather than a literal description. This is an interpretation, and scholars differ.",
+   "refs": [
+    "Jeremiah 9:25-26",
+    "Ezekiel 32:19-32"
+   ],
+   "source": "Herodotus; Saqqara tomb of Ankhmahor"
+  }
+ ]
+}

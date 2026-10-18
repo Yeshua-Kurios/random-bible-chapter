@@ -1344,6 +1344,9 @@ function updateReader(pending) {
 async function renderReader(pending) {
   const token = ++readerToken;
   els.readerText.textContent = "";
+  document.getElementById("chapter-map").hidden = true;
+  document.getElementById("reader-notes-row").hidden = true;
+  closePopover();
   if (!pending) {
     els.readerSummary.textContent = "Read it here · KJV";
     const p = document.createElement("p");
@@ -1387,42 +1390,535 @@ async function renderReader(pending) {
     updateReader(loadPending());
   };
 
-  els.readerText.textContent = "";
-  let para = null;
+  const notes = await loadNotes(book, chapter);
+  if (token !== readerToken) return;
+  const readVersion = text.version === "par" ? "KJV27" : "KJV";
+  const buildText = () => {
+    const shown = notesEnabled() ? notes : [];
+    els.readerText.textContent = "";
+    let para = null;
+    verses.forEach((raw, i) => {
+      let t = raw;
+      if (t.startsWith("#")) {
+        t = t.replace(/^#\s*/, "");
+        para = null;
+      }
+      if (!para) {
+        para = document.createElement("p");
+        para.className = "verse-para";
+        els.readerText.appendChild(para);
+      }
+      const span = document.createElement("span");
+      span.className = "verse";
+      span.dataset.v = String(i + 1);
+      const num = document.createElement("sup");
+      num.className = "verse-num";
+      num.textContent = String(i + 1);
+      num.tabIndex = 0;
+      num.setAttribute("role", "button");
+      num.title = "Ask a question about this verse";
+      const ask = () => openAsk(num, book, chapter, i + 1, readVersion);
+      num.addEventListener("click", ask);
+      num.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          ask();
+        }
+      });
+      span.appendChild(num);
+      renderVerseText(span, t, shown.filter((n) => n.v === i + 1), (btn, ns) => {
+        rememberSpot(i + 1);
+        openPopover(btn, (body) => fillNotes(body, ns));
+      });
+      para.appendChild(span);
+    });
+  };
+  const refresh = () => {
+    const y = window.scrollY;
+    buildText();
+    renderNotesRow(notes, refresh);
+    window.scrollTo(0, y);
+  };
+  buildText();
+  renderNotesRow(notes, refresh);
+  renderChapterMap(verses);
+  updateResume();
+}
+
+// --- Popover: one small floating card, reused by study notes, map pins and the ask-a-question box.
+
+const popover = document.getElementById("popover");
+const popoverBody = document.getElementById("popover-body");
+let popoverAnchor = null;
+
+function closePopover() {
+  popover.hidden = true;
+  popoverAnchor = null;
+}
+
+function positionPopover(anchor) {
+  const rect = anchor.getBoundingClientRect();
+  const viewW = document.documentElement.clientWidth;
+  const width = Math.min(360, viewW - 24);
+  popover.style.width = `${width}px`;
+  popover.style.left = "0px";
+  popover.style.top = "0px";
+  const h = popover.offsetHeight;
+  const wantLeft = Math.max(12, Math.min(rect.left + rect.width / 2 - width / 2, viewW - width - 12));
+  const below = rect.bottom + 8;
+  const wantTop = below + h < window.innerHeight - 8 ? below : Math.max(8, rect.top - h - 8);
+  // The popover sits in the page, so measure where (0, 0) landed and place it relative to that.
+  const origin = popover.getBoundingClientRect();
+  popover.style.left = `${wantLeft - origin.left}px`;
+  popover.style.top = `${wantTop - origin.top}px`;
+}
+
+function openPopover(anchor, fill) {
+  if (!popover.hidden && popoverAnchor === anchor) return closePopover(); // tapping the same word again closes it
+  popoverBody.textContent = "";
+  fill(popoverBody);
+  popover.hidden = false;
+  popoverAnchor = anchor;
+  positionPopover(anchor);
+}
+
+document.getElementById("popover-close").addEventListener("click", closePopover);
+document.addEventListener("pointerdown", (e) => {
+  if (popover.hidden || popover.contains(e.target) || (popoverAnchor && popoverAnchor.contains(e.target))) return;
+  closePopover();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closePopover();
+});
+window.addEventListener("resize", () => {
+  if (!popover.hidden && popoverAnchor) positionPopover(popoverAnchor);
+});
+
+function textEl(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+// --- Study notes: bold words in the text that open a short note. Notes live in par/notes/<book>-<n>.json
+// (see par/pipeline/notes_check.py); par/notes/index.json lists the chapters that have them.
+
+const NOTE_KINDS = {
+  word: "Rare word",
+  variant: "Textual variant",
+  ane: "Ancient Near East",
+  archaeology: "Archaeology",
+  extrabiblical: "Outside the Bible",
+  prophecy: "Prophecy fulfilled",
+  canon: "Canonical connection",
+};
+const NOTES_PREF_KEY = "rbc:studyNotes";
+let notesIndex = null;
+
+function notesEnabled() {
+  try {
+    return localStorage.getItem(NOTES_PREF_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+async function loadNotes(book, chapter) {
+  try {
+    if (!notesIndex) {
+      notesIndex = fetch("par/notes/index.json", { cache: "no-cache" })
+        .then((res) => (res.ok ? res.json() : { chapters: [] }))
+        .then((data) => new Set(data.chapters || []))
+        .catch(() => new Set());
+    }
+    const key = `${bookSlug(book)}-${chapter}`;
+    if (!(await notesIndex).has(key)) return [];
+    const res = await fetch(`par/notes/${key}.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (Array.isArray(data.notes) ? data.notes : []).filter(
+      (n) => n && NOTE_KINDS[n.kind] && Number.isInteger(n.v) && Array.isArray(n.match) && n.match.length && n.title && n.text,
+    );
+  } catch {
+    return [];
+  }
+}
+
+function fillNotes(body, notes) {
+  for (const n of notes) {
+    const box = document.createElement("div");
+    box.className = "note";
+    const kind = textEl("span", `note-kind ann-${n.kind}`, NOTE_KINDS[n.kind]);
+    box.append(kind, textEl("strong", "note-title", n.title), textEl("p", "", n.text));
+    if (Array.isArray(n.refs) && n.refs.length) box.append(textEl("p", "note-refs", `See ${n.refs.join("; ")}`));
+    if (n.source) box.append(textEl("p", "note-source", `Source: ${n.source}`));
+    body.append(box);
+  }
+}
+
+// A verse as plain text plus the ranges that are italic (the KJV's [supplied words]).
+function verseSegments(raw) {
+  let plain = "";
+  const italics = [];
+  for (const part of raw.split(/(\[[^\]]*\])/)) {
+    if (!part) continue;
+    if (part.startsWith("[") && part.endsWith("]")) {
+      const t = part.slice(1, -1);
+      italics.push([plain.length, plain.length + t.length]);
+      plain += t;
+    } else {
+      plain += part;
+    }
+  }
+  return { plain, italics };
+}
+
+// Where each note's first matching phrase sits in the verse; overlapping phrases share one bold word.
+function noteAnchors(plain, notes) {
+  const low = plain.toLowerCase();
+  const spans = [];
+  for (const n of notes) {
+    for (const m of n.match) {
+      const i = low.indexOf(String(m).toLowerCase());
+      if (i >= 0) {
+        spans.push({ start: i, end: i + String(m).length, notes: [n] });
+        break;
+      }
+    }
+  }
+  spans.sort((a, b) => a.start - b.start);
+  const merged = [];
+  for (const s of spans) {
+    const last = merged[merged.length - 1];
+    if (last && s.start < last.end) {
+      last.end = Math.max(last.end, s.end);
+      last.notes.push(...s.notes);
+    } else {
+      merged.push(s);
+    }
+  }
+  return merged;
+}
+
+function renderVerseText(parent, raw, notes, onNote) {
+  const { plain, italics } = verseSegments(raw);
+  const anchors = noteAnchors(plain, notes);
+  const cuts = new Set([0, plain.length]);
+  for (const [s, e] of italics) cuts.add(s), cuts.add(e);
+  for (const a of anchors) cuts.add(a.start), cuts.add(a.end);
+  const points = [...cuts].sort((a, b) => a - b);
+  let open = null;
+  for (let i = 0; i < points.length - 1; i++) {
+    const [a, b] = [points[i], points[i + 1]];
+    if (a === b) continue;
+    const anchor = anchors.find((x) => a >= x.start && b <= x.end);
+    if (anchor && (!open || open.anchor !== anchor)) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `ann ann-${anchor.notes[0].kind}`;
+      btn.addEventListener("click", () => onNote(btn, anchor.notes));
+      parent.appendChild(btn);
+      open = { anchor, el: btn };
+    } else if (!anchor) {
+      open = null;
+    }
+    const piece = plain.slice(a, b);
+    const node = italics.some(([s, e]) => a >= s && b <= e) ? textEl("i", "", piece) : document.createTextNode(piece);
+    (open ? open.el : parent).appendChild(node);
+  }
+  parent.appendChild(document.createTextNode(" "));
+}
+
+function renderNotesRow(notes, rerender) {
+  const row = document.getElementById("reader-notes-row");
+  row.hidden = notes.length === 0;
+  if (!notes.length) return;
+  const on = notesEnabled();
+  const toggle = document.getElementById("notes-toggle");
+  toggle.textContent = on ? "Hide study notes" : "Show study notes";
+  toggle.onclick = () => {
+    try {
+      localStorage.setItem(NOTES_PREF_KEY, notesEnabled() ? "off" : "on");
+    } catch {
+      // the choice just won't be remembered
+    }
+    closePopover();
+    rerender();
+  };
+  const legend = document.getElementById("notes-legend");
+  legend.textContent = "";
+  if (!on) return;
+  for (const kind of Object.keys(NOTE_KINDS)) {
+    if (!notes.some((n) => n.kind === kind)) continue;
+    const s = textEl("span", `ann-${kind}`, NOTE_KINDS[kind]);
+    legend.appendChild(s);
+  }
+}
+
+// --- Ask a question about a verse without leaving it: tap the verse number, type, save.
+
+function openAsk(anchor, book, chapter, verse, version) {
+  const passage = `${book} ${chapter}:${verse}`;
+  rememberSpot(verse);
+  openPopover(anchor, (body) => {
+    const ta = document.createElement("textarea");
+    ta.className = "code-box";
+    ta.rows = 3;
+    ta.placeholder = "What did you wonder about?";
+    const status = textEl("p", "hint", "");
+    status.setAttribute("aria-live", "polite");
+    const save = textEl("button", "primary", "Save question");
+    save.type = "button";
+    save.addEventListener("click", () => {
+      const text = ta.value.trim();
+      if (!text) {
+        status.textContent = "Write your question first.";
+        ta.focus();
+        return;
+      }
+      const questions = loadQuestions();
+      questions.items.push({
+        id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        passage,
+        version,
+        text,
+        t: Date.now(),
+      });
+      questions.lastVersion = version;
+      saveQuestions(questions);
+      scheduleBackupSync();
+      renderQuestions(loadPending());
+      ta.value = "";
+      status.textContent = "Saved. You're still where you were.";
+    });
+    const open = textEl("button", "", "Open notebook");
+    open.type = "button";
+    open.addEventListener("click", () => {
+      closePopover();
+      askAboutVerse(book, chapter, verse);
+    });
+    const actions = document.createElement("div");
+    actions.className = "popover-actions";
+    actions.append(save, open);
+    body.append(textEl("strong", "note-title", `Ask about ${passage}`), ta, actions, status);
+    setTimeout(() => ta.focus(), 0);
+  });
+}
+
+// --- Back to where you left off: the pill appears when the verse you were reading is off screen.
+
+const SPOT_KEY = "rbc:spot";
+const resumePill = document.getElementById("resume-pill");
+let spot = null; // {key, v}: the chapter and verse you were last reading
+let spotSaveTimer = 0;
+
+function loadSpot() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SPOT_KEY) || "null");
+    if (s && typeof s.key === "string" && Number.isInteger(s.v)) return s;
+  } catch {
+    // no saved spot
+  }
+  return null;
+}
+
+function setSpot(next) {
+  spot = next;
+  clearTimeout(spotSaveTimer);
+  spotSaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(SPOT_KEY, JSON.stringify(spot));
+    } catch {
+      // the spot just won't survive a reload
+    }
+  }, 400);
+}
+
+function rememberSpot(v) {
+  if (readerKey) setSpot({ key: readerKey, v });
+}
+
+function verseSpan(v) {
+  return els.readerText.querySelector(`.verse[data-v="${v}"]`);
+}
+
+function updateResume() {
+  const span = spot && readerKey && spot.key === readerKey && document.getElementById("reader").open ? verseSpan(spot.v) : null;
+  if (!span) {
+    resumePill.hidden = true;
+    return;
+  }
+  const r = span.getBoundingClientRect();
+  const visible = r.bottom > 40 && r.top < window.innerHeight - 40;
+  resumePill.hidden = visible;
+  if (!visible) resumePill.textContent = r.top < 0 ? `↑ Back to verse ${spot.v}` : `↓ Resume at verse ${spot.v}`;
+}
+
+function trackSpot() {
+  if (!readerKey) return;
+  const box = els.readerText.getBoundingClientRect();
+  if (box.bottom > 60 && box.top < window.innerHeight - 60) {
+    let found = null;
+    for (const s of els.readerText.querySelectorAll(".verse")) {
+      if (s.getBoundingClientRect().top <= 90) found = s;
+      else break;
+    }
+    const v = found ? Number(found.dataset.v) : 1;
+    const current = spot && spot.key === readerKey ? verseSpan(spot.v) : null;
+    const currentVisible = current && current.getBoundingClientRect().bottom > 40 && current.getBoundingClientRect().top < window.innerHeight - 40;
+    // Keep a saved spot until you read past it (or it is back on screen), so a stray scroll can't lose it.
+    if (!current || currentVisible || v > spot.v) {
+      if (!spot || spot.key !== readerKey || spot.v !== v) setSpot({ key: readerKey, v });
+    }
+  }
+  updateResume();
+}
+
+let spotFrame = 0;
+window.addEventListener(
+  "scroll",
+  () => {
+    if (spotFrame) return;
+    spotFrame = requestAnimationFrame(() => {
+      spotFrame = 0;
+      trackSpot();
+    });
+  },
+  { passive: true },
+);
+window.addEventListener("resize", updateResume);
+
+spot = loadSpot();
+
+resumePill.addEventListener("click", () => {
+  const span = spot && verseSpan(spot.v);
+  if (!span) return;
+  window.scrollTo({ top: span.getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth" });
+  span.classList.add("flash");
+  setTimeout(() => span.classList.remove("flash"), 1800);
+});
+
+// --- Chapter map: an offline SVG map (map-data.js) with the places the chapter names (places.js) highlighted.
+
+const PLACE_LIST = typeof PLACES === "undefined" ? [] : PLACES.map((p) => ({
+  names: p[0].split("|"), label: p[0].split("|")[0], kind: p[1], lat: p[2], lon: p[3], modern: p[4], approx: p[5].includes("~"), anchor: p[5].includes("a"),
+}));
+const PLACE_BY_NAME = new Map();
+for (const p of PLACE_LIST) for (const n of p.names) PLACE_BY_NAME.set(n, p);
+const PLACE_RE = PLACE_LIST.length
+  ? new RegExp(`\\b(${[...PLACE_BY_NAME.keys()].sort((a, b) => b.length - a.length).map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "g")
+  : null;
+
+function placesIn(verses) {
+  const found = new Map(); // place -> verse numbers
+  if (!PLACE_RE) return found;
   verses.forEach((raw, i) => {
-    let text = raw;
-    if (text.startsWith("#")) {
-      text = text.replace(/^#\s*/, "");
-      para = null;
+    for (const m of plainVerse(raw).matchAll(PLACE_RE)) {
+      const p = PLACE_BY_NAME.get(m[1]);
+      if (!found.has(p)) found.set(p, new Set());
+      found.get(p).add(i + 1);
     }
-    if (!para) {
-      para = document.createElement("p");
-      para.className = "verse-para";
-      els.readerText.appendChild(para);
-    }
-    const num = document.createElement("sup");
-    num.className = "verse-num";
-    num.textContent = String(i + 1);
-    num.tabIndex = 0;
-    num.setAttribute("role", "button");
-    num.title = "Ask a question about this verse";
-    const ask = () => askAboutVerse(book, chapter, i + 1);
-    num.addEventListener("click", ask);
-    num.addEventListener("keydown", (e) => {
+  });
+  return found;
+}
+
+function mapProject(lon, lat) {
+  return [(lon - MAP_BASE.lon0) * MAP_BASE.kx * MAP_BASE.scale, (MAP_BASE.lat1 - lat) * MAP_BASE.scale];
+}
+
+function mapView(points) {
+  const M = MAP_BASE;
+  const xy = points.map((p) => mapProject(p.lon, p.lat));
+  const xs = xy.map((p) => p[0]);
+  const ys = xy.map((p) => p[1]);
+  const padX = 0.7 * M.kx * M.scale;
+  const padY = 0.7 * M.scale;
+  const W = (M.lon1 - M.lon0) * M.kx * M.scale;
+  const H = (M.lat1 - M.lat0) * M.scale;
+  const ratio = 1.55;
+  let w = Math.max(Math.max(...xs) - Math.min(...xs) + 2 * padX, 5.5 * M.kx * M.scale);
+  let h = Math.max(Math.max(...ys) - Math.min(...ys) + 2 * padY, 3.4 * M.scale);
+  if (w / h > ratio) h = w / ratio;
+  else w = h * ratio;
+  if (w > W) [w, h] = [W, W / ratio];
+  if (h > H) [w, h] = [H * ratio, H];
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  return { x: Math.max(0, Math.min(cx - w / 2, W - w)), y: Math.max(0, Math.min(cy - h / 2, H - h)), w, h };
+}
+
+function renderChapterMap(verses) {
+  const box = document.getElementById("chapter-map");
+  const frame = document.getElementById("map-frame");
+  frame.textContent = "";
+  box.hidden = true;
+  if (typeof MAP_BASE === "undefined" || !PLACE_RE) return;
+  const found = placesIn(verses);
+  const pins = [...found.keys()].filter((p) => p.kind !== "r");
+  const lands = [...found.keys()].filter((p) => p.kind === "r");
+  if (!pins.length && !lands.length) return;
+  const view = mapView(pins.length ? pins : lands);
+  const fs = view.h / 24; // label size in map units, so text stays the same size on screen
+  const r = fs * 0.36;
+  const inside = (p, slack = 0) => {
+    const [x, y] = mapProject(p.lon, p.lat);
+    return x > view.x - slack && x < view.x + view.w + slack && y > view.y - slack && y < view.y + view.h + slack;
+  };
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  let svg = `<svg viewBox="${view.x} ${view.y} ${view.w} ${view.h}" role="img" aria-label="Map of the places named in this chapter" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<path class="map-land" fill-rule="evenodd" stroke-width="${view.h / 600}" d="${MAP_BASE.land}"/>`;
+  svg += `<path class="map-lake" stroke-width="${view.h / 700}" d="${MAP_BASE.lakes}"/>`;
+  for (const rv of MAP_BASE.rivers) svg += `<path class="map-river" stroke-width="${view.h / 260}" d="${rv}"/>`;
+  for (const p of lands.filter((l) => inside(l))) {
+    const [x, y] = mapProject(p.lon, p.lat);
+    svg += `<text class="map-region" x="${x}" y="${y}" text-anchor="middle" font-size="${fs * 0.8}">${esc(p.label)}</text>`;
+  }
+  for (const p of PLACE_LIST.filter((q) => q.anchor && q.kind === "c" && !found.has(q) && inside(q))) {
+    const [x, y] = mapProject(p.lon, p.lat);
+    svg += `<circle class="map-anchor" cx="${x}" cy="${y}" r="${r * 0.55}"/><text class="map-anchor" x="${x + r * 1.2}" y="${y + fs * 0.3}" font-size="${fs * 0.75}">${esc(p.label)}</text>`;
+  }
+  pins.filter((p) => inside(p, fs)).forEach((p) => {
+    const [x, y] = mapProject(p.lon, p.lat);
+    const right = x + fs * 0.62 * p.label.length < view.x + view.w;
+    const shape = p.kind === "m"
+      ? `<polygon class="pin${p.approx ? " approx" : ""}" stroke-width="${r / 3}" points="${x},${y - r * 1.25} ${x - r * 1.15},${y + r * 0.8} ${x + r * 1.15},${y + r * 0.8}"/>`
+      : `<circle class="pin${p.approx ? " approx" : ""}" stroke-width="${r / 3}" cx="${x}" cy="${y}" r="${r}"/>`;
+    svg += `<g class="map-pin" tabindex="0" role="button" data-place="${esc(p.label)}" aria-label="${esc(p.label)}"><circle cx="${x}" cy="${y}" r="${r * 2.4}" fill="transparent"/>${shape}`
+      + `<text x="${right ? x + r * 1.7 : x - r * 1.7}" y="${y + fs * 0.32}" text-anchor="${right ? "start" : "end"}" font-size="${fs}" stroke-width="${fs / 5}">${esc(p.label)}</text></g>`;
+  });
+  svg += "</svg>";
+  frame.innerHTML = svg;
+  const byLabel = new Map(PLACE_LIST.map((p) => [p.label, p]));
+  frame.querySelectorAll(".map-pin").forEach((g) => {
+    const open = () => {
+      const p = byLabel.get(g.dataset.place);
+      openPopover(g, (body) => {
+        body.append(textEl("strong", "note-title", p.label));
+        if (p.modern) body.append(textEl("p", "", `Today: ${p.modern}${p.approx ? " (site uncertain)" : ""}`));
+        const vs = [...found.get(p)].sort((a, b) => a - b);
+        body.append(textEl("p", "note-refs", `Named in verse${vs.length > 1 ? "s" : ""} ${vs.join(", ")}`));
+      });
+    };
+    g.addEventListener("click", open);
+    g.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        ask();
+        open();
       }
     });
-    para.appendChild(num);
-    appendWithItalics(para, text + " ");
   });
+  const names = pins.map((p) => p.label);
+  document.getElementById("map-caption").textContent =
+    (names.length ? `Highlighted: ${names.join(", ")}. ` : "") +
+    "Tap a place for details. Hollow markers are approximate or debated sites. Base map: Natural Earth (public domain).";
+  box.hidden = false;
 }
 
 // --- Questions notebook: jot questions per passage and Bible version, then
 // copy them all as one prompt for an LLM.
 
-const BIBLE_VERSIONS = ["KJV", "NKJV", "ESV", "NIV", "NLT", "NASB", "CSB", "NRSV", "AMP", "MSG"];
+const BIBLE_VERSIONS = ["KJV", "KJV27", "NKJV", "ESV", "NIV", "NLT", "NASB", "CSB", "NRSV", "AMP", "MSG"];
 const OTHER_VERSION = "Other…";
 const BOOK_ALIASES = {
   psalm: "Psalms",
@@ -2326,6 +2822,7 @@ async function checkForUpdate() {
     if (build && build !== RUNNING_BUILD && build !== dismissedBuild) {
       document.getElementById("update-banner").dataset.build = build;
       document.getElementById("update-banner").hidden = false;
+      document.body.classList.add("has-update-banner");
     }
   } catch {
     // offline: try again next time
@@ -2344,6 +2841,7 @@ document.getElementById("update-later").addEventListener("click", () => {
   const banner = document.getElementById("update-banner");
   dismissedBuild = banner.dataset.build || null;
   banner.hidden = true;
+  document.body.classList.remove("has-update-banner");
 });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") checkForUpdate();

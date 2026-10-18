@@ -1,0 +1,172 @@
+{
+ "chapter": "proverbs-12",
+ "notes": [
+  {
+   "v": 1,
+   "match": [
+    "stupid",
+    "brutish"
+   ],
+   "kind": "word",
+   "title": "baar",
+   "text": "Hebrew baar means dull or brutish, like the word for cattle or livestock (the same root appears in Proverbs 30:2 and Psalm 73:22). It describes someone who refuses to learn.",
+   "refs": [
+    "Proverbs 30:2",
+    "Psalm 73:22"
+   ],
+   "source": ""
+  },
+  {
+   "v": 4,
+   "match": [
+    "wife of noble character",
+    "virtuous woman"
+   ],
+   "kind": "canon",
+   "title": "eshet chayil",
+   "text": "The phrase \"woman of worth\" is also in Proverbs 31:10 and Ruth 3:11. Chayil means strength, worth, or valor; it is used of armies. The proverb is about a wife, and its other half sets a disgraceful wife beside her.",
+   "refs": [
+    "Proverbs 31:10",
+    "Ruth 3:11"
+   ],
+   "source": ""
+  },
+  {
+   "v": 9,
+   "match": [
+    "lightly esteemed",
+    "He who is despised",
+    "despised"
+   ],
+   "kind": "word",
+   "title": "Hard Hebrew",
+   "text": "The first line is compressed in Hebrew and the word usually translated \"despised\" or \"lightly esteemed\" (niqleh) is rare. Some versions read it instead as someone of low standing, versus a person who plays the great man but has no bread.",
+   "refs": [],
+   "source": "commentaries"
+  },
+  {
+   "v": 10,
+   "match": [
+    "The righteous care for the needs of their animals",
+    "A righteous man regardeth the life of his beast"
+   ],
+   "kind": "canon",
+   "title": "Care for animals",
+   "text": "The law already commands care for animals: rest for the ox and donkey (Exodus 23:12), no muzzling the threshing ox (Deuteronomy 25:4), and helping an animal that has fallen (Deuteronomy 22:4).",
+   "refs": [
+    "Exodus 23:12",
+    "Deuteronomy 25:4",
+    "Deuteronomy 22:4"
+   ],
+   "source": ""
+  },
+  {
+   "v": 11,
+   "match": [
+    "empty pursuits",
+    "vain persons"
+   ],
+   "kind": "canon",
+   "title": "A repeated proverb",
+   "text": "The same saying appears almost word for word in Proverbs 28:19. Hebrew reqim can mean empty things or worthless people.",
+   "refs": [
+    "Proverbs 28:19"
+   ],
+   "source": ""
+  },
+  {
+   "v": 12,
+   "match": [
+    "the net of evildoers",
+    "net of evil men"
+   ],
+   "kind": "variant",
+   "title": "\"Net\" or \"plunder\"?",
+   "text": "The Hebrew of the first line is hard. The word read as \"net\" (matzod) can also be read as \"plunder\" or \"stronghold\" with different vowels, and the ancient versions (Greek, Syriac) read the line differently. Translators are split.",
+   "refs": [],
+   "source": "BHS apparatus; ancient versions"
+  },
+  {
+   "v": 14,
+   "match": [
+    "From the fruit of their words",
+    "by the fruit of his mouth",
+    "by the fruit of [his] mouth"
+   ],
+   "kind": "canon",
+   "title": "Fruit of the mouth",
+   "text": "Similar sayings appear in Proverbs 13:2 and 18:20, and fit the book's theme that speech has consequences.",
+   "refs": [
+    "Proverbs 13:2",
+    "Proverbs 18:20"
+   ],
+   "source": ""
+  },
+  {
+   "v": 22,
+   "match": [
+    "an abomination to the LORD",
+    "abomination to the LORD"
+   ],
+   "kind": "canon",
+   "title": "What the LORD hates",
+   "text": "A lying tongue is on the list of things the LORD hates in Proverbs 6:16-19, and Proverbs 11:20 uses the same \"abomination to the LORD\" language of the crooked.",
+   "refs": [
+    "Proverbs 6:16-19",
+    "Proverbs 11:20"
+   ],
+   "source": ""
+  },
+  {
+   "v": 24,
+   "match": [
+    "forced labor",
+    "under tribute"
+   ],
+   "kind": "canon",
+   "title": "mas, forced labor",
+   "text": "Hebrew mas means conscripted labor, such as Solomon's gangs of workers, or tribute paid in labor. Jacob's blessing of Issachar uses the same word (Genesis 49:15).",
+   "refs": [
+    "1 Kings 5:13-14",
+    "1 Kings 9:21",
+    "Genesis 49:15"
+   ],
+   "source": ""
+  },
+  {
+   "v": 26,
+   "match": [
+    "choose their friends carefully",
+    "more excellent than his neighbour"
+   ],
+   "kind": "variant",
+   "title": "A hard verse",
+   "text": "The first line is uncertain. The Hebrew verb yater can mean to search out, to guide, or to be superior. The KJV (\"more excellent than his neighbour\") reflects one reading; the Greek and Syriac read it differently. KJV27 follows a reading in which the righteous scout out or choose their companions.",
+   "refs": [],
+   "source": "BHS apparatus; HALOT"
+  },
+  {
+   "v": 27,
+   "match": [
+    "roast their game",
+    "roasteth not"
+   ],
+   "kind": "word",
+   "title": "A one-time word",
+   "text": "The Hebrew verb (yaharok, from charak) occurs only here in the Bible. Translators guess: roast, catch, or flush out. The sense of the proverb, that the lazy do not finish what they start, is clear.",
+   "refs": [],
+   "source": "HALOT"
+  },
+  {
+   "v": 28,
+   "match": [
+    "no death"
+   ],
+   "kind": "variant",
+   "title": "A different Greek line",
+   "text": "The Hebrew says literally \"in the way of righteousness is life, and the path of its road is not-death\", an unusual phrase. The Greek Septuagint reads the second line quite differently (\"but the ways of the revengeful lead to death\").",
+   "refs": [],
+   "source": "Septuagint; BHS apparatus"
+  }
+ ]
+}

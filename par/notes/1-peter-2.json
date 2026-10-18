@@ -1,0 +1,209 @@
+{
+ "chapter": "1-peter-2",
+ "notes": [
+  {
+   "v": 2,
+   "match": [
+    "pure milk of the word",
+    "sincere milk of the word"
+   ],
+   "kind": "word",
+   "title": "adolos and logikos",
+   "text": "\"Pure\" (Greek adolos, unadulterated) occurs only here in the New Testament. \"Of the word\" translates logikon, found elsewhere only in Romans 12:1 (\"reasonable\" service). It can mean spiritual, rational, or 'of the word'; translators differ.",
+   "refs": [
+    "Romans 12:1"
+   ],
+   "source": "Greek lexica (BDAG)"
+  },
+  {
+   "v": 2,
+   "match": [
+    "grow by it",
+    "grow thereby"
+   ],
+   "kind": "variant",
+   "title": "\"Into salvation\"",
+   "text": "Many early manuscripts (including Sinaiticus and Vaticanus) add \"into salvation\" (eis soterian) after \"grow\". The manuscripts behind the KJV leave it out. Most modern translations include it: \"that by it you may grow up into salvation.\"",
+   "refs": [],
+   "source": "NA28 apparatus"
+  },
+  {
+   "v": 6,
+   "match": [
+    "chief cornerstone",
+    "chief corner stone"
+   ],
+   "kind": "canon",
+   "title": "Isaiah 28:16",
+   "text": "Quoted from Isaiah 28:16 (a stone laid in Zion). Peter joins it with Psalm 118:22 (v. 7) and Isaiah 8:14 (v. 8): three \"stone\" texts that the early church read together.",
+   "refs": [
+    "Isaiah 28:16",
+    "Psalm 118:22",
+    "Isaiah 8:14"
+   ],
+   "source": ""
+  },
+  {
+   "v": 7,
+   "match": [
+    "The stone the builders rejected",
+    "the stone which the builders disallowed"
+   ],
+   "kind": "canon",
+   "title": "Psalm 118:22",
+   "text": "Quoted from Psalm 118:22. The same verse is used by Jesus (Matthew 21:42; Mark 12:10; Luke 20:17) and by Peter in Acts 4:11.",
+   "refs": [
+    "Psalm 118:22",
+    "Matthew 21:42",
+    "Acts 4:11"
+   ],
+   "source": ""
+  },
+  {
+   "v": 8,
+   "match": [
+    "a stone of stumbling and a rock of offense",
+    "a stone of stumbling, and a rock of offence"
+   ],
+   "kind": "canon",
+   "title": "Isaiah 8:14",
+   "text": "From Isaiah 8:14, where the LORD himself is both a sanctuary and \"a stone of stumbling\" to Israel. Paul quotes the same verse in Romans 9:33.",
+   "refs": [
+    "Isaiah 8:14",
+    "Romans 9:33"
+   ],
+   "source": ""
+  },
+  {
+   "v": 9,
+   "match": [
+    "a chosen race",
+    "a chosen generation"
+   ],
+   "kind": "canon",
+   "title": "Israel's titles, given to the church",
+   "text": "\"A royal priesthood, a holy nation\" is Exodus 19:5-6, and \"chosen race\" and \"people for his own possession\" echo Isaiah 43:20-21 and Malachi 3:17. Peter applies to Christian readers, many of them Gentiles, what was said of Israel at Sinai. The Greek genos means a people of common descent, which the KJV renders \"generation\".",
+   "refs": [
+    "Exodus 19:5-6",
+    "Isaiah 43:20-21",
+    "Malachi 3:17"
+   ],
+   "source": ""
+  },
+  {
+   "v": 10,
+   "match": [
+    "Once you were not a people",
+    "Which in time past were not a people"
+   ],
+   "kind": "canon",
+   "title": "Hosea",
+   "text": "Echoes Hosea 1:9-10 and 2:23, where \"Not my people\" and \"No mercy\" become \"my people\" and \"mercy shown\". Paul uses the same texts in Romans 9:25-26.",
+   "refs": [
+    "Hosea 1:9-10",
+    "Hosea 2:23",
+    "Romans 9:25-26"
+   ],
+   "source": ""
+  },
+  {
+   "v": 11,
+   "match": [
+    "foreigners and exiles",
+    "strangers and pilgrims"
+   ],
+   "kind": "canon",
+   "title": "Abraham's words",
+   "text": "The Greek pair paroikoi and parepidemoi is the Septuagint wording of Abraham's description of himself in Genesis 23:4 (\"a stranger and a sojourner\"). Hebrews 11:13 uses the same picture of the patriarchs.",
+   "refs": [
+    "Genesis 23:4",
+    "Hebrews 11:13"
+   ],
+   "source": ""
+  },
+  {
+   "v": 12,
+   "match": [
+    "evildoers"
+   ],
+   "kind": "extrabiblical",
+   "title": "Christians as suspected criminals",
+   "text": "Roman writers show the charge Peter describes. Tacitus (Annals 15.44, about AD 116) says Nero blamed the Christians, a group \"hated for their abominations\". Pliny the Younger (Letters 10.96, about AD 112) executes Christians simply for refusing to renounce the name.",
+   "refs": [],
+   "source": "Tacitus, Annals 15.44; Pliny, Letters 10.96"
+  },
+  {
+   "v": 22,
+   "match": [
+    "no deceit was found in his mouth",
+    "neither was guile found in his mouth"
+   ],
+   "kind": "canon",
+   "title": "Isaiah 53:9",
+   "text": "A quotation of Isaiah 53:9. Verses 22-25 draw on the Suffering Servant song throughout: sin-bearing (Isaiah 53:4, 12), wounds (53:5), straying sheep (53:6).",
+   "refs": [
+    "Isaiah 53:9",
+    "Isaiah 53:4-6",
+    "Isaiah 53:12"
+   ],
+   "source": ""
+  },
+  {
+   "v": 21,
+   "match": [
+    "suffered for us",
+    "suffered for us"
+   ],
+   "kind": "variant",
+   "title": "\"For us\" or \"for you\"",
+   "text": "The manuscripts behind the KJV read \"suffered for us, leaving us an example\". Many earlier manuscripts read \"for you ... leaving you\", and most modern translations follow them. KJV27 keeps the KJV reading.",
+   "refs": [],
+   "source": "NA28 apparatus"
+  },
+  {
+   "v": 24,
+   "match": [
+    "wounds",
+    "stripes"
+   ],
+   "kind": "word",
+   "title": "molops",
+   "text": "The Greek molops (a welt or bruise from a blow) occurs only here in the New Testament. It is the word used in the Greek Old Testament of Isaiah 53:5, which Peter is quoting. The KJV \"stripes\" is a classic rendering; \"wounds\" is plainer today.",
+   "refs": [
+    "Isaiah 53:5"
+   ],
+   "source": "BDAG; Septuagint"
+  },
+  {
+   "v": 24,
+   "match": [
+    "on the tree",
+    "on the tree"
+   ],
+   "kind": "canon",
+   "title": "\"The tree\"",
+   "text": "\"Tree\" (Greek xylon, wood) recalls Deuteronomy 21:22-23, where a body hung on a tree is under God's curse. Paul draws on it in Galatians 3:13, and Peter uses \"tree\" of the cross in Acts 5:30 and 10:39.",
+   "refs": [
+    "Deuteronomy 21:22-23",
+    "Galatians 3:13",
+    "Acts 5:30"
+   ],
+   "source": ""
+  },
+  {
+   "v": 25,
+   "match": [
+    "Overseer",
+    "Bishop"
+   ],
+   "kind": "word",
+   "title": "episkopos",
+   "text": "Greek episkopos means overseer, guardian. It later became the church office \"bishop\". Here it is a title of Christ, paired with Shepherd. Ezekiel 34 is the background: God himself will shepherd and watch over his scattered sheep.",
+   "refs": [
+    "Ezekiel 34:11-16",
+    "Isaiah 53:6"
+   ],
+   "source": ""
+  }
+ ]
+}

@@ -48,7 +48,16 @@
       <div id="reader-version-row" class="reader-version-row" hidden>
         <button id="reader-version-btn" type="button"></button>
       </div>
+      <div id="reader-notes-row" class="reader-notes-row" hidden>
+        <button id="notes-toggle" type="button"></button>
+        <span id="notes-legend" class="notes-legend"></span>
+      </div>
       <div id="reader-text" class="reader-text" aria-live="polite"></div>
+      <div id="chapter-map" class="chapter-map" hidden>
+        <h3 class="map-title">Places in this chapter</h3>
+        <div id="map-frame" class="map-frame"></div>
+        <p id="map-caption" class="hint"></p>
+      </div>
       <div id="reader-mark-row" class="reader-mark-row" hidden>
         <button id="mark-btn-2" class="primary">Mark as Read</button>
       </div>
@@ -224,6 +233,13 @@
       </div>
     </section>
 
+    <div id="popover" class="popover" role="dialog" hidden>
+      <button id="popover-close" class="popover-close" type="button" aria-label="Close">×</button>
+      <div id="popover-body"></div>
+    </div>
+
+    <button id="resume-pill" class="resume-pill" type="button" hidden></button>
+
     <div id="update-banner" class="update-banner" role="alert" hidden>
       <span>A new version is available.</span>
       <button id="update-reload" class="primary" type="button">Reload</button>
@@ -262,6 +278,8 @@
   <script src="trivia-greek-aramaic-texts.js?v=__BUILD__"></script>
   <script src="trivia-warmups.js?v=__BUILD__"></script>
   <script src="trivia-deep.js?v=__BUILD__"></script>
+  <script src="map-data.js?v=__BUILD__"></script>
+  <script src="places.js?v=__BUILD__"></script>
   <script src="app.js?v=__BUILD__"></script>
 </body>
 </html>
