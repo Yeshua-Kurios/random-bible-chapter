@@ -39,6 +39,9 @@ jobs:
         run: python par/pipeline/dryrun.py --list-models
       - name: Dry run
         run: python par/pipeline/dryrun.py --book "${{ inputs.book || 'Ps' }}" --chapter "${{ inputs.chapter || '23' }}" --out par-out
+      - name: Dry run (less familiar chapter)
+        if: github.event_name == 'push'
+        run: python par/pipeline/dryrun.py --book Obad --chapter 1 --out par-out
       - uses: actions/upload-artifact@v4
         with:
           name: par-dryrun

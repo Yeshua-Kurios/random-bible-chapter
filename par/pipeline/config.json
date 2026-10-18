@@ -55,6 +55,6 @@
   "checkers": {
     "lexical": "nvidia",
     "meaning": "gemini",
-    "style": "mistral"
+    "style": "zai"
   }
 }

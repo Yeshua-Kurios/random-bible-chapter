@@ -23,11 +23,18 @@ HERE = Path(__file__).resolve().parent
 OSIS = "{http://www.bibletechnologies.net/2003/OSIS/namespace}"
 WLC_URL = "https://raw.githubusercontent.com/openscriptures/morphhb/master/wlc/{book}.xml"
 
-DRAFT_SYSTEM = (
-    "You translate biblical Hebrew into English. You are given only the Hebrew text. "
-    "Translate faithfully and keep every verse, in order. "
-    'Reply with JSON only: {"verses":[{"n":<verse number>,"gloss":"<word-by-word gloss>",'
-    '"translation":"<English>"}]}.'
+GLOSS_SYSTEM = (
+    "You gloss biblical Hebrew one word at a time. Each input line is an id and one Hebrew word. "
+    "Give a short literal English gloss for every word, in order, using only what the word means. "
+    "Do not write sentences and do not recall any English Bible. "
+    'Reply with JSON only: {"words":[{"id":"<id>","gloss":"<gloss>"}]} with exactly one entry per input id.'
+)
+TRANSLATE_SYSTEM = (
+    "You build English verses from word glosses of biblical Hebrew. You never see the Hebrew or any English Bible. "
+    "Use only the glosses: every content word in your English must come from a gloss, and you may add only "
+    "function words (articles, prepositions, auxiliaries) that English grammar needs. Do not use remembered "
+    "Bible wording that the glosses do not support. Keep every verse, in order. "
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"translation":"<English>"}]}.'
 )
 CHECK_FOCUS = {
     "lexical": "Check that each Hebrew word is rendered with a defensible sense, and that no word is dropped or invented.",
@@ -158,39 +165,65 @@ def list_models(cfg):
 
 
 def fetch_chapter(book, chapter):
-    """Return [(verse_number, hebrew_text)] for one chapter of the WLC (OSIS)."""
+    """Return ([(verse, hebrew_text)], {verse: [word, ...]}) for one chapter of the WLC (OSIS)."""
     with urllib.request.urlopen(WLC_URL.format(book=book), timeout=60) as r:
         root = ET.parse(r).getroot()
-    verses = []
+    verses, words = [], {}
     for v in root.iter(OSIS + "verse"):
         parts = (v.get("osisID") or "").split(".")
         if len(parts) != 3 or parts[1] != str(chapter):
             continue
-        words = ["".join(w.itertext()).replace("/", "") for w in v.iter(OSIS + "w")]
-        verses.append((int(parts[2]), " ".join(words)))
+        n = int(parts[2])
+        words[n] = ["".join(w.itertext()).replace("/", "") for w in v.iter(OSIS + "w")]
+        verses.append((n, " ".join(words[n])))
     if not verses:
         raise SystemExit("no verses found for %s %s" % (book, chapter))
-    return verses
+    return verses, words
 
 
 def source_block(verses):
     return "\n".join("%d %s" % (n, t) for n, t in verses)
 
 
-def draft(cfg, verses):
+def word_lines(words):
+    return "\n".join("%d.%d %s" % (n, i + 1, w) for n, ws in words.items() for i, w in enumerate(ws))
+
+
+def gate_glosses(words, out):
+    """Every source word gets exactly one non-empty gloss, and nothing else is glossed."""
+    want = ["%d.%d" % (n, i + 1) for n, ws in words.items() for i, _ in enumerate(ws)]
+    got = [str(w.get("id")) for w in out["words"]]
+    if sorted(got) != sorted(want):
+        raise ValueError("glosses cover %d ids, source has %d (missing %s)" % (
+            len(set(got)), len(want), sorted(set(want) - set(got))[:5]))
+    glosses = {str(w["id"]): str(w.get("gloss", "")).strip() for w in out["words"]}
+    empty = [i for i, g in glosses.items() if not g]
+    if empty:
+        raise ValueError("empty glosses: %s" % empty[:5])
+    return glosses
+
+
+def draft(cfg, verses, words):
+    """Two steps: gloss each Hebrew word, then build English from the glosses alone."""
     for name in cfg["drafters"]:
         prov = provider(cfg, name)
         if not prov:
             print("drafter %s: skipped" % name, file=sys.stderr)
             continue
         try:
-            out = parse_json(chat(name, prov, DRAFT_SYSTEM, source_block(verses)))
+            glosses = gate_glosses(words, parse_json(chat(name, prov, GLOSS_SYSTEM, word_lines(words))))
+            gloss_text = "\n".join("%d: %s" % (n, " | ".join(glosses["%d.%d" % (n, i + 1)] for i, _ in enumerate(ws)))
+                                   for n, ws in words.items())
+            out = parse_json(chat(name, prov, TRANSLATE_SYSTEM, gloss_text))
             got = [int(v["n"]) for v in out["verses"]]
             if got != [n for n, _ in verses]:
                 raise ValueError("verse numbers %s do not match the source" % got)
-            return name, prov[2], out["verses"]
+            drafted = [{"n": int(v["n"]),
+                        "gloss": " | ".join(glosses["%d.%d" % (v["n"], i + 1)] for i, _ in enumerate(words[int(v["n"])])),
+                        "translation": v["translation"]} for v in out["verses"]]
+            return name, prov[2], drafted
         except Exception as e:
-            print("drafter %s failed: %s" % (name, str(e)[:200]), file=sys.stderr)
+            print("drafter %s failed: %s" % (name, str(e)[:300]), file=sys.stderr)
     return None
 
 
@@ -213,9 +246,9 @@ def render(book, chapter, verses, drafter, drafted, checks):
     lines = ["# %s %s (dry run)" % (book, chapter), "",
              "Drafter: %s" % (("%s (%s)" % (drafter[0], drafter[1])) if drafter else "none (all skipped)"), "",
              "Hebrew psalm numbering: titles count as verse 1.", "",
-             "| v | Hebrew | Translation |", "|---|---|---|"]
+             "| v | Hebrew | Gloss | Translation |", "|---|---|---|---|"]
     for v in drafted:
-        lines.append("| %s | %s | %s |" % (v["n"], src.get(int(v["n"]), ""), v.get("translation", "")))
+        lines.append("| %s | %s | %s | %s |" % (v["n"], src.get(int(v["n"]), ""), v.get("gloss", ""), v.get("translation", "")))
     lines += ["", "## Checks", ""]
     for c in checks:
         lines.append("- **%s** (%s): %s%s" % (c["checker"], c["provider"], c["verdict"],
@@ -240,8 +273,8 @@ def main():
         list_models(cfg)
         return
 
-    verses = fetch_chapter(args.book, args.chapter)
-    drafter = draft(cfg, verses)
+    verses, words = fetch_chapter(args.book, args.chapter)
+    drafter = draft(cfg, verses, words)
     drafted = drafter[2] if drafter else []
     checks = [check(cfg, k, verses, drafted) for k in cfg["checkers"]] if drafter else []
     md = render(args.book, args.chapter, verses, drafter, drafted, checks)
