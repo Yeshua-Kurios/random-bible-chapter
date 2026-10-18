@@ -3,7 +3,7 @@
 Last updated 2026-10-18.
 
 ## Project
-KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is a light modernization of the KJV English (see `par/STYLE.md`). It is NOT a new translation from Hebrew or Greek. Free models draft the modernization, other models cross-check, and a person is the final reviewer.
+KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is the KJV in clear modern English: NO archaic English at all, and poor KJV renderings corrected (see `par/STYLE.md`). It is still not a fresh translation from Hebrew or Greek. Free models draft, one checker reviews, and a person is the final reviewer. Owner's goal (2026-10-18): a solid translation without wasting tokens.
 
 ## Direction change (2026-10-18)
 The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and parked. What the experiment showed, in case it is revisited:
@@ -14,9 +14,9 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 
 ## Design rules
 - Keep verse count, verse order and the `#` paragraph markers exactly as in `kjv/`.
-- Keep the weighty KJV vocabulary the style guide lists; do not paraphrase.
+- No archaic English (the gate rejects thee/thou/-eth/wherefore/behold/yea etc.). Keep theological words that are still living English; fix clear mistranslations, and report each one in the verse's `note` so the review file shows it. Do not paraphrase.
 - Deterministic gate (in `par/pipeline/dryrun.py`): same verses in order, paragraph markers kept, no `[bracketed]` words, no thee/thou/hath/-eth forms left. All five hand-made pilot chapters pass it.
-- LLM checkers: fidelity (meaning kept) and style (STYLE.md rules). One revision pass on flagged verses, then re-check.
+- Token frugality: ONE reviewer call per chapter (meaning + style together, `review` in config), one revision pass on flagged verses only, and the re-check sends only the revised verses.
 - Judgment calls go in `par/NOTES.md`. A person reviews before anything is published.
 - One chapter per file (a very large write was content-filtered once). Split Psalm 119.
 
@@ -26,6 +26,13 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 - Random order: `par/queue.json` is one fixed shuffle of all 1,189 chapters (made by `par/pipeline/make_queue.py`, seed 20261018). In the first read-through the app's Get/Skip/Mark hand out the next unread chapter in that order (skip sends a chapter to the back of the line); the daily job modernizes the same order, so KJV27 text is ready for what is read next. After a first full read-through, or if the file can't load, the app picks random unread chapters as before. Don't change the seed once reading has started.
 - Optional, for the daily job to skip chapters already read: add an org/repo secret `READING_LOG_TOKEN` (a fine-grained, read-only token with Contents access to the private repo the app syncs its reading log to). Without it the job starts at the head of the queue, so chapters read before the first PR merges may get KJV27 text nobody sees.
 - App: the reader shows KJV27 for chapters listed in `par/progress.json` and the KJV for all others, with a per-reader toggle back to the KJV (remembered in the browser).
+
+## Standing instruction (2026-10-18, from the owner)
+Whenever the owner asks for an app update, FIRST review the KJV27 queue and optimize what the free LLMs produced, THEN do the requested update. Concretely:
+1. Fetch main; list the chapters in `par/text/` (and `failed` in `par/progress.json`) that have not been human-polished.
+2. Read each against its KJV (`par/review/<book>-<n>.md`) and `par/STYLE.md`: fix awkward or ungrammatical wording, meaning drift, and any style-guide misses. Keep verse count, order and `#` markers; keep the weighty KJV vocabulary.
+3. Run the deterministic gate from `par/pipeline/dryrun.py` on every edited chapter; log judgment calls in `par/NOTES.md`.
+4. Mention in the PR what was polished, then proceed with the update. Chapters with `fidelity`/`style` = `error` in `par/progress.json` were never LLM-checked, so give those the closest read.
 
 ## Open decisions (ask the owner)
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.

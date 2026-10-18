@@ -53,10 +53,10 @@
     "nvidia"
   ],
   "checkers": {
-    "fidelity": "gemini",
-    "style": "groq"
+    "review": "groq"
   },
   "checker_fallbacks": [
+    "gemini",
     "nvidia"
   ]
 }
