@@ -21,6 +21,16 @@ through the whole Bible in random order without duplicates.
   rejection sampling, rather than `Math.random()`. See "How random is it?"
   below.
 
+## Scripture memory
+
+Highlight any words in the reader and tap "Memorize" (or tap a verse number and
+choose "Memorize verse", or add a passage by reference) to save it to the
+"Scripture memory" section. Practice runs in the app with no LLM: fill in the
+blanks, then first letters, then typing it from memory (passing at 90% of the
+words). Passed items come back after 1, 3, 7, 14, 30 and 60 days; a miss starts
+over at the easiest step. Items live in `localStorage` (`rbc:memory`) and are
+included in the cloud backup. Code is in `memory.js`.
+
 ## Running locally
 
 Just open `index.html` in a browser, or serve the folder with any static

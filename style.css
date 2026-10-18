@@ -1429,3 +1429,63 @@ body.has-update-banner .resume-pill {
 .map-pin:focus-visible { outline: none; }
 .map-pin:focus-visible .pin,
 .map-pin:hover .pin { fill: var(--gold); }
+
+.memorize-pill {
+  position: fixed;
+  left: 14px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 46;
+  max-width: calc(100vw - 28px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--gold);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+body.has-update-banner .memorize-pill {
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+
+.mem-snippet,
+.mem-text {
+  margin: 0.2rem 0 0.8rem;
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.mem-snippet {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.mem-ref {
+  font-family: var(--font-display);
+  color: var(--gold);
+  margin: 0 0 0.5rem;
+}
+
+.mem-drill button {
+  margin-bottom: 0.4rem;
+}
+
+.mem-miss {
+  text-decoration: underline wavy #b3382c;
+  text-underline-offset: 3px;
+}
+
+.mem-pass {
+  color: #2e7d50;
+  font-weight: 600;
+}
+
+.mem-fail {
+  color: #b3382c;
+  font-weight: 600;
+}
