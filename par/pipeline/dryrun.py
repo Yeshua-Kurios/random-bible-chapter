@@ -85,13 +85,15 @@ def provider(cfg, name):
     return base.rstrip("/"), key, p["model"]
 
 
-def http(url, key, body=None, timeout=240, retries=3):
+def http(url, key, body=None, timeout=90, retries=2):
+    """One request. Rate limits and server errors retry with backoff; a timeout retries once."""
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, headers={
         "Authorization": "Bearer " + key,
         "Content-Type": "application/json",
         "User-Agent": "par-dryrun",
     })
+    timeouts = 0
     for attempt in range(retries + 1):
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -102,10 +104,10 @@ def http(url, key, body=None, timeout=240, retries=3):
                 continue
             raise RuntimeError("HTTP %d from %s: %s" % (e.code, url, e.read()[:300].decode("utf-8", "replace")))
         except (TimeoutError, urllib.error.URLError) as e:
-            if attempt < retries:
-                time.sleep(5)
+            timeouts += 1
+            if timeouts < 2 and attempt < retries:
                 continue
-            raise RuntimeError("no response from %s: %s" % (url, e))
+            raise RuntimeError("no response from %s after %ds: %s" % (url, timeout, e))
 
 
 USAGE = {}  # provider -> token counts for this run
@@ -137,14 +139,28 @@ def save_usage(path):
     path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
 
 
+START = time.monotonic()
+BUDGET = 900  # seconds for the whole run; calls after this fail fast so the run still ends
+
+
+def log(msg):
+    print("[%4ds] %s" % (time.monotonic() - START, msg), file=sys.stderr, flush=True)
+
+
 def chat(name, prov, system, user):
     base, key, model = prov
+    if time.monotonic() - START > BUDGET:
+        raise RuntimeError("time budget of %ds exhausted" % BUDGET)
+    step = system.split(".")[0][:40]
+    t0 = time.monotonic()
+    log("%s/%s: %s ..." % (name, model, step))
     res = http(base + "/chat/completions", key, {
         "model": model,
         "temperature": 0.2,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
     })
     record_usage(name, res)
+    log("%s: done in %.0fs" % (name, time.monotonic() - t0))
     return res["choices"][0]["message"]["content"]
 
 
@@ -327,9 +343,12 @@ def main():
     ap.add_argument("--book", default="Ps", help="morphhb file stem, e.g. Ps, Gen")
     ap.add_argument("--chapter", type=int, default=23)
     ap.add_argument("--out", default="par-out")
+    ap.add_argument("--budget", type=int, default=BUDGET, help="seconds before remaining calls fail fast")
     ap.add_argument("--usage", default=str(HERE.parent / "usage.json"), help="token ledger to update")
     args = ap.parse_args()
     cfg = load_config()
+    global BUDGET
+    BUDGET = args.budget
 
     if args.list_models:
         list_models(cfg)
