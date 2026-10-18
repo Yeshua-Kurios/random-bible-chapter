@@ -97,6 +97,27 @@
       <button id="q-clear" class="q-clear">Clear all questions</button>
     </details>
 
+    <details id="memory" class="card questions">
+      <summary>Scripture memory <span id="memory-count"></span></summary>
+      <div id="mem-home">
+        <p class="hint">
+          Highlight any words in the reader above and tap “Memorize”, or tap a
+          verse number and choose “Memorize verse”. You can also add a passage
+          by reference. Practice starts with blanks and ends with typing it from
+          memory; verses you know come back less often.
+        </p>
+        <form id="mem-form" class="q-form" autocomplete="off">
+          <label for="mem-passage">Add a passage</label>
+          <input id="mem-passage" class="code-box q-input" type="text" placeholder="e.g. Psalm 23:1-4 or John 3:16" />
+          <button type="submit" class="primary">Add to memory</button>
+        </form>
+        <button id="mem-practice" class="primary" type="button" hidden></button>
+        <p id="mem-status" class="hint" aria-live="polite"></p>
+        <ul id="mem-list" class="q-list"></ul>
+      </div>
+      <div id="mem-drill" class="mem-drill" hidden></div>
+    </details>
+
     <div class="card level-card">
       <div class="level-card-main">
         <div id="level-ring" class="level-ring">
@@ -239,6 +260,7 @@
     </div>
 
     <button id="resume-pill" class="resume-pill" type="button" hidden></button>
+    <button id="memorize-pill" class="memorize-pill" type="button" hidden></button>
 
     <div id="update-banner" class="update-banner" role="alert" hidden>
       <span>A new version is available.</span>
@@ -280,6 +302,7 @@
   <script src="trivia-deep.js?v=__BUILD__"></script>
   <script src="map-data.js?v=__BUILD__"></script>
   <script src="places.js?v=__BUILD__"></script>
+  <script src="memory.js?v=__BUILD__"></script>
   <script src="app.js?v=__BUILD__"></script>
 </body>
 </html>

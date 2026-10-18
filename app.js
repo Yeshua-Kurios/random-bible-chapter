@@ -424,6 +424,7 @@ function buildBackupPayload() {
     freezes: loadFreezes(),
     trivia: loadTrivia(),
     questions: loadQuestions(),
+    memory: loadMemory(),
   };
 }
 
@@ -445,6 +446,7 @@ function applyBackupPayload(payload) {
   // Questions are the user's own writing: an older backup that predates
   // them must not wipe the ones already on this device.
   if (payload.questions !== undefined) saveQuestions(sanitizeQuestions(payload.questions));
+  if (payload.memory !== undefined) saveMemory(sanitizeMemory(payload.memory));
   triviaSession = null;
   els.triviaQuiz.hidden = true;
   localStorage.removeItem(PENDING_KEY);
@@ -1692,6 +1694,12 @@ function openAsk(anchor, book, chapter, verse, version) {
       ta.value = "";
       status.textContent = "Saved. You're still where you were.";
     });
+    const memorize = textEl("button", "", "Memorize verse");
+    memorize.type = "button";
+    memorize.addEventListener("click", () => {
+      const added = addMemoryItem({ ref: passage, version, text: readerVerseText(verse) });
+      status.textContent = added ? "Saved to Scripture memory." : "Already in Scripture memory.";
+    });
     const open = textEl("button", "", "Open notebook");
     open.type = "button";
     open.addEventListener("click", () => {
@@ -1700,7 +1708,7 @@ function openAsk(anchor, book, chapter, verse, version) {
     });
     const actions = document.createElement("div");
     actions.className = "popover-actions";
-    actions.append(save, open);
+    actions.append(save, memorize, open);
     body.append(textEl("strong", "note-title", `Ask about ${passage}`), ta, actions, status);
     setTimeout(() => ta.focus(), 0);
   });
@@ -2268,6 +2276,7 @@ function render() {
   updateReader(pending);
   renderKjv27Progress();
   renderQuestions(pending);
+  renderMemory();
   renderLevel(log);
   renderHabit(log, readSet);
   renderTrivia();
