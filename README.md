@@ -28,7 +28,7 @@ choose "Memorize verse", or add a passage by reference) to save it to the
 "Scripture memory" section. Practice runs in the app with no LLM: fill in the
 blanks, then first letters, then typing it from memory (passing at 90% of the
 words). Passed items come back after 1, 3, 7, 14, 30 and 60 days; a miss starts
-over at the easiest step. Items live in `localStorage` (`rbc:memory`) and are
+over at the easiest step. Passing a review that is due earns XP (2 to 10 by step, more for longer passages, 20 a day at most; early practice and retries earn none), added to your lifetime XP like trivia XP. Items live in `localStorage` (`rbc:memory`) and are
 included in the cloud backup. Code is in `memory.js`.
 
 ## Running locally
