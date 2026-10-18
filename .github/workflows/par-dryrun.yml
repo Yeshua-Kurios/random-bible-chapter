@@ -3,12 +3,12 @@ name: PAR dry run
 on:
   push:
     branches: [par-pilot, claude/read-handoff-8s8tjl]
-    paths: ["par/pipeline/**"]
+    paths: ["par/**", "kjv/**"]
   workflow_dispatch:
     inputs:
       book:
-        description: morphhb file stem (Ps, Gen, ...)
-        default: Ps
+        description: kjv/ file stem (psalms, john, 1-john, ...)
+        default: psalms
       chapter:
         description: Chapter number
         default: "23"
@@ -19,32 +19,30 @@ permissions:
 jobs:
   dryrun:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { book: psalms, chapter: "23" }
+          - { book: john, chapter: "3" }
     env:
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
-      WORKERSAI_API_KEY: ${{ secrets.WORKERSAI_API_KEY }}
-      SAMBANOVA_API_KEY: ${{ secrets.SAMBANOVA_API_KEY }}
-      ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
-      SCALEWAY_API_KEY: ${{ secrets.SCALEWAY_API_KEY }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: List models
-        run: python par/pipeline/dryrun.py --list-models
-      - name: Dry run
-        run: python par/pipeline/dryrun.py --book "${{ inputs.book || 'Ps' }}" --chapter "${{ inputs.chapter || '23' }}" --out par-out
-      - name: Dry run (less familiar chapter)
+      - name: Modernize ${{ matrix.book }} ${{ matrix.chapter }}
         if: github.event_name == 'push'
-        run: python par/pipeline/dryrun.py --book Obad --chapter 1 --out par-out
+        run: python par/pipeline/dryrun.py --book "${{ matrix.book }}" --chapter "${{ matrix.chapter }}" --out par-out
+      - name: Modernize ${{ inputs.book }} ${{ inputs.chapter }}
+        if: github.event_name == 'workflow_dispatch' && matrix.book == 'psalms'
+        run: python par/pipeline/dryrun.py --book "${{ inputs.book }}" --chapter "${{ inputs.chapter }}" --out par-out
       - uses: actions/upload-artifact@v4
         with:
-          name: par-dryrun
+          name: par-${{ matrix.book }}-${{ matrix.chapter }}
           path: |
             par-out
             par/usage.json

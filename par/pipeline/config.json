@@ -1,5 +1,5 @@
 {
-  "_note": "Base URLs verified by --list-models on 2026-10-18 (Workers AI has no /models; its model ID is unverified). Model IDs come from those lists. Cerebras and SambaNova need billing, Z.ai has no balance: left out of the drafter and checker lists.",
+  "_note": "Base URLs verified by --list-models on 2026-10-18 (Workers AI has no /models; its model ID is unverified). Cerebras and SambaNova need billing, Z.ai has no balance, Scaleway is quota-locked, Mistral rate-limits: all left out. NVIDIA is slow (60-90s a call), so it is the last drafter only.",
   "providers": {
     "nvidia": {
       "base_url": "https://integrate.api.nvidia.com/v1",
@@ -49,12 +49,11 @@
   },
   "drafters": [
     "groq",
-    "nvidia",
-    "scaleway"
+    "gemini",
+    "nvidia"
   ],
   "checkers": {
-    "lexical": "nvidia",
-    "meaning": "gemini",
-    "style": "scaleway"
+    "fidelity": "gemini",
+    "style": "groq"
   }
 }

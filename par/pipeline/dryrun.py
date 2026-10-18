@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""PAR dry run: draft one chapter from the Hebrew (WLC), then have checkers review it.
+"""PAR dry run: modernize one KJV chapter, gate it, have checkers review it, revise once.
 
+PAR is a light modernization of the KJV (see par/STYLE.md), not a new translation.
 Standard library only. Providers whose key env var is unset are skipped.
 Keys are never printed.
 
   python par/pipeline/dryrun.py --list-models
-  python par/pipeline/dryrun.py --book Ps --chapter 23
+  python par/pipeline/dryrun.py --book psalms --chapter 23
 """
 import argparse
 import datetime
@@ -16,43 +17,42 @@ import sys
 import time
 import urllib.error
 import urllib.request
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-OSIS = "{http://www.bibletechnologies.net/2003/OSIS/namespace}"
-WLC_URL = "https://raw.githubusercontent.com/openscriptures/morphhb/master/wlc/{book}.xml"
+ROOT = HERE.parent.parent
+CHUNK = 12  # verses per model call
 
-GLOSS_SYSTEM = (
-    "You gloss biblical Hebrew one word at a time. Each input line is an id and one Hebrew word. "
-    "Give a short literal English gloss for every word, in order, using only what the word means. "
-    "Do not write sentences and do not recall any English Bible. "
-    'Reply with JSON only: {"words":[{"id":"<id>","gloss":"<gloss>"}]} with exactly one entry per input id.'
-)
-TRANSLATE_SYSTEM = (
-    "You build English verses from word glosses of biblical Hebrew. You never see the Hebrew or any English Bible. "
-    "Use only the glosses: every content word in your English must come from a gloss, and you may add only "
-    "function words (articles, prepositions, auxiliaries) that English grammar needs. Do not use remembered "
-    "Bible wording that the glosses do not support. Keep every verse, in order. "
-    'Reply with JSON only: {"verses":[{"n":<verse number>,"translation":"<English>"}]}.'
+DRAFT_SYSTEM = (
+    "You modernize the English of the King James Version according to the style guide below. "
+    "You are not retranslating: keep the meaning, verse order and sentence rhythm of the KJV. "
+    "Each input line is a verse number and its KJV text. A leading '#' marks a paragraph break; keep it. "
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>"}]} with one entry per input verse.'
+    "\n\nSTYLE GUIDE\n%s"
 )
 REVISE_SYSTEM = (
-    "You revise English verses built from word glosses of biblical Hebrew. You never see the Hebrew or any "
-    "English Bible. For each verse you get its glosses, the current English, and reviewers' issues. Fix the "
-    "problems the issues describe. An issue may show that a gloss was misread (for example a conjunction or a "
-    "subject); follow the issue's reading of the Hebrew, and change nothing else. "
-    'Reply with JSON only: {"verses":[{"n":<verse number>,"translation":"<English>"}]} for the listed verses only.'
+    "You revise modernized KJV verses according to the style guide below. For each verse you get the KJV, "
+    "the current modernization and reviewers' issues. Fix what the issues describe and change nothing else. "
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>"}]} for the listed verses only.'
+    "\n\nSTYLE GUIDE\n%s"
 )
-CHUNK = 6  # verses per model call
 CHECK_FOCUS = {
-    "lexical": "Check that each Hebrew word is rendered with a defensible sense, and that no word is dropped or invented.",
-    "meaning": "Check that the English conveys the meaning of the Hebrew clause, including syntax, tense and idiom.",
-    "style": "Check that the English is clear, consistent and free of padding, without changing the meaning.",
+    "fidelity": "Check that each modernized verse keeps the full meaning of the KJV verse: nothing dropped, added or reinterpreted, and theologically weighty vocabulary kept.",
+    "style": "Check each verse against the style guide: leftover archaic forms, words that should have stayed (LORD, only begotten...), and paraphrase or smoothing that the guide forbids.",
 }
 CHECK_SYSTEM = (
-    "You review an English draft against its Hebrew source. {focus} "
-    'Reply with JSON only: {{"verdict":"pass"|"fail","issues":[{{"verse":<n>,"problem":"...","suggestion":"..."}}]}}.'
+    "You review a light modernization of the King James Version. %s "
+    'Reply with JSON only: {"verdict":"pass"|"fail","issues":[{"verse":<n>,"problem":"...","suggestion":"..."}]}. '
+    "Report only real problems."
+    "\n\nSTYLE GUIDE\n%s"
 )
+ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily)\b", re.I)
+ETH = re.compile(r"\b[a-z]{3,}eth\b")  # lowercase only, so names like Elizabeth pass
+ETH_OK = {"teeth", "beneath", "nineteenth", "sixteenth", "seventeenth", "eighteenth"}  # -est verbs are left to the style checker
+
+
+def style_guide():
+    return (ROOT / "par" / "STYLE.md").read_text(encoding="utf-8")
 
 
 def load_config():
@@ -193,87 +193,79 @@ def list_models(cfg):
             print("%s: error: %s" % (name, str(e)[:200]))
 
 
-def fetch_chapter(book, chapter):
-    """Return ([(verse, hebrew_text)], {verse: [word, ...]}) for one chapter of the WLC (OSIS)."""
-    with urllib.request.urlopen(WLC_URL.format(book=book), timeout=60) as r:
-        root = ET.parse(r).getroot()
-    verses, words = [], {}
-    for v in root.iter(OSIS + "verse"):
-        parts = (v.get("osisID") or "").split(".")
-        if len(parts) != 3 or parts[1] != str(chapter):
-            continue
-        n = int(parts[2])
-        words[n] = ["".join(w.itertext()).replace("/", "") for w in v.iter(OSIS + "w")]
-        verses.append((n, " ".join(words[n])))
-    if not verses:
-        raise SystemExit("no verses found for %s %s" % (book, chapter))
-    return verses, words
+def load_kjv(book, chapter):
+    """Return [(verse_number, kjv_text)] for one chapter of the repo's KJV (kjv/<book>.json)."""
+    data = json.loads((ROOT / "kjv" / ("%s.json" % book)).read_text(encoding="utf-8"))
+    if not 1 <= chapter <= len(data["chapters"]):
+        raise SystemExit("%s has %d chapters" % (data["book"], len(data["chapters"])))
+    return data["book"], [(i + 1, t) for i, t in enumerate(data["chapters"][chapter - 1])]
 
 
-def source_block(verses):
+def kjv_block(verses):
     return "\n".join("%d %s" % (n, t) for n, t in verses)
 
 
-def word_lines(words):
-    return "\n".join("%d.%d %s" % (n, i + 1, w) for n, ws in words.items() for i, w in enumerate(ws))
-
-
-def gate_glosses(words, out):
-    """Every source word gets exactly one non-empty gloss, and nothing else is glossed."""
-    want = ["%d.%d" % (n, i + 1) for n, ws in words.items() for i, _ in enumerate(ws)]
-    got = [str(w.get("id")) for w in out["words"]]
-    if sorted(got) != sorted(want):
-        raise ValueError("glosses cover %d ids, source has %d (missing %s)" % (
-            len(set(got)), len(want), sorted(set(want) - set(got))[:5]))
-    glosses = {str(w["id"]): str(w.get("gloss", "")).strip() for w in out["words"]}
-    empty = [i for i, g in glosses.items() if not g]
-    if empty:
-        raise ValueError("empty glosses: %s" % empty[:5])
-    return glosses
+def gate(src, out):
+    """Deterministic checks on one chunk: same verses in order, paragraph markers kept, no archaic forms."""
+    got = [int(v["n"]) for v in out["verses"]]
+    if got != [n for n, _ in src]:
+        raise ValueError("verse numbers %s do not match the KJV" % got)
+    for (n, kjv), v in zip(src, out["verses"]):
+        text = str(v["text"])
+        if kjv.lstrip().startswith("#") != text.lstrip().startswith("#"):
+            raise ValueError("verse %d: paragraph marker not kept" % n)
+        if "[" in text or "]" in text:
+            raise ValueError("verse %d: bracketed words left in" % n)
+        bad = [m.group(0) for m in ARCHAIC.finditer(text)]
+        bad += [w for w in ETH.findall(text) if w not in ETH_OK]
+        if bad:
+            raise ValueError("verse %d still has archaic forms: %s" % (n, sorted(set(bad))))
+    return out["verses"]
 
 
 def chunks(verses, size=CHUNK):
     return [verses[i:i + size] for i in range(0, len(verses), size)]
 
 
-def draft_chunk(cfg, part, words, skip=()):
-    """Gloss, gate, then translate one chunk of verses; try each drafter in turn."""
-    cw = {n: words[n] for n, _ in part}
-    for name in cfg["drafters"]:
-        prov = provider(cfg, name)
-        if not prov or name in skip:
-            print("drafter %s: skipped" % name, file=sys.stderr)
-            continue
-        try:
-            glosses = gate_glosses(cw, parse_json(chat(name, prov, GLOSS_SYSTEM, word_lines(cw))))
-            gloss_text = "\n".join("%d: %s" % (n, " | ".join(glosses["%d.%d" % (n, i + 1)] for i, _ in enumerate(ws)))
-                                   for n, ws in cw.items())
-            out = parse_json(chat(name, prov, TRANSLATE_SYSTEM, gloss_text))
-            got = [int(v["n"]) for v in out["verses"]]
-            if got != [n for n, _ in part]:
-                raise ValueError("verse numbers %s do not match the source" % got)
-            return name, prov[2], [{"n": int(v["n"]),
-                                    "gloss": " | ".join(glosses["%d.%d" % (v["n"], i + 1)] for i, _ in enumerate(cw[int(v["n"])])),
-                                    "translation": v["translation"]} for v in out["verses"]]
-        except Exception as e:
-            print("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]), file=sys.stderr)
-    return None
-
-
-def draft(cfg, verses, words):
-    """Draft the chapter chunk by chunk. Returns (providers used, [verse dicts]) or None."""
-    drafted, used = [], []
+def draft(cfg, verses):
+    """Modernize chunk by chunk; each chunk falls through the drafter chain on any failure or gate miss."""
+    system = DRAFT_SYSTEM % style_guide()
+    done, used = [], set()
     for part in chunks(verses):
-        res = draft_chunk(cfg, part, words)
-        if not res:
-            return None
-        used.append("%s (%s)" % res[:2])
-        drafted += res[2]
-    return sorted(set(used)), drafted
+        for name in cfg["drafters"]:
+            prov = provider(cfg, name)
+            if not prov:
+                continue
+            try:
+                out = gate(part, parse_json(chat(name, prov, system, kjv_block(part))))
+                done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": str(v["text"]).strip()} for v in out]
+                used.add("%s (%s)" % (name, prov[2]))
+                break
+            except Exception as e:
+                log("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]))
+        else:
+            log("no drafter could do verses %d-%d; keeping the finished chunks" % (part[0][0], part[-1][0]))
+            done += [{"n": n, "kjv": t, "text": None} for n, t in part]
+    return sorted(used), done
+
+
+def check(cfg, kind, drafted):
+    name = cfg["checkers"][kind]
+    prov = provider(cfg, name)
+    if not prov:
+        return {"checker": kind, "provider": name, "verdict": "skipped", "issues": []}
+    rows = [v for v in drafted if v["text"]]
+    user = "\n\n".join("Verse %d\nKJV: %s\nModern: %s" % (v["n"], v["kjv"], v["text"]) for v in rows)
+    try:
+        out = parse_json(chat(name, prov, CHECK_SYSTEM % (CHECK_FOCUS[kind], style_guide()), user))
+        return {"checker": kind, "provider": name, "model": prov[2],
+                "verdict": out.get("verdict", "unknown"), "issues": out.get("issues", [])}
+    except Exception as e:
+        return {"checker": kind, "provider": name, "verdict": "error", "issues": [], "error": str(e)[:200]}
 
 
 def revise(cfg, drafted, checks):
-    """One revision pass: give each flagged verse's glosses and issues back to a drafter."""
+    """One pass: send each flagged verse back with its issues, gate the result, keep the first draft for comparison."""
     issues = {}
     for c in checks:
         for i in c["issues"]:
@@ -281,51 +273,34 @@ def revise(cfg, drafted, checks):
                 issues.setdefault(int(i.get("verse")), []).append("%s: %s -> %s" % (c["checker"], i.get("problem"), i.get("suggestion")))
             except (TypeError, ValueError):
                 pass
-    flagged = [v for v in drafted if v["n"] in issues]
+    flagged = [v for v in drafted if v["text"] and v["n"] in issues]
     if not flagged:
         return drafted, []
-    user = "\n\n".join("Verse %d\nGlosses: %s\nCurrent English: %s\nIssues:\n- %s" % (
-        v["n"], v["gloss"], v["translation"], "\n- ".join(issues[v["n"]])) for v in flagged)
+    user = "\n\n".join("Verse %d\nKJV: %s\nCurrent: %s\nIssues:\n- %s" % (
+        v["n"], v["kjv"], v["text"], "\n- ".join(issues[v["n"]])) for v in flagged)
+    system = REVISE_SYSTEM % style_guide()
     for name in cfg["drafters"]:
         prov = provider(cfg, name)
         if not prov:
             continue
         try:
-            out = {int(v["n"]): v["translation"] for v in parse_json(chat(name, prov, REVISE_SYSTEM, user))["verses"]}
-            if not set(out) <= set(issues):
-                raise ValueError("revised verses %s were not flagged" % sorted(out))
-            return [dict(v, translation=out.get(v["n"], v["translation"]), first=v["translation"] if v["n"] in out else None)
-                    for v in drafted], sorted(out)
+            out = parse_json(chat(name, prov, system, user))
+            got = gate([(v["n"], v["kjv"]) for v in flagged], out)
+            new = {int(v["n"]): str(v["text"]).strip() for v in got}
+            return [dict(v, text=new.get(v["n"], v["text"]), first=v["text"] if v["n"] in new else None) for v in drafted], sorted(new)
         except Exception as e:
-            print("reviser %s failed: %s" % (name, str(e)[:300]), file=sys.stderr)
+            log("reviser %s failed: %s" % (name, str(e)[:300]))
     return drafted, []
 
 
-def check(cfg, kind, verses, drafted):
-    name = cfg["checkers"][kind]
-    prov = provider(cfg, name)
-    if not prov:
-        return {"checker": kind, "provider": name, "verdict": "skipped", "issues": []}
-    user = "HEBREW:\n%s\n\nDRAFT:\n%s" % (source_block(verses), json.dumps(drafted, ensure_ascii=False))
-    try:
-        out = parse_json(chat(name, prov, CHECK_SYSTEM.format(focus=CHECK_FOCUS[kind]), user))
-        return {"checker": kind, "provider": name, "model": prov[2],
-                "verdict": out.get("verdict", "unknown"), "issues": out.get("issues", [])}
-    except Exception as e:
-        return {"checker": kind, "provider": name, "verdict": "error", "issues": [], "error": str(e)[:200]}
-
-
-def render(book, chapter, verses, used, drafted, rounds, revised):
-    src = dict(verses)
-    lines = ["# %s %s (dry run)" % (book, chapter), "",
-             "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
-             "Hebrew psalm numbering: titles count as verse 1.", "",
-             "| v | Hebrew | Gloss | Translation |", "|---|---|---|---|"]
+def render(title, used, drafted, rounds, revised):
+    lines = ["# %s (PAR dry run)" % title, "", "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
+             "| v | KJV | PAR |", "|---|---|---|"]
     for v in drafted:
-        t = v.get("translation", "")
+        t = v["text"] if v["text"] else "_not drafted_"
         if v.get("first"):
             t += " _(revised; first draft: %s)_" % v["first"]
-        lines.append("| %s | %s | %s | %s |" % (v["n"], src.get(int(v["n"]), ""), v.get("gloss", ""), t))
+        lines.append("| %s | %s | %s |" % (v["n"], v["kjv"], t))
     for k, checks in enumerate(rounds, 1):
         lines += ["", "## Checks, round %d%s" % (k, "" if k == 1 else " (after revising verses %s)" % ", ".join(map(str, revised))), ""]
         for c in checks:
@@ -333,7 +308,7 @@ def render(book, chapter, verses, used, drafted, rounds, revised):
                                                  " - " + c["error"] if c.get("error") else ""))
             for i in c["issues"]:
                 lines.append("  - v%s: %s -> %s" % (i.get("verse"), i.get("problem"), i.get("suggestion")))
-    lines += ["", "_Agreement among models is evidence, not proof. A person reviews before this is called a translation._"]
+    lines += ["", "_Agreement among models is evidence, not proof. A person reviews before this is published._"]
     return "\n".join(lines) + "\n"
 
 
@@ -341,39 +316,38 @@ def main():
     global BUDGET
     ap = argparse.ArgumentParser()
     ap.add_argument("--list-models", action="store_true")
-    ap.add_argument("--book", default="Ps", help="morphhb file stem, e.g. Ps, Gen")
+    ap.add_argument("--book", default="psalms", help="kjv/ file stem, e.g. psalms, john, 1-john")
     ap.add_argument("--chapter", type=int, default=23)
     ap.add_argument("--out", default="par-out")
     ap.add_argument("--budget", type=int, default=BUDGET, help="seconds before remaining calls fail fast")
     ap.add_argument("--usage", default=str(HERE.parent / "usage.json"), help="token ledger to update")
     args = ap.parse_args()
-    cfg = load_config()
     BUDGET = args.budget
+    cfg = load_config()
 
     if args.list_models:
         list_models(cfg)
         return
 
-    verses, words = fetch_chapter(args.book, args.chapter)
-    res = draft(cfg, verses, words)
-    used, drafted = res if res else ([], [])
+    book, verses = load_kjv(args.book, args.chapter)
+    used, drafted = draft(cfg, verses)
     rounds, revised = [], []
-    if drafted:
-        rounds.append([check(cfg, k, verses, drafted) for k in cfg["checkers"]])
+    if any(v["text"] for v in drafted):
+        rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
         if any(c["issues"] for c in rounds[0]):
             drafted, revised = revise(cfg, drafted, rounds[0])
             if revised:
-                rounds.append([check(cfg, k, verses, drafted) for k in cfg["checkers"]])
-    md = render(args.book, args.chapter, verses, used, drafted, rounds, revised)
+                rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
+    md = render("%s %d" % (book, args.chapter), used, drafted, rounds, revised)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    stem = "%s-%s" % (args.book, args.chapter)
+    stem = "%s-%d" % (args.book, args.chapter)
     (out / (stem + ".md")).write_text(md, encoding="utf-8")
-    (out / (stem + ".json")).write_text(json.dumps(
-        {"book": args.book, "chapter": args.chapter, "source": verses, "drafters": used,
-         "verses": drafted, "revised": revised, "checks": rounds},
-        ensure_ascii=False, indent=2), encoding="utf-8")
+    # same shape as the hand-made pilot files in par/, with the run details alongside
+    (out / ("pilot-%s.json" % stem)).write_text(json.dumps(
+        {"book": book, "chapter": args.chapter, "verses": [v["text"] for v in drafted],
+         "drafters": used, "revised": revised, "checks": rounds}, ensure_ascii=False, indent=2), encoding="utf-8")
     if USAGE:
         save_usage(args.usage)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
