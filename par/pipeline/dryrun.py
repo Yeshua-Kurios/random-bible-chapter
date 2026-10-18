@@ -338,6 +338,7 @@ def render(book, chapter, verses, used, drafted, rounds, revised):
 
 
 def main():
+    global BUDGET
     ap = argparse.ArgumentParser()
     ap.add_argument("--list-models", action="store_true")
     ap.add_argument("--book", default="Ps", help="morphhb file stem, e.g. Ps, Gen")
@@ -347,7 +348,6 @@ def main():
     ap.add_argument("--usage", default=str(HERE.parent / "usage.json"), help="token ledger to update")
     args = ap.parse_args()
     cfg = load_config()
-    global BUDGET
     BUDGET = args.budget
 
     if args.list_models:
