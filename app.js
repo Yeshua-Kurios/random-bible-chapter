@@ -1770,6 +1770,7 @@ function render() {
   els.actionRow.hidden = pending === null;
 
   updateReader(pending);
+  renderKjv27Progress();
   renderQuestions(pending);
   renderLevel(log);
   renderHabit(log, readSet);
@@ -2206,7 +2207,6 @@ function showSettings(open) {
   document.body.classList.toggle("settings-open", open);
   document.getElementById("settings-view").hidden = !open;
   document.getElementById("llm-usage").hidden = true;
-  document.getElementById("kjv27-progress").hidden = true;
   document.getElementById("settings-menu").hidden = false;
   if (open) window.scrollTo(0, 0);
 }
@@ -2263,17 +2263,15 @@ async function openLlmUsage() {
 
 document.getElementById("settings-btn").addEventListener("click", () => showSettings(true));
 document.getElementById("settings-back").addEventListener("click", () => {
-  const sub = !document.getElementById("llm-usage").hidden || !document.getElementById("kjv27-progress").hidden;
+  const sub = !document.getElementById("llm-usage").hidden;
   showSettings(sub);
 });
 document.getElementById("llm-usage-link").addEventListener("click", openLlmUsage);
 
-// Settings > KJV27 Progress: how many of the next queued chapters already have KJV27 text.
+// Homepage KJV27 queue: how many of the next queued chapters already have KJV27 text.
 const KJV27_LOOKAHEAD = 20;
 
-async function openKjv27Progress() {
-  document.getElementById("settings-menu").hidden = true;
-  document.getElementById("kjv27-progress").hidden = false;
+async function renderKjv27Progress() {
   const status = document.getElementById("kjv27-status");
   status.textContent = "Loading…";
   if (!queueOrder) await loadQueue();
@@ -2292,7 +2290,7 @@ async function openKjv27Progress() {
     return done.has(`${bookSlug(book)}-${ch}`);
   };
   const ready = next.filter(hasPar).length;
-  document.getElementById("kjv27-next").textContent = `${ready} of the next ${next.length} chapters have KJV27`;
+  document.getElementById("kjv27-count").textContent = `· ${ready} of next ${next.length} ready`;
   document.getElementById("kjv27-next-fill").style.width = (next.length ? (ready / next.length) * 100 : 0) + "%";
   const list = document.getElementById("kjv27-list");
   list.textContent = "";
@@ -2305,7 +2303,6 @@ async function openKjv27Progress() {
   status.textContent = "";
 }
 
-document.getElementById("kjv27-link").addEventListener("click", openKjv27Progress);
 document.getElementById("usage-budget").addEventListener("change", (e) => {
   const n = Number(e.target.value);
   try {
