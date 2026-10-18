@@ -26,6 +26,9 @@ assert errs("Intending after Easter to bring him forth.", "He planned after East
 # automatic fixes: spelling, curly quotes, Holy Ghost
 t, notes = rules.normalize("filled with the Holy Ghost", "filled with the Holy Ghost and honour’s")
 assert t == "filled with the Holy Spirit and honor's" and len(notes) == 1, (t, notes)
+# we/us/our swaps need a note
+assert rules.check("Christ also suffered for us, leaving us an example", "Christ also suffered for you, leaving you an example")[1]
+assert not rules.check("Christ also suffered for us, leaving us an example", "Christ also suffered for you, leaving you an example", "variant")[1]
 # the gate raises with the reason, and fixes what it can
 src = [(1, "The LORD [is] my shepherd; I shall not want.")]
 try:

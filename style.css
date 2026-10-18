@@ -12,6 +12,17 @@
   --font-body: "Georgia", "Iowan Old Style", serif;
   --font-display: "Playfair Display", Georgia, serif;
   --shadow-card: 0 4px 24px rgba(74, 44, 24, 0.08), 0 1px 2px rgba(74, 44, 24, 0.05);
+  --map-sea: #d7e6ee;
+  --map-land: #f0e8d6;
+  --map-line: #b9a98a;
+  --map-water: #9bbdd0;
+  --k-word: #9a6a00;
+  --k-variant: #b3382c;
+  --k-ane: #2a6f94;
+  --k-archaeology: #2e7d50;
+  --k-extrabiblical: #6a4c93;
+  --k-prophecy: #c25f00;
+  --k-canon: #1f5fa8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,6 +37,17 @@
     --gold: #e0aa2e;
     --gold-bright: #f5cf6e;
     --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+    --map-sea: #1f2f3a;
+    --map-land: #3a342b;
+    --map-line: #6b6150;
+    --map-water: #3f6a85;
+    --k-word: #e0aa2e;
+    --k-variant: #ef7d70;
+    --k-ane: #6db6dc;
+    --k-archaeology: #6fcf97;
+    --k-extrabiblical: #b79be0;
+    --k-prophecy: #f09a4a;
+    --k-canon: #7fb0ec;
   }
 }
 
@@ -1216,3 +1238,194 @@ body.settings-open .subtitle {
   flex: 1;
   font-weight: 600;
 }
+
+/* --- Tap targets, study notes, popover, resume pill, chapter map --- */
+.reader-text .verse-num {
+  display: inline-block;
+  min-width: 2.2em;
+  padding: 0.55em 0.5em;
+  margin: -0.55em -0.25em -0.55em -0.5em;
+  text-align: center;
+  line-height: 1;
+}
+
+.reader-text .verse.flash {
+  background: color-mix(in srgb, var(--gold) 28%, transparent);
+  border-radius: 4px;
+  transition: background 0.6s ease;
+}
+
+.reader-notes-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 8px;
+}
+
+.reader-notes-row button {
+  font-size: 0.8rem;
+}
+
+.notes-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.notes-legend span {
+  border-bottom: 2px dotted var(--k, var(--muted));
+}
+
+.ann {
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 2px dotted var(--k, var(--muted));
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: inherit;
+  line-height: inherit;
+}
+
+.ann:hover,
+.ann:focus-visible {
+  background: color-mix(in srgb, var(--k, var(--gold)) 18%, transparent);
+  outline: none;
+}
+
+.ann-word { --k: var(--k-word); }
+.ann-variant { --k: var(--k-variant); }
+.ann-ane { --k: var(--k-ane); }
+.ann-archaeology { --k: var(--k-archaeology); }
+.ann-extrabiblical { --k: var(--k-extrabiblical); }
+.ann-prophecy { --k: var(--k-prophecy); }
+.ann-canon { --k: var(--k-canon); }
+
+.popover {
+  position: absolute;
+  z-index: 60;
+  max-height: min(70vh, 480px);
+  overflow: auto;
+  padding: 14px 16px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.popover-close {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+
+.note + .note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.note-kind {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--k, var(--muted));
+}
+
+.note-title {
+  display: block;
+  margin: 2px 0 4px;
+  font-family: var(--font-display);
+}
+
+.note p {
+  margin: 0 0 6px;
+}
+
+.note-refs,
+.note-source {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.popover textarea {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.popover .popover-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.resume-pill {
+  position: fixed;
+  right: 14px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+body.has-update-banner .resume-pill {
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+
+.chapter-map {
+  margin: 1.2rem 0 0.6rem;
+}
+
+.map-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-family: var(--font-display);
+}
+
+.map-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--map-sea);
+}
+
+.map-land { fill: var(--map-land); stroke: var(--map-line); }
+.map-lake { fill: var(--map-sea); stroke: var(--map-water); }
+.map-river { fill: none; stroke: var(--map-water); stroke-linecap: round; }
+.map-region { fill: var(--muted); font-style: italic; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; font-family: var(--font-body); }
+.map-anchor { fill: var(--muted); opacity: 0.65; font-family: var(--font-body); }
+.map-pin { cursor: pointer; }
+.map-pin .pin { fill: var(--accent); stroke: var(--card); }
+.map-pin .pin.approx { fill: var(--card); stroke: var(--accent); }
+.map-pin text { fill: var(--text); font-weight: 700; font-family: var(--font-body); paint-order: stroke; stroke: var(--map-land); stroke-linejoin: round; }
+.map-pin:focus-visible { outline: none; }
+.map-pin:focus-visible .pin,
+.map-pin:hover .pin { fill: var(--gold); }

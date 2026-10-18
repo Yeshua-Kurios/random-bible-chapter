@@ -33,7 +33,15 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 1. Fetch main; list the chapters in `par/text/` (and `failed` in `par/progress.json`) that have not been human-polished.
 2. Read each against its KJV (`par/review/<book>-<n>.md`) and `par/STYLE.md`: fix awkward or ungrammatical wording, meaning drift, and any style-guide misses. Keep verse count, order and `#` markers; keep the weighty KJV vocabulary.
 3. Run the deterministic gate from `par/pipeline/dryrun.py` on every edited chapter; log judgment calls in `par/NOTES.md`.
-4. Mention in the PR what was polished, then proceed with the update. Chapters with `fidelity`/`style` = `error` in `par/progress.json` were never LLM-checked, so give those the closest read.
+4. When a chapter is polished, add study notes for it in `par/notes/` where you are confident (see the reader features section), and run `notes_check.py`.
+5. Mention in the PR what was polished, then proceed with the update. Chapters with `fidelity`/`style` = `error` in `par/progress.json` were never LLM-checked, so give those the closest read.
+
+## Reader features added 2026-10-18 (owner's request)
+- Tap a verse number: a small box opens at the verse to type a question and save it to the notebook (saved as KJV or KJV27), so you stay where you are. "Open notebook" jumps to the full notebook.
+- "Back to verse N" pill (bottom right): appears when the verse you were reading is off screen (for example after scrolling to the notebook or map). It also appears on reload with "Resume at verse N". Saved in localStorage (`rbc:spot`). A stray scroll will not overwrite it until you read past it.
+- Study notes: bold words with a dotted underline open a popup. Seven kinds: rare word, textual variant, Ancient Near East, archaeology, outside the Bible, prophecy fulfilled, canonical connection. Data: `par/notes/<book>-<n>.json`, listed in `par/notes/index.json`; validate with `python par/pipeline/notes_check.py` (anchors must exist in the text). `match` lists the phrase to bold, KJV27 wording first, KJV wording second. A toggle hides them. Only the four hand-polished chapters have notes so far. Rules for new notes: short (under 700 characters), name the source, hedge what scholars dispute, and only put under "Prophecy fulfilled" what independent historical records back up. Never invent a source or inscription number; leave it out.
+- Chapter map: an offline SVG at the bottom of each chapter that mentions mapped places; pins for cities and mountains, faint labels for lands, faint anchor cities for orientation, tap a pin for the modern location and verses. `places.js` is the gazetteer (175 entries, 679 of 1,189 chapters have at least one); `python par/pipeline/places_check.py --top 40` validates it and shows coverage. `map-data.js` is generated from public-domain Natural Earth by `par/pipeline/build_map.py` (see its docstring); do not edit it by hand. Hollow pins are approximate or debated sites.
+- Ideas not done: generating study notes automatically for the daily chapters (needs strict sourcing and the owner's review, because invented archaeology or prophecy claims would be worse than none); more places; a larger map for the New Testament voyages.
 
 ## Open decisions (ask the owner)
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
@@ -51,7 +59,7 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvidia/nemotron-3-super-120b-a12b`, slow). Keys: GROQ_API_KEY, GEMINI_API_KEY, NVIDIA_API_KEY. The other providers' keys and `CLOUDFLARE_ACCOUNT_ID` are set but unused. Run `dryrun.py --list-models` to re-check IDs.
 
 ## Gotchas
-- Update prompt: the deploy workflow replaces `__BUILD__` in `index.html` with the commit SHA and writes `version.json`; the app compares them and shows a Reload banner. Keep `__BUILD__` in `index.html` (meta tag and the `?v=` on styles and scripts) and add new scripts with `?v=__BUILD__`. An unstamped copy (local file, or a host that does not run the deploy workflow) simply never prompts.
+- Update prompt: the deploy workflow replaces `__BUILD__` in `index.html` with the commit SHA and writes `version.json`; the app compares them and shows a Reload banner. Keep `__BUILD__` in `index.html` (meta tag and the `?v=` on styles and scripts) and add new scripts with `?v=__BUILD__` (`map-data.js`, `places.js` and `app.js` are loaded that way). An unstamped copy (local file, or a host that does not run the deploy workflow) simply never prompts.
 - The deploy workflow publishes the whole repo folder (`.assetsignore` hides par/pipeline and par/HANDOFF.md): never commit keys.
 - Agreement among free models is evidence, not proof.
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.

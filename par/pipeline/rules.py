@@ -144,6 +144,11 @@ def check(kjv, text, note=None):
     if missing:
         errors.append("numbers dropped or changed: %s" % ", ".join(sorted(set(missing))))
 
+    # we/us/our never change when modernizing; a swap (e.g. "for us" -> "for you") is a different manuscript reading
+    first_plural = re.compile(r"\b(we|us|our|ours|ourselves)\b", re.I)
+    if len(first_plural.findall(plain)) != len(first_plural.findall(t)) and not note:
+        warns.append("we/us/our count differs from the KJV without a note (a different manuscript reading?)")
+
     # size and drift (a correction note excuses drift, but not silence)
     kw, tw = len(_words(plain)), len(_words(t))
     if kw >= 6:

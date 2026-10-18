@@ -1,0 +1,211 @@
+{
+ "chapter": "2-kings-16",
+ "notes": [
+  {
+   "v": 1,
+   "match": [
+    "Ahaz son of Jotham",
+    "Ahaz the son of Jotham"
+   ],
+   "kind": "extrabiblical",
+   "title": "Ahaz in Assyrian records",
+   "text": "An inscription of Tiglath-pileser III lists \"Jehoahaz (Ia-u-ha-zi) of Judah\" among the kings who paid him tribute, about 734 BC. It is the same king, under the longer form of his name.",
+   "refs": [
+    "2 Chronicles 28",
+    "Isaiah 7"
+   ],
+   "source": "Tiglath-pileser III, Summary Inscription 7 (K 3751)"
+  },
+  {
+   "v": 2,
+   "match": [
+    "twenty years old"
+   ],
+   "kind": "variant",
+   "title": "Ahaz's age",
+   "text": "If Ahaz was twenty at his accession and reigned sixteen years, he died at thirty-six, yet 2 Kings 18:2 says his son Hezekiah was twenty-five when he began to reign, so Ahaz would have been about eleven at Hezekiah's birth. Some ancient witnesses (for example some Greek manuscripts and the Syriac) read \"twenty-five\". This is a well-known chronology puzzle.",
+   "refs": [
+    "2 Kings 18:2"
+   ],
+   "source": "textual apparatus; commentaries"
+  },
+  {
+   "v": 3,
+   "match": [
+    "pass through the fire"
+   ],
+   "kind": "archaeology",
+   "title": "Burning children",
+   "text": "Cremated infant remains in urns, buried at sacred precincts called tophets, are well attested at Phoenician and Punic sites such as Carthage. Scholars debate how far these were sacrifices. The Bible says plainly that Judah's kings burned their sons (2 Kings 17:17; 21:6; Jeremiah 7:31). No tophet has been firmly identified in Judah.",
+   "refs": [
+    "2 Kings 21:6",
+    "Jeremiah 7:31"
+   ],
+   "source": "Carthage and Phoenician tophet excavations"
+  },
+  {
+   "v": 4,
+   "match": [
+    "high places"
+   ],
+   "kind": "archaeology",
+   "title": "Shrines of the Judean kingdom",
+   "text": "Cult installations from the Judean monarchy have been found at Tel Arad and Tel Beersheba. At Beersheba a horned altar was found dismantled, its stones reused in a wall. Some link such finds to Hezekiah's reforms (2 Kings 18:4), though dating and interpretation are debated.",
+   "refs": [
+    "2 Kings 18:4"
+   ],
+   "source": "Tel Arad and Tel Beersheba excavations"
+  },
+  {
+   "v": 5,
+   "match": [
+    "Pekah son of Remaliah king of Israel"
+   ],
+   "kind": "extrabiblical",
+   "title": "Rezin and Pekah in Assyrian records",
+   "text": "Tiglath-pileser III names Rezin of Damascus (Ra-hi-a-nu) among his opponents. His inscriptions also say Israel's people \"overthrew their king Pekah\" and that he put Hoshea over them, matching 2 Kings 15:30.",
+   "refs": [
+    "2 Kings 15:30",
+    "Isaiah 7:1"
+   ],
+   "source": "Tiglath-pileser III annals and Summary Inscriptions"
+  },
+  {
+   "v": 6,
+   "match": [
+    "the Edomites",
+    "the Syrians"
+   ],
+   "kind": "variant",
+   "title": "Edomites or Syrians",
+   "text": "The consonants of the Hebrew text give Aram (Syria); the traditional marginal reading (Qere) gives Edom. In Hebrew script the letters resh and dalet look alike. Because Elath lies on the Red Sea, far from Syria, many scholars prefer Edom, and KJV27 follows it.",
+   "refs": [],
+   "source": "Kethib and Qere"
+  },
+  {
+   "v": 6,
+   "match": [
+    "Elath"
+   ],
+   "kind": "archaeology",
+   "title": "Elath",
+   "text": "Elath is the Red Sea port at the head of the Gulf of Aqaba. Tell el-Kheleifeh, long linked to Ezion-geber and Elath, has a fortress with Judean and Edomite phases, though its identification is debated.",
+   "refs": [
+    "1 Kings 9:26"
+   ],
+   "source": "Tell el-Kheleifeh excavations (Glueck)"
+  },
+  {
+   "v": 7,
+   "match": [
+    "I am your servant and your son",
+    "I am thy servant and thy son"
+   ],
+   "kind": "ane",
+   "title": "Vassal language",
+   "text": "\"Servant\" and \"son\" are standard Near Eastern vassal terms. In the Amarna letters (about 1350 BC), Canaanite rulers call the Egyptian king \"my lord\" and themselves his servants. Ahaz is placing himself under Assyria's authority, against Isaiah's advice (Isaiah 7:4-9).",
+   "refs": [
+    "Isaiah 7:4-9"
+   ],
+   "source": "Amarna letters; Assyrian vassal treaties"
+  },
+  {
+   "v": 9,
+   "match": [
+    "carried its people into exile to Kir",
+    "carried [the people of] it captive to Kir",
+    "carried the people of it captive to Kir"
+   ],
+   "kind": "prophecy",
+   "title": "Amos 1:5",
+   "text": "Amos announced that \"the people of Aram shall go into exile to Kir\" (Amos 1:5), and Isaiah that Damascus would be plundered by the king of Assyria (Isaiah 8:4). Assyrian records confirm that Tiglath-pileser III conquered Damascus and deported people in 733-732 BC. The location of Kir is unknown.",
+   "refs": [
+    "Amos 1:5",
+    "Isaiah 8:4",
+    "Isaiah 17:1"
+   ],
+   "source": "Tiglath-pileser III annals; 2 Kings 16:9"
+  },
+  {
+   "v": 10,
+   "match": [
+    "Urijah the priest"
+   ],
+   "kind": "canon",
+   "title": "Isaiah's witness",
+   "text": "Isaiah 8:2 names \"Uriah the priest\" as a reliable witness for Isaiah's prophecy against Damascus and Samaria, in the same years. It is probably the same man.",
+   "refs": [
+    "Isaiah 8:2"
+   ],
+   "source": ""
+  },
+  {
+   "v": 13,
+   "match": [
+    "grain offering",
+    "meat offering"
+   ],
+   "kind": "word",
+   "title": "minchah",
+   "text": "Hebrew minchah is an offering of grain or flour, not of meat. The KJV \"meat\" meant food in 1611.",
+   "refs": [
+    "Leviticus 2"
+   ],
+   "source": ""
+  },
+  {
+   "v": 17,
+   "match": [
+    "the Sea"
+   ],
+   "kind": "canon",
+   "title": "The bronze Sea",
+   "text": "Solomon's huge bronze water basin rested on twelve bronze oxen (1 Kings 7:23-26). Mesopotamian temples also had large ritual water basins (the apsu). Ahaz removes it to pay or please Assyria. The Babylonians later broke it up (2 Kings 25:13).",
+   "refs": [
+    "1 Kings 7:23-26",
+    "2 Kings 25:13"
+   ],
+   "source": ""
+  },
+  {
+   "v": 18,
+   "match": [
+    "covered walkway",
+    "covert for the sabbath"
+   ],
+   "kind": "word",
+   "title": "A rare word",
+   "text": "The Hebrew word (written musak, read mesak) occurs only here in the Bible. Its meaning is uncertain: translators guess a covered walkway, a throne canopy, or a Sabbath platform.",
+   "refs": [],
+   "source": "Hebrew lexica (HALOT)"
+  },
+  {
+   "v": 19,
+   "match": [
+    "Book of the Annals of the Kings of Judah",
+    "book of the chronicles of the kings of Judah"
+   ],
+   "kind": "canon",
+   "title": "Lost royal annals",
+   "text": "The writer of Kings repeatedly cites royal annals for Judah and Israel (1 Kings 14:19, 29). They are lost. Mesopotamian kings kept similar court chronicles, such as the Babylonian Chronicles that mention Judah's kings.",
+   "refs": [
+    "1 Kings 14:29",
+    "2 Chronicles 28:26"
+   ],
+   "source": ""
+  },
+  {
+   "v": 20,
+   "match": [
+    "Hezekiah his son"
+   ],
+   "kind": "archaeology",
+   "title": "Hezekiah's seal",
+   "text": "A clay seal impression found in Eilat Mazar's 2009 excavation on the Ophel in Jerusalem reads \"Belonging to Hezekiah [son of] Ahaz king of Judah\". It is the first royal seal impression of a Judean king found in a controlled dig.",
+   "refs": [
+    "2 Kings 18:1"
+   ],
+   "source": "Ophel excavations, E. Mazar (published 2015)"
+  }
+ ]
+}
