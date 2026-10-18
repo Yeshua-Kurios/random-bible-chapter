@@ -1184,3 +1184,10 @@ body.settings-open .subtitle {
 .reader-version-row button {
   font-size: 0.8rem;
 }
+
+.kjv27-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  columns: 2;
+}

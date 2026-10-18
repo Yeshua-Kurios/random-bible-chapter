@@ -1770,6 +1770,7 @@ function render() {
   els.actionRow.hidden = pending === null;
 
   updateReader(pending);
+  renderKjv27Progress();
   renderQuestions(pending);
   renderLevel(log);
   renderHabit(log, readSet);
@@ -2263,9 +2264,45 @@ async function openLlmUsage() {
 document.getElementById("settings-btn").addEventListener("click", () => showSettings(true));
 document.getElementById("settings-back").addEventListener("click", () => {
   const sub = !document.getElementById("llm-usage").hidden;
-  showSettings(!sub ? false : true);
+  showSettings(sub);
 });
 document.getElementById("llm-usage-link").addEventListener("click", openLlmUsage);
+
+// Homepage KJV27 queue: how many of the next queued chapters already have KJV27 text.
+const KJV27_LOOKAHEAD = 20;
+
+async function renderKjv27Progress() {
+  const status = document.getElementById("kjv27-status");
+  status.textContent = "Loading…";
+  if (!queueOrder) await loadQueue();
+  const done = await loadParProgress();
+  if (!queueOrder) {
+    status.textContent = "Couldn't load par/queue.json.";
+    return;
+  }
+  const readSet = readKeysSet(loadReadLog());
+  const skipped = loadSkipped();
+  const unread = queueOrder.filter((k) => !readSet.has(k));
+  // The same order the app hands chapters out: skipped ones go to the back of the line.
+  const next = [...unread.filter((k) => !skipped.has(k)), ...unread.filter((k) => skipped.has(k))].slice(0, KJV27_LOOKAHEAD);
+  const hasPar = (k) => {
+    const [book, ch] = splitKey(k);
+    return done.has(`${bookSlug(book)}-${ch}`);
+  };
+  const ready = next.filter(hasPar).length;
+  document.getElementById("kjv27-count").textContent = `· ${ready} of next ${next.length} ready`;
+  document.getElementById("kjv27-next-fill").style.width = (next.length ? (ready / next.length) * 100 : 0) + "%";
+  const list = document.getElementById("kjv27-list");
+  list.textContent = "";
+  next.forEach((k, i) => {
+    const li = document.createElement("li");
+    li.textContent = `${hasPar(k) ? "✓" : "–"} ${i + 1}. ${k}`;
+    list.appendChild(li);
+  });
+  document.getElementById("kjv27-all").textContent = `${done.size.toLocaleString()} of ${queueOrder.length.toLocaleString()} chapters have KJV27 in all.`;
+  status.textContent = "";
+}
+
 document.getElementById("usage-budget").addEventListener("change", (e) => {
   const n = Number(e.target.value);
   try {
