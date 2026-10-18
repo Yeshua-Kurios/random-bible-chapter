@@ -2311,6 +2311,46 @@ document.getElementById("usage-budget").addEventListener("change", (e) => {
   openLlmUsage();
 });
 
+// --- New-version prompt. The deploy workflow stamps the commit into the page (<meta name="build">,
+// and ?v= on the scripts) and writes the same value to version.json. If version.json ever differs
+// from the build this page was loaded with, offer a reload. Unstamped copies (local files) skip it.
+const RUNNING_BUILD = document.querySelector('meta[name="build"]')?.content || "";
+let dismissedBuild = null;
+
+async function checkForUpdate() {
+  if (!RUNNING_BUILD || RUNNING_BUILD.startsWith("__")) return;
+  try {
+    const res = await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return;
+    const { build } = await res.json();
+    if (build && build !== RUNNING_BUILD && build !== dismissedBuild) {
+      document.getElementById("update-banner").dataset.build = build;
+      document.getElementById("update-banner").hidden = false;
+    }
+  } catch {
+    // offline: try again next time
+  }
+}
+
+document.getElementById("update-reload").addEventListener("click", async () => {
+  try {
+    await fetch(location.pathname, { cache: "reload" }); // refresh the cached page so the reload gets the new scripts
+  } catch {
+    // reload anyway
+  }
+  location.reload();
+});
+document.getElementById("update-later").addEventListener("click", () => {
+  const banner = document.getElementById("update-banner");
+  dismissedBuild = banner.dataset.build || null;
+  banner.hidden = true;
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") checkForUpdate();
+});
+setInterval(checkForUpdate, 10 * 60 * 1000);
+setTimeout(checkForUpdate, 3000);
+
 loadQueue();
 render();
 checkCloudOnLoad();

@@ -51,6 +51,7 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvidia/nemotron-3-super-120b-a12b`, slow). Keys: GROQ_API_KEY, GEMINI_API_KEY, NVIDIA_API_KEY. The other providers' keys and `CLOUDFLARE_ACCOUNT_ID` are set but unused. Run `dryrun.py --list-models` to re-check IDs.
 
 ## Gotchas
+- Update prompt: the deploy workflow replaces `__BUILD__` in `index.html` with the commit SHA and writes `version.json`; the app compares them and shows a Reload banner. Keep `__BUILD__` in `index.html` (meta tag and the `?v=` on styles and scripts) and add new scripts with `?v=__BUILD__`. An unstamped copy (local file, or a host that does not run the deploy workflow) simply never prompts.
 - The deploy workflow publishes the whole repo folder (`.assetsignore` hides par/pipeline and par/HANDOFF.md): never commit keys.
 - Agreement among free models is evidence, not proof.
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.
