@@ -25,6 +25,9 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GH_TOKEN: ${{ github.token }}
+      # Optional: lets the run skip chapters you have already read. Unset = start at the head of the queue.
+      READING_LOG_TOKEN: ${{ secrets.READING_LOG_TOKEN }}
+      READING_LOG_URL: https://api.github.com/repos/yeshuakurios/ai-bible-commentary/contents/reading-log.json
     steps:
       - name: Is it time?
         id: when

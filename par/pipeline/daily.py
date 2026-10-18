@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Daily PAR run: take the next chapters in canonical order, modernize them, and record the results.
+"""Daily PAR run: take the next chapters in the app's random order (par/queue.json), modernize them, and record the results.
 
 Writes, for each chapter that drafts completely:
   par/text/<book>-<n>.json    the verses the app shows (only exists once the chapter is in the repo)
@@ -33,6 +33,46 @@ def canon():
     return [(slug(b), c) for b, n in re.findall(r'\["([^"]+)",\s*(\d+)\]', js) for c in range(1, int(n) + 1)]
 
 
+def key_to_chapter(key):
+    """'1 John 2' (the app's key) -> ('1-john', 2)."""
+    book, _, ch = key.rpartition(" ")
+    return slug(book), int(ch)
+
+
+def queue_order():
+    """The chapters in the order the app will hand them out (par/queue.json); canonical order if it is missing."""
+    try:
+        order = json.loads((PAR / "queue.json").read_text(encoding="utf-8"))["order"]
+        return [key_to_chapter(k) for k in order]
+    except (OSError, ValueError, KeyError):
+        d.log("par/queue.json not readable; using canonical order")
+        return canon()
+
+
+def already_read():
+    """Chapters you have read, from the app's synced reading log, so the run starts at what is still unread.
+
+    Optional: needs READING_LOG_TOKEN (a read-only token for the private repo the app syncs to) and
+    READING_LOG_URL (its contents API URL for reading-log.json). Without them the run starts at the head of the queue.
+    """
+    import os
+    import urllib.request
+    token, url = os.environ.get("READING_LOG_TOKEN"), os.environ.get("READING_LOG_URL")
+    if not token or not url:
+        return set()
+    try:
+        req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token,
+                                                   "Accept": "application/vnd.github.raw+json", "User-Agent": "par-daily"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            entries = json.load(r)
+        read = {key_to_chapter(e["k"]) for e in entries if isinstance(e, dict) and isinstance(e.get("k"), str)}
+        d.log("reading log: %d chapters already read" % len(read))
+        return read
+    except Exception as e:  # never let an unreachable log stop the run
+        d.log("could not read the reading log (%s); starting at the head of the queue" % str(e)[:120])
+        return set()
+
+
 def load_progress():
     try:
         return json.loads((PAR / "progress.json").read_text(encoding="utf-8"))
@@ -57,7 +97,9 @@ def main():
     done, failed = progress["chapters"], progress.setdefault("failed", {})
     today = datetime.date.today().isoformat()
 
-    queue = [(s, c) for s, c in canon() if "%s-%d" % (s, c) not in done and failed.get("%s-%d" % (s, c), 0) < MAX_FAILURES]
+    read = already_read()
+    queue = [(s, c) for s, c in queue_order()
+             if (s, c) not in read and "%s-%d" % (s, c) not in done and failed.get("%s-%d" % (s, c), 0) < MAX_FAILURES]
     drafted, notes, failures = [], [], 0
     for s, c in queue:
         if len(drafted) >= args.count:

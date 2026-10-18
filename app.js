@@ -601,6 +601,58 @@ function pickRandomUnread(readSet, excludeKey) {
   return unread[secureRandomInt(unread.length)];
 }
 
+// --- The shared random order. par/queue.json is one fixed shuffle of every chapter;
+// the app hands out the next unread chapter in it, and the PAR pipeline modernizes
+// chapters in the same order, so modernized text is ready for what you read next.
+// Skipping sends a chapter to the back of the line. After a first full read-through
+// (or if the file can't be loaded) it's the old behaviour: a random unread chapter.
+
+const SKIPPED_KEY = "rbc:skipped";
+let queueOrder = null;
+
+async function loadQueue() {
+  try {
+    const res = await fetch("par/queue.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const order = (await res.json()).order;
+    const valid = new Set(allChapterKeys());
+    if (Array.isArray(order) && order.length === valid.size && order.every((k) => valid.has(k))) queueOrder = order;
+  } catch {
+    // no queue: random unread chapters, as before
+  }
+}
+
+function loadSkipped() {
+  try {
+    const list = JSON.parse(localStorage.getItem(SKIPPED_KEY) || "[]");
+    return new Set(Array.isArray(list) ? list : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSkipped(set) {
+  try {
+    localStorage.setItem(SKIPPED_KEY, JSON.stringify([...set]));
+  } catch {
+    // skipped chapters just come back sooner
+  }
+}
+
+function pickNextChapter(readSet, excludeKey) {
+  if (queueOrder && loadLifetime().completions.length === 0) {
+    const skipped = loadSkipped();
+    const first = (skip) => queueOrder.find((k) => !readSet.has(k) && !skip.has(k) && k !== excludeKey);
+    let key = first(skipped);
+    if (!key && skipped.size) {
+      saveSkipped(new Set()); // every unread chapter has been skipped once: start the line again
+      key = first(new Set());
+    }
+    if (key) return key;
+  }
+  return pickRandomUnread(readSet, excludeKey);
+}
+
 function computeBookCounts(readSet) {
   const counts = new Map();
   for (const key of readSet) {
@@ -1704,7 +1756,7 @@ function render() {
   // chapter queued up — without this, the Get button would stay hidden
   // (since `started` is true) with no way left to fetch a new chapter.
   if (pending === null && readSet.size > 0) {
-    pending = pickRandomUnread(readSet);
+    pending = pickNextChapter(readSet);
     savePending(pending);
   }
 
@@ -1974,7 +2026,7 @@ function renderBookMap(readSet) {
 
 function handleGet() {
   const readSet = readKeysSet(loadReadLog());
-  savePending(pickRandomUnread(readSet));
+  savePending(pickNextChapter(readSet));
   render();
 }
 
@@ -2021,7 +2073,7 @@ function handleMark() {
     return;
   }
 
-  savePending(pickRandomUnread(newReadSet));
+  savePending(pickNextChapter(newReadSet));
   const newLevel = levelForXp(computeLifetimeXp(log, achievements));
   render();
   showToasts(newBadges);
@@ -2033,7 +2085,12 @@ function handleMark() {
 function handleSkip() {
   const pending = loadPending();
   const readSet = readKeysSet(loadReadLog());
-  savePending(pickRandomUnread(readSet, pending));
+  if (pending) {
+    const skipped = loadSkipped();
+    skipped.add(pending);
+    saveSkipped(skipped);
+  }
+  savePending(pickNextChapter(readSet, pending));
   render();
 }
 
@@ -2048,6 +2105,7 @@ function handleReset() {
   localStorage.removeItem(ACHIEVEMENTS_KEY);
   localStorage.removeItem(LIFETIME_KEY);
   localStorage.removeItem(FREEZES_KEY);
+  localStorage.removeItem(SKIPPED_KEY);
   localStorage.removeItem(TRIVIA_KEY);
   localStorage.removeItem(QUESTIONS_KEY);
   triviaSession = null;
@@ -2216,5 +2274,6 @@ document.getElementById("usage-budget").addEventListener("change", (e) => {
   openLlmUsage();
 });
 
+loadQueue();
 render();
 checkCloudOnLoad();
