@@ -20,6 +20,8 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import rules  # deterministic checks and fixes (par/pipeline/rules.py)
 ROOT = HERE.parent.parent
 CHUNK = 12  # verses per model call
 
@@ -34,7 +36,7 @@ DRAFT_SYSTEM = (
 REVISE_SYSTEM = (
     "You revise modern-English KJV verses according to the style guide below. For each verse you get the KJV, "
     "the current modernization and reviewers' issues. Fix what the issues describe and change nothing else. "
-    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>"}]} for the listed verses only.'
+    'Reply with JSON only: {"verses":[{"n":<verse number>,"text":"<modernized verse>","note":"<one line, only if you corrected the KJV rendering>"}]} for the listed verses only.'
     "\n\nSTYLE GUIDE\n%s"
 )
 CHECK_FOCUS = {
@@ -46,11 +48,6 @@ CHECK_SYSTEM = (
     "Report only real problems."
     "\n\nSTYLE GUIDE\n%s"
 )
-ARCHAIC = re.compile(r"\b(thee|thou|thy|thine|thyself|ye|hath|hast|doth|dost|didst|shalt|wilt|wast|wert|saith|unto|verily|lest|wherefore|whoso|whosoever|yea|nay|behold|begat|brethren|spake|hearken|peradventure|whence|whither|thence|hither|thither|howbeit|forasmuch)\b", re.I)
-ETH = re.compile(r"\b[a-z]{3,}eth\b")  # lowercase only, so names like Elizabeth pass
-ETH_OK = {"teeth", "beneath", "nineteenth", "sixteenth", "seventeenth", "eighteenth"}  # -est verbs are left to the style checker
-
-
 def style_guide():
     return (ROOT / "par" / "STYLE.md").read_text(encoding="utf-8")
 
@@ -206,20 +203,21 @@ def kjv_block(verses):
 
 
 def gate(src, out):
-    """Deterministic checks on one chunk: same verses in order, paragraph markers kept, no archaic forms."""
+    """Deterministic checks on one chunk (par/pipeline/rules.py). Safe fixes are applied; errors raise so the drafter is told why.
+    Returns the verses with `text` normalized, `note` completed with automatic corrections, and `warn` for the reviewer."""
     got = [int(v["n"]) for v in out["verses"]]
     if got != [n for n, _ in src]:
         raise ValueError("verse numbers %s do not match the KJV" % got)
+    problems = []
     for (n, kjv), v in zip(src, out["verses"]):
-        text = str(v["text"])
-        if kjv.lstrip().startswith("#") != text.lstrip().startswith("#"):
-            raise ValueError("verse %d: paragraph marker not kept" % n)
-        if "[" in text or "]" in text:
-            raise ValueError("verse %d: bracketed words left in" % n)
-        bad = [m.group(0) for m in ARCHAIC.finditer(text)]
-        bad += [w for w in ETH.findall(text) if w not in ETH_OK]
-        if bad:
-            raise ValueError("verse %d still has archaic forms: %s" % (n, sorted(set(bad))))
+        text, auto = rules.normalize(kjv, str(v["text"]))
+        note = " ".join(x for x in [str(v.get("note") or "").strip()] + auto if x) or None
+        errors, warns = rules.check(kjv, text, note)
+        if errors:
+            problems.append("verse %d: %s" % (n, "; ".join(errors)))
+        v["text"], v["note"], v["warn"] = text, note, warns
+    if problems:
+        raise ValueError(" | ".join(problems))
     return out["verses"]
 
 
@@ -247,7 +245,7 @@ def draft(cfg, verses):
                 except Exception as e:
                     log("drafter %s failed on verses %d-%d: %s" % (name, part[0][0], part[-1][0], str(e)[:300]))
                     break
-                done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": str(v["text"]).strip(), "note": str(v.get("note") or "").strip() or None} for v in out]
+                done += [{"n": int(v["n"]), "kjv": dict(part)[int(v["n"])], "text": v["text"], "note": v["note"], "warn": v["warn"]} for v in out]
                 used.add("%s (%s)" % (name, prov[2]))
                 ok = True
                 break
@@ -290,6 +288,9 @@ def revise(cfg, drafted, checks):
                 issues.setdefault(int(i.get("verse")), []).append("%s: %s -> %s" % (c["checker"], i.get("problem"), i.get("suggestion")))
             except (TypeError, ValueError):
                 pass
+    for v in drafted:  # the free deterministic warnings ride along with the reviewer's issues
+        for w in v.get("warn") or []:
+            issues.setdefault(v["n"], []).append("rules: %s" % w)
     flagged = [v for v in drafted if v["text"] and v["n"] in issues]
     if not flagged:
         return drafted, []
@@ -303,8 +304,9 @@ def revise(cfg, drafted, checks):
         try:
             out = parse_json(chat(name, prov, system, user))
             got = gate([(v["n"], v["kjv"]) for v in flagged], out)
-            new = {int(v["n"]): str(v["text"]).strip() for v in got}
-            return [dict(v, text=new.get(v["n"], v["text"]), first=v["text"] if v["n"] in new else None) for v in drafted], sorted(new)
+            new = {int(v["n"]): v for v in got}
+            return [dict(v, text=new[v["n"]]["text"], note=new[v["n"]]["note"] or v.get("note"), warn=new[v["n"]]["warn"],
+                         first=v["text"]) if v["n"] in new else v for v in drafted], sorted(new)
         except Exception as e:
             log("reviser %s failed: %s" % (name, str(e)[:300]))
     return drafted, []
@@ -319,6 +321,8 @@ def render(title, used, drafted, rounds, revised):
             t += " _(correction: %s)_" % v["note"]
         if v.get("first"):
             t += " _(revised; first draft: %s)_" % v["first"]
+        if v.get("warn"):
+            t += " _(check: %s)_" % "; ".join(v["warn"])
         lines.append("| %s | %s | %s |" % (v["n"], v["kjv"], t))
     for k, checks in enumerate(rounds, 1):
         lines += ["", "## Checks, round %d%s" % (k, "" if k == 1 else " (after revising verses %s)" % ", ".join(map(str, revised))), ""]
@@ -338,7 +342,7 @@ def run_chapter(cfg, slug, chapter):
     rounds, revised = [], []
     if any(v["text"] for v in drafted):
         rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
-        if any(c["issues"] for c in rounds[0]):
+        if any(c["issues"] for c in rounds[0]) or any(v.get("warn") for v in drafted):
             drafted, revised = revise(cfg, drafted, rounds[0])
             if revised:
                 rounds.append([check(cfg, k, drafted, set(revised)) for k in cfg["checkers"]])  # re-check only what changed
