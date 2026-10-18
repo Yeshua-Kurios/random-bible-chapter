@@ -1,0 +1,32 @@
+{
+  "_comment": "Model names change often; edit here. Each entry is called through an OpenAI-compatible chat/completions endpoint. A provider is skipped if its key env var is not set.",
+  "drafter": {
+    "name": "drafter",
+    "base_url": "https://openrouter.ai/api/v1",
+    "key_env": "OPENROUTER_API_KEY",
+    "model": "meta-llama/llama-3.3-70b-instruct:free"
+  },
+  "checkers": [
+    {
+      "name": "lexical",
+      "role": "Check each Hebrew word against the English: is every word rendered, and is each rendering a defensible meaning of that Hebrew word?",
+      "base_url": "https://api.groq.com/openai/v1",
+      "key_env": "GROQ_API_KEY",
+      "model": "llama-3.3-70b-versatile"
+    },
+    {
+      "name": "meaning",
+      "role": "Check meaning and completeness: is anything added, dropped, or shifted in sense compared with the Hebrew? Flag theologically loaded word choices.",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "key_env": "GEMINI_API_KEY",
+      "model": "gemini-2.0-flash"
+    },
+    {
+      "name": "style",
+      "role": "Check against the PAR style guide: modern English, no thee/thou or -eth forms, KJV rhythm kept, protected words unchanged, no paraphrase.",
+      "base_url": "https://openrouter.ai/api/v1",
+      "key_env": "OPENROUTER_API_KEY",
+      "model": "deepseek/deepseek-chat-v3-0324:free"
+    }
+  ]
+}
