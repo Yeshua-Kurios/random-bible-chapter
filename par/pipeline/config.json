@@ -55,5 +55,8 @@
   "checkers": {
     "fidelity": "gemini",
     "style": "groq"
-  }
+  },
+  "checker_fallbacks": [
+    "nvidia"
+  ]
 }

@@ -1176,3 +1176,11 @@ body.settings-open .subtitle {
   padding: 0;
   margin: 12px 0 0;
 }
+
+.reader-version-row {
+  margin: 4px 0 8px;
+}
+
+.reader-version-row button {
+  font-size: 0.8rem;
+}

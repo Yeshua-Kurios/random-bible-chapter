@@ -90,6 +90,8 @@ const els = {
   triviaEnd: document.getElementById("trivia-end"),
   readerDetails: document.getElementById("reader"),
   readerSummary: document.getElementById("reader-summary"),
+  readerVersionRow: document.getElementById("reader-version-row"),
+  readerVersionBtn: document.getElementById("reader-version-btn"),
   readerText: document.getElementById("reader-text"),
   readerMarkRow: document.getElementById("reader-mark-row"),
   markBtn2: document.getElementById("mark-btn-2"),
@@ -1214,6 +1216,51 @@ async function kjvChapterVerses(book, chapter) {
   return verses;
 }
 
+// --- PAR (a light modernization of the KJV, drafted by the pipeline in par/).
+// par/progress.json lists the chapters that have PAR text on main; every other
+// chapter is simply shown in the KJV. A reader can flip a chapter back to the KJV.
+
+const READER_VERSION_KEY = "rbc:readerVersion";
+let parProgress = null; // Promise of the set of chapter keys that have PAR text
+
+function loadParProgress() {
+  if (!parProgress) {
+    parProgress = fetch("par/progress.json", { cache: "no-cache" })
+      .then((res) => (res.ok ? res.json() : { chapters: {} }))
+      .then((data) => new Set(Object.keys(data.chapters || {})))
+      .catch(() => new Set()); // offline or missing: KJV everywhere
+  }
+  return parProgress;
+}
+
+function preferredVersion() {
+  try {
+    return localStorage.getItem(READER_VERSION_KEY) === "kjv" ? "kjv" : "par";
+  } catch {
+    return "par";
+  }
+}
+
+// Resolves to {version: "par"|"kjv", verses, parAvailable}. PAR is used only when the
+// chapter has it and the reader hasn't chosen the KJV; any problem falls back to the KJV.
+async function chapterText(book, chapter) {
+  const key = `${bookSlug(book)}-${chapter}`;
+  let hasPar = (await loadParProgress()).has(key);
+  if (hasPar && preferredVersion() === "par") {
+    try {
+      const res = await fetch(`par/text/${key}.json`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      if (Array.isArray(data.verses) && data.verses.length && data.verses.every((v) => typeof v === "string")) {
+        return { version: "par", verses: data.verses, parAvailable: true };
+      }
+    } catch {
+      hasPar = false; // listed but unreadable: show the KJV and no toggle
+    }
+  }
+  return { version: "kjv", verses: await kjvChapterVerses(book, chapter), parAvailable: hasPar };
+}
+
 // Appends text to `parent`, rendering [bracketed] words in italics.
 function appendWithItalics(parent, text) {
   for (const part of text.split(/(\[[^\]]*\])/)) {
@@ -1254,15 +1301,17 @@ async function renderReader(pending) {
     return;
   }
   els.readerSummary.textContent = `${pending} · KJV`;
+  els.readerVersionRow.hidden = true;
   const status = document.createElement("p");
   status.className = "reader-status";
   status.textContent = "Loading…";
   els.readerText.appendChild(status);
 
   const [book, chapter] = splitKey(pending);
-  let verses;
+  let verses, text;
   try {
-    verses = await kjvChapterVerses(book, chapter);
+    text = await chapterText(book, chapter);
+    verses = text.verses;
   } catch {
     if (token !== readerToken) return;
     readerKey = undefined; // let the next render try again
@@ -1272,6 +1321,19 @@ async function renderReader(pending) {
     return;
   }
   if (token !== readerToken) return; // a different chapter was requested meanwhile
+
+  els.readerSummary.textContent = `${pending} · ${text.version === "par" ? "PAR (modernized KJV)" : "KJV"}`;
+  els.readerVersionRow.hidden = !text.parAvailable;
+  els.readerVersionBtn.textContent = text.version === "par" ? "Show the KJV" : "Show the modernized text";
+  els.readerVersionBtn.onclick = () => {
+    try {
+      localStorage.setItem(READER_VERSION_KEY, text.version === "par" ? "kjv" : "par");
+    } catch {
+      // the choice just won't be remembered
+    }
+    readerKey = undefined;
+    updateReader(loadPending());
+  };
 
   els.readerText.textContent = "";
   let para = null;

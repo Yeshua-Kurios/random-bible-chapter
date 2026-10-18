@@ -20,14 +20,20 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 - Judgment calls go in `par/NOTES.md`. A person reviews before anything is published.
 - One chapter per file (a very large write was content-filtered once). Split Psalm 119.
 
+## Decided (2026-10-18)
+- Daily job: 5 chapters a day at 5 am US Eastern, canonical order (Genesis to Revelation), as a GitHub Actions workflow (`par-daily.yml`) that opens one PR per day. A GitHub Actions run, not a Claude session, because the free-model keys are org secrets that only Actions can see. About 238 days for 1,189 chapters.
+- Review: the person reviews each day's PR (KJV beside PAR in `par/review/`). Merging is the approval.
+- App: the reader shows PAR for chapters listed in `par/progress.json` and the KJV for all others, with a per-reader toggle back to the KJV (remembered in the browser).
+
 ## Open decisions (ask the owner)
-1. Daily job: about 5 chapters/day (1,189 chapters, about 238 days), one fresh session per run, draft PR each day. Chapter order and run time.
-2. Where the modernized text shows up in the app (a toggle next to the KJV reader, in a separate PR).
-3. How the person reviews: PR review per chapter, or a batch.
+1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
+2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
 
 ## State
 - Pilot: `par/pilot-{genesis-1,psalms-23,isaiah-53,john-3,romans-8}.json` plus `par/STYLE.md` and `par/NOTES.md`, copied from the par-pilot branch (PR #19).
-- Pipeline: `par/pipeline/{config.json,dryrun.py}` and `.github/workflows/par-dryrun.yml` (one job per chapter, Psalm 23 and John 3).
+- Pipeline: `par/pipeline/{config.json,dryrun.py,daily.py}`. `dryrun.py` modernizes one chapter; `daily.py` picks the next chapters from `data.js` order, writes `par/text/<book>-<n>.json` (what the app reads), `par/review/<book>-<n>.md` and `par/progress.json`.
+- Workflows: `par-dryrun.yml` (manual test, one job per chapter) and `par-daily.yml` (the schedule). Scheduled workflows only run from the default branch, so the daily job starts once this is merged to main. It runs at 09:00 and 10:00 UTC and lets through only the run that lands in 5-6 am Eastern, once per day. The PR step needs Actions to be allowed to create pull requests (repo or org setting); if not, it pushes the branch and warns.
+- A run stops after 3 failed chapters (a provider outage), so an outage cannot burn through the queue.
 - App: Settings > LLM Usage shows the token meter; the ledger is `par/usage.json`, updated by `dryrun.py`.
 - No model-drafted chapter has been accepted yet.
 
@@ -40,6 +46,6 @@ Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvi
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.
 
 ## TODO
-1. Run the workflow on Psalm 23 and John 3, compare to the hand-made pilots, tune STYLE.md and the prompts.
-2. Decide the daily job (open decision 1) and add `par/PROGRESS.json`.
-3. App toggle for the modernized text, in a separate PR.
+1. Merge to main, then run `PAR daily` once by hand (Actions > PAR daily > Run workflow) and check the PR it opens.
+2. Compare the first batches to the hand-made pilots and tune STYLE.md and the prompts.
+3. Decide the open items above.

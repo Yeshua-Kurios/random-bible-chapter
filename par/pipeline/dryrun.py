@@ -250,18 +250,25 @@ def draft(cfg, verses):
 
 
 def check(cfg, kind, drafted):
-    name = cfg["checkers"][kind]
-    prov = provider(cfg, name)
-    if not prov:
-        return {"checker": kind, "provider": name, "verdict": "skipped", "issues": []}
+    """Run one checker; on an error or unparseable reply fall back to cfg["checker_fallbacks"] in order."""
     rows = [v for v in drafted if v["text"]]
     user = "\n\n".join("Verse %d\nKJV: %s\nModern: %s" % (v["n"], v["kjv"], v["text"]) for v in rows)
-    try:
-        out = parse_json(chat(name, prov, CHECK_SYSTEM % (CHECK_FOCUS[kind], style_guide()), user))
-        return {"checker": kind, "provider": name, "model": prov[2],
-                "verdict": out.get("verdict", "unknown"), "issues": out.get("issues", [])}
-    except Exception as e:
-        return {"checker": kind, "provider": name, "verdict": "error", "issues": [], "error": str(e)[:200]}
+    names = [cfg["checkers"][kind]] + [n for n in cfg.get("checker_fallbacks", []) if n != cfg["checkers"][kind]]
+    err = None
+    for name in names:
+        prov = provider(cfg, name)
+        if not prov:
+            continue
+        try:
+            out = parse_json(chat(name, prov, CHECK_SYSTEM % (CHECK_FOCUS[kind], style_guide()), user))
+            return {"checker": kind, "provider": name, "model": prov[2],
+                    "verdict": out.get("verdict", "unknown"), "issues": out.get("issues", [])}
+        except Exception as e:
+            err = "%s: %s" % (name, str(e)[:160])
+            log("checker %s failed: %s" % (kind, err))
+    if err is None:
+        return {"checker": kind, "provider": cfg["checkers"][kind], "verdict": "skipped", "issues": []}
+    return {"checker": kind, "provider": cfg["checkers"][kind], "verdict": "error", "issues": [], "error": err}
 
 
 def revise(cfg, drafted, checks):
@@ -312,6 +319,22 @@ def render(title, used, drafted, rounds, revised):
     return "\n".join(lines) + "\n"
 
 
+def run_chapter(cfg, slug, chapter):
+    """Modernize, check, revise once and re-check one chapter. Returns a result dict."""
+    book, verses = load_kjv(slug, chapter)
+    used, drafted = draft(cfg, verses)
+    rounds, revised = [], []
+    if any(v["text"] for v in drafted):
+        rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
+        if any(c["issues"] for c in rounds[0]):
+            drafted, revised = revise(cfg, drafted, rounds[0])
+            if revised:
+                rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
+    return {"book": book, "slug": slug, "chapter": chapter, "drafters": used, "verses": drafted,
+            "rounds": rounds, "revised": revised, "complete": all(v["text"] for v in drafted),
+            "md": render("%s %d" % (book, chapter), used, drafted, rounds, revised)}
+
+
 def main():
     global BUDGET
     ap = argparse.ArgumentParser()
@@ -329,32 +352,23 @@ def main():
         list_models(cfg)
         return
 
-    book, verses = load_kjv(args.book, args.chapter)
-    used, drafted = draft(cfg, verses)
-    rounds, revised = [], []
-    if any(v["text"] for v in drafted):
-        rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
-        if any(c["issues"] for c in rounds[0]):
-            drafted, revised = revise(cfg, drafted, rounds[0])
-            if revised:
-                rounds.append([check(cfg, k, drafted) for k in cfg["checkers"]])
-    md = render("%s %d" % (book, args.chapter), used, drafted, rounds, revised)
-
+    res = run_chapter(cfg, args.book, args.chapter)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     stem = "%s-%d" % (args.book, args.chapter)
-    (out / (stem + ".md")).write_text(md, encoding="utf-8")
+    (out / (stem + ".md")).write_text(res["md"], encoding="utf-8")
     # same shape as the hand-made pilot files in par/, with the run details alongside
     (out / ("pilot-%s.json" % stem)).write_text(json.dumps(
-        {"book": book, "chapter": args.chapter, "verses": [v["text"] for v in drafted],
-         "drafters": used, "revised": revised, "checks": rounds}, ensure_ascii=False, indent=2), encoding="utf-8")
+        {"book": res["book"], "chapter": args.chapter, "verses": [v["text"] for v in res["verses"]],
+         "drafters": res["drafters"], "revised": res["revised"], "checks": res["rounds"]},
+        ensure_ascii=False, indent=2), encoding="utf-8")
     if USAGE:
         save_usage(args.usage)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
-            f.write(md)
-    print(md)
+            f.write(res["md"])
+    print(res["md"])
 
 
 if __name__ == "__main__":
