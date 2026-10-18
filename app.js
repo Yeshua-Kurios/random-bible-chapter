@@ -2206,6 +2206,7 @@ function showSettings(open) {
   document.body.classList.toggle("settings-open", open);
   document.getElementById("settings-view").hidden = !open;
   document.getElementById("llm-usage").hidden = true;
+  document.getElementById("kjv27-progress").hidden = true;
   document.getElementById("settings-menu").hidden = false;
   if (open) window.scrollTo(0, 0);
 }
@@ -2262,10 +2263,49 @@ async function openLlmUsage() {
 
 document.getElementById("settings-btn").addEventListener("click", () => showSettings(true));
 document.getElementById("settings-back").addEventListener("click", () => {
-  const sub = !document.getElementById("llm-usage").hidden;
-  showSettings(!sub ? false : true);
+  const sub = !document.getElementById("llm-usage").hidden || !document.getElementById("kjv27-progress").hidden;
+  showSettings(sub);
 });
 document.getElementById("llm-usage-link").addEventListener("click", openLlmUsage);
+
+// Settings > KJV27 Progress: how many of the next queued chapters already have KJV27 text.
+const KJV27_LOOKAHEAD = 20;
+
+async function openKjv27Progress() {
+  document.getElementById("settings-menu").hidden = true;
+  document.getElementById("kjv27-progress").hidden = false;
+  const status = document.getElementById("kjv27-status");
+  status.textContent = "Loading…";
+  if (!queueOrder) await loadQueue();
+  const done = await loadParProgress();
+  if (!queueOrder) {
+    status.textContent = "Couldn't load par/queue.json.";
+    return;
+  }
+  const readSet = readKeysSet(loadReadLog());
+  const skipped = loadSkipped();
+  const unread = queueOrder.filter((k) => !readSet.has(k));
+  // The same order the app hands chapters out: skipped ones go to the back of the line.
+  const next = [...unread.filter((k) => !skipped.has(k)), ...unread.filter((k) => skipped.has(k))].slice(0, KJV27_LOOKAHEAD);
+  const hasPar = (k) => {
+    const [book, ch] = splitKey(k);
+    return done.has(`${bookSlug(book)}-${ch}`);
+  };
+  const ready = next.filter(hasPar).length;
+  document.getElementById("kjv27-next").textContent = `${ready} of the next ${next.length} chapters have KJV27`;
+  document.getElementById("kjv27-next-fill").style.width = (next.length ? (ready / next.length) * 100 : 0) + "%";
+  const list = document.getElementById("kjv27-list");
+  list.textContent = "";
+  next.forEach((k, i) => {
+    const li = document.createElement("li");
+    li.textContent = `${hasPar(k) ? "✓" : "–"} ${i + 1}. ${k}`;
+    list.appendChild(li);
+  });
+  document.getElementById("kjv27-all").textContent = `${done.size.toLocaleString()} of ${queueOrder.length.toLocaleString()} chapters have KJV27 in all.`;
+  status.textContent = "";
+}
+
+document.getElementById("kjv27-link").addEventListener("click", openKjv27Progress);
 document.getElementById("usage-budget").addEventListener("change", (e) => {
   const n = Number(e.target.value);
   try {

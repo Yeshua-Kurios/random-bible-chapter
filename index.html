@@ -199,6 +199,16 @@
       <h2>Settings</h2>
       <div id="settings-menu">
         <button id="llm-usage-link" class="settings-row" type="button">LLM Usage <span aria-hidden="true">›</span></button>
+        <button id="kjv27-link" class="settings-row" type="button">KJV27 Progress <span aria-hidden="true">›</span></button>
+      </div>
+      <div id="kjv27-progress" class="card" hidden>
+        <h3>KJV27 Progress</h3>
+        <p class="hint">Of the next chapters in your reading queue, how many already have KJV27 text.</p>
+        <p id="kjv27-next" class="usage-total"></p>
+        <div class="usage-meter" id="kjv27-next-meter"><div id="kjv27-next-fill" class="usage-fill"></div></div>
+        <ul id="kjv27-list" class="kjv27-list"></ul>
+        <p id="kjv27-all" class="hint"></p>
+        <p id="kjv27-status" class="hint" aria-live="polite"></p>
       </div>
       <div id="llm-usage" class="card" hidden>
         <h3>LLM Usage</h3>
