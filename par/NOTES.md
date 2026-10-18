@@ -1,4 +1,4 @@
-# PAR judgment-call notes
+# KJV27 judgment-call notes
 
 ## Isaiah 53
 - v10: "when thou shalt make his soul an offering" became "when you make"; second-person address kept as in the KJV.

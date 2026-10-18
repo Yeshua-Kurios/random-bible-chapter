@@ -1,4 +1,4 @@
-name: PAR daily
+name: KJV27 daily
 
 # 5 am US Eastern. GitHub cron is UTC, so it runs at 09:00 and 10:00 UTC (5 am EDT and 5 am EST)
 # and the first step lets through only the run that lands in the 5-6 am Eastern window, once per day.
@@ -61,10 +61,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branch"
           git add par/text par/review par/progress.json par/usage.json
-          git commit -m "PAR: modernize the next chapters ($(date +%F))"
+          git commit -m "KJV27: modernize the next chapters ($(date +%F))"
           git push origin "$branch"
           gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
-            --title "PAR: chapters for $(TZ=America/New_York date +%F)" --body-file par-out/summary.md \
+            --title "KJV27: chapters for $(TZ=America/New_York date +%F)" --body-file par-out/summary.md \
             || echo "::warning::Pushed $branch but could not open the PR; open it from the GitHub branch page."
       - name: Summary
         if: always() && steps.when.outputs.run == 'true'

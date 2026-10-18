@@ -1,9 +1,9 @@
-# PAR handoff
+# KJV27 handoff
 
 Last updated 2026-10-18.
 
 ## Project
-PAR = Pastorally Affirmed Rendering: a light modernization of the KJV English (see `par/STYLE.md`). It is NOT a new translation from Hebrew or Greek. Free models draft the modernization, other models cross-check, and a person is the final reviewer.
+KJV27 (an unofficial, internal name for personal use; the project was first called PAR, "Pastorally Affirmed Rendering") is a light modernization of the KJV English (see `par/STYLE.md`). It is NOT a new translation from Hebrew or Greek. Free models draft the modernization, other models cross-check, and a person is the final reviewer.
 
 ## Direction change (2026-10-18)
 The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and parked. What the experiment showed, in case it is revisited:
@@ -22,10 +22,10 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 
 ## Decided (2026-10-18)
 - Daily job: 5 chapters a day at 5 am US Eastern, in the app's random order (`par/queue.json`), as a GitHub Actions workflow (`par-daily.yml`) that opens one PR per day. A GitHub Actions run, not a Claude session, because the free-model keys are org secrets that only Actions can see. About 238 days for 1,189 chapters.
-- Review: the person reviews each day's PR (KJV beside PAR in `par/review/`). Merging is the approval.
-- Random order: `par/queue.json` is one fixed shuffle of all 1,189 chapters (made by `par/pipeline/make_queue.py`, seed 20261018). In the first read-through the app's Get/Skip/Mark hand out the next unread chapter in that order (skip sends a chapter to the back of the line); the daily job modernizes the same order, so PAR text is ready for what is read next. After a first full read-through, or if the file can't load, the app picks random unread chapters as before. Don't change the seed once reading has started.
-- Optional, for the daily job to skip chapters already read: add an org/repo secret `READING_LOG_TOKEN` (a fine-grained, read-only token with Contents access to the private repo the app syncs its reading log to). Without it the job starts at the head of the queue, so chapters read before the first PR merges may get PAR text nobody sees.
-- App: the reader shows PAR for chapters listed in `par/progress.json` and the KJV for all others, with a per-reader toggle back to the KJV (remembered in the browser).
+- Review: the person reviews each day's PR (KJV beside KJV27 in `par/review/`). Merging is the approval.
+- Random order: `par/queue.json` is one fixed shuffle of all 1,189 chapters (made by `par/pipeline/make_queue.py`, seed 20261018). In the first read-through the app's Get/Skip/Mark hand out the next unread chapter in that order (skip sends a chapter to the back of the line); the daily job modernizes the same order, so KJV27 text is ready for what is read next. After a first full read-through, or if the file can't load, the app picks random unread chapters as before. Don't change the seed once reading has started.
+- Optional, for the daily job to skip chapters already read: add an org/repo secret `READING_LOG_TOKEN` (a fine-grained, read-only token with Contents access to the private repo the app syncs its reading log to). Without it the job starts at the head of the queue, so chapters read before the first PR merges may get KJV27 text nobody sees.
+- App: the reader shows KJV27 for chapters listed in `par/progress.json` and the KJV for all others, with a per-reader toggle back to the KJV (remembered in the browser).
 
 ## Open decisions (ask the owner)
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
@@ -48,6 +48,6 @@ Working: groq (`openai/gpt-oss-120b`), gemini (`gemini-3.5-flash`), nvidia (`nvi
 - GitHub only shows a job's log when the whole job finishes; the matrix gives one job per chapter for that reason.
 
 ## TODO
-1. Merge to main, then run `PAR daily` once by hand (Actions > PAR daily > Run workflow) and check the PR it opens.
+1. Merge to main, then run `KJV27 daily` once by hand (Actions > KJV27 daily > Run workflow) and check the PR it opens.
 2. Compare the first batches to the hand-made pilots and tune STYLE.md and the prompts.
 3. Decide the open items above.

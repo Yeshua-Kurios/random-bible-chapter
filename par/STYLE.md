@@ -1,6 +1,6 @@
-# PAR style guide (draft)
+# KJV27 style guide (draft)
 
-PAR is a light modernization of the KJV English. It is not a new translation from Hebrew or Greek.
+KJV27 is a light modernization of the KJV English. It is not a new translation from Hebrew or Greek. The name is an unofficial, internal one for personal use; it is not an official or published Bible version.
 
 ## Rules
 - Keep verse count, verse order, and the `#` paragraph markers exactly as in `kjv/`.

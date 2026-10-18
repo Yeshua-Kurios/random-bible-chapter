@@ -602,7 +602,7 @@ function pickRandomUnread(readSet, excludeKey) {
 }
 
 // --- The shared random order. par/queue.json is one fixed shuffle of every chapter;
-// the app hands out the next unread chapter in it, and the PAR pipeline modernizes
+// the app hands out the next unread chapter in it, and the KJV27 pipeline modernizes
 // chapters in the same order, so modernized text is ready for what you read next.
 // Skipping sends a chapter to the back of the line. After a first full read-through
 // (or if the file can't be loaded) it's the old behaviour: a random unread chapter.
@@ -1268,12 +1268,12 @@ async function kjvChapterVerses(book, chapter) {
   return verses;
 }
 
-// --- PAR (a light modernization of the KJV, drafted by the pipeline in par/).
-// par/progress.json lists the chapters that have PAR text on main; every other
+// --- KJV27 (a light modernization of the KJV, drafted by the pipeline in par/).
+// par/progress.json lists the chapters that have KJV27 text on main; every other
 // chapter is simply shown in the KJV. A reader can flip a chapter back to the KJV.
 
 const READER_VERSION_KEY = "rbc:readerVersion";
-let parProgress = null; // Promise of the set of chapter keys that have PAR text
+let parProgress = null; // Promise of the set of chapter keys that have KJV27 text
 
 function loadParProgress() {
   if (!parProgress) {
@@ -1293,7 +1293,7 @@ function preferredVersion() {
   }
 }
 
-// Resolves to {version: "par"|"kjv", verses, parAvailable}. PAR is used only when the
+// Resolves to {version: "par"|"kjv", verses, parAvailable}. KJV27 is used only when the
 // chapter has it and the reader hasn't chosen the KJV; any problem falls back to the KJV.
 async function chapterText(book, chapter) {
   const key = `${bookSlug(book)}-${chapter}`;
@@ -1374,9 +1374,9 @@ async function renderReader(pending) {
   }
   if (token !== readerToken) return; // a different chapter was requested meanwhile
 
-  els.readerSummary.textContent = `${pending} · ${text.version === "par" ? "PAR (modernized KJV)" : "KJV"}`;
+  els.readerSummary.textContent = `${pending} · ${text.version === "par" ? "KJV27" : "KJV"}`;
   els.readerVersionRow.hidden = !text.parAvailable;
-  els.readerVersionBtn.textContent = text.version === "par" ? "Show the KJV" : "Show the modernized text";
+  els.readerVersionBtn.textContent = text.version === "par" ? "Show the KJV" : "Show KJV27";
   els.readerVersionBtn.onclick = () => {
     try {
       localStorage.setItem(READER_VERSION_KEY, text.version === "par" ? "kjv" : "par");
@@ -2188,7 +2188,7 @@ if (navigator.storage?.persist) {
   navigator.storage.persist();
 }
 
-// Settings > LLM Usage: a meter over the token ledger the PAR pipeline
+// Settings > LLM Usage: a meter over the token ledger the KJV27 pipeline
 // writes to par/usage.json (the app itself makes no LLM calls).
 const USAGE_BUDGET_KEY = "rbc:usageBudget";
 const DEFAULT_USAGE_BUDGET = 5000000; // a full translation pass is ~3-5M tokens

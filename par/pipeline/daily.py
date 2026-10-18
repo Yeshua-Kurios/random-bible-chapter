@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Daily PAR run: take the next chapters in the app's random order (par/queue.json), modernize them, and record the results.
+"""Daily KJV27 run: take the next chapters in the app's random order (par/queue.json), modernize them, and record the results.
 
 Writes, for each chapter that drafts completely:
   par/text/<book>-<n>.json    the verses the app shows (only exists once the chapter is in the repo)
-  par/review/<book>-<n>.md    KJV beside PAR plus the checkers' notes, for the person reviewing the PR
-and updates par/progress.json, which the app reads to know which chapters have PAR text.
+  par/review/<book>-<n>.md    KJV beside KJV27 plus the checkers' notes, for the person reviewing the PR
+and updates par/progress.json, which the app reads to know which chapters have KJV27 text.
 A chapter that cannot be drafted is retried on later days, and set aside after MAX_FAILURES.
 
   python par/pipeline/daily.py --count 5
@@ -20,7 +20,7 @@ import dryrun as d
 
 MAX_FAILURES = 3  # tries per chapter before it is set aside
 MAX_RUN_FAILURES = 3  # chapters that may fail in one run before it stops (a provider outage, not bad chapters)
-PAR = d.ROOT / "par"
+PAR_DIR = d.ROOT / "par"
 
 
 def slug(book):
@@ -42,7 +42,7 @@ def key_to_chapter(key):
 def queue_order():
     """The chapters in the order the app will hand them out (par/queue.json); canonical order if it is missing."""
     try:
-        order = json.loads((PAR / "queue.json").read_text(encoding="utf-8"))["order"]
+        order = json.loads((PAR_DIR / "queue.json").read_text(encoding="utf-8"))["order"]
         return [key_to_chapter(k) for k in order]
     except (OSError, ValueError, KeyError):
         d.log("par/queue.json not readable; using canonical order")
@@ -75,7 +75,7 @@ def already_read():
 
 def load_progress():
     try:
-        return json.loads((PAR / "progress.json").read_text(encoding="utf-8"))
+        return json.loads((PAR_DIR / "progress.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {"chapters": {}, "failed": {}}
 
@@ -120,27 +120,27 @@ def main():
                          + (" - set aside after %d tries" % MAX_FAILURES if failed[key] >= MAX_FAILURES else ""))
             continue
         failed.pop(key, None)
-        (PAR / "text").mkdir(exist_ok=True)
-        (PAR / "review").mkdir(exist_ok=True)
-        (PAR / "text" / (key + ".json")).write_text(json.dumps(
+        (PAR_DIR / "text").mkdir(exist_ok=True)
+        (PAR_DIR / "review").mkdir(exist_ok=True)
+        (PAR_DIR / "text" / (key + ".json")).write_text(json.dumps(
             {"book": res["book"], "chapter": c, "verses": [v["text"] for v in res["verses"]]},
             ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        (PAR / "review" / (key + ".md")).write_text(res["md"], encoding="utf-8")
+        (PAR_DIR / "review" / (key + ".md")).write_text(res["md"], encoding="utf-8")
         done[key] = {"date": today, "drafters": res["drafters"], "revised": res["revised"], **verdicts(res["rounds"])}
         drafted.append(key)
 
     progress["updated"] = today
-    (PAR / "progress.json").write_text(json.dumps(progress, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    (PAR_DIR / "progress.json").write_text(json.dumps(progress, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     if d.USAGE:
-        d.save_usage(PAR / "usage.json")
+        d.save_usage(PAR_DIR / "usage.json")
 
-    lines = ["PAR chapters for %s: %d of %d drafted. %d of %d chapters done in all." % (
+    lines = ["KJV27 chapters for %s: %d of %d drafted. %d of %d chapters done in all." % (
         today, len(drafted), args.count, len(done), len(canon())), ""]
     for key in drafted:
         v = {k: x for k, x in done[key].items() if k in ("fidelity", "style")}
         lines.append("- %s: %s%s" % (key, ", ".join("%s %s" % kv for kv in v.items()),
                                      ", revised verses %s" % done[key]["revised"] if done[key]["revised"] else ""))
-    lines += notes + ["", "Review KJV against PAR in `par/review/`. Merging this PR is the approval: the app shows these chapters "
+    lines += notes + ["", "Review KJV against KJV27 in `par/review/`. Merging this PR is the approval: the app shows these chapters "
                       "only once they are on main, and shows the KJV for every other chapter."]
     Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
     Path(args.summary).write_text("\n".join(lines) + "\n", encoding="utf-8")

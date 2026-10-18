@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Write par/queue.json: one fixed random order of every chapter, shared by the app and the daily PAR run.
+"""Write par/queue.json: one fixed random order of every chapter, shared by the app and the daily KJV27 run.
 
 The app hands out the next unread chapter in this order (so it still feels random), and the pipeline
-modernizes chapters in the same order, so PAR text is ready for the chapters you are about to read.
+modernizes chapters in the same order, so KJV27 text is ready for the chapters you are about to read.
 Run it once. Re-running with the same seed gives the same order; changing the seed reshuffles
 everything, so don't once readers are partway through.
 

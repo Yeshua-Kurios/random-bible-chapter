@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""PAR dry run: modernize one KJV chapter, gate it, have checkers review it, revise once.
+"""KJV27 dry run: modernize one KJV chapter, gate it, have checkers review it, revise once.
 
-PAR is a light modernization of the KJV (see par/STYLE.md), not a new translation.
+KJV27 is a light modernization of the KJV (see par/STYLE.md), not a new translation.
 Standard library only. Providers whose key env var is unset are skipped.
 Keys are never printed.
 
@@ -311,8 +311,8 @@ def revise(cfg, drafted, checks):
 
 
 def render(title, used, drafted, rounds, revised):
-    lines = ["# %s (PAR dry run)" % title, "", "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
-             "| v | KJV | PAR |", "|---|---|---|"]
+    lines = ["# %s (KJV27 dry run)" % title, "", "Drafters: %s" % (", ".join(used) if used else "none (all failed)"), "",
+             "| v | KJV | KJV27 |", "|---|---|---|"]
     for v in drafted:
         t = v["text"] if v["text"] else "_not drafted_"
         if v.get("first"):
