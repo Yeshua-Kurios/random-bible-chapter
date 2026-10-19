@@ -12,6 +12,15 @@ The plan was briefly a from-source translation (WLC/SBLGNT). It was tried and pa
 - Free tiers are thin: Cerebras and SambaNova now need billing, Z.ai has no balance, Scaleway is quota-locked, Mistral rate-limits, NVIDIA takes 60-90 s a call. Groq and Gemini were the reliable ones.
 - The two-step gloss pipeline is in git history (commit c11160e and earlier on this branch).
 
+## From-source track (2026-10-19, owner's request)
+The owner wants the text translated from the Hebrew and Greek with no KJV in the process, as mechanically as possible: a mechanical stage, free LLMs to smooth it, Claude to review on request. The Oct 18 experiment above (models recalled the KJV/ESV instead of translating) is the reason the mechanical stage does the translating and models only smooth.
+- Code: `par/pipeline/mech/` (read its docstrings). `fetch.py` pins MACULA Hebrew; `lex.py` reads only the STEPBible TBESH Gloss column; `english.py` inflects; `render.py` turns the syntax tree into a literal English draft with every source word accounted for; `gate.py` checks the smoothed text; `publish.py` joins draft and smoothed text, runs the gate and writes `par/text/`, `par/review/`, `par/progress.json`. Tests: `python par/pipeline/mech/test_mech.py` (fetches pinned data on first run).
+- Data flow per chapter: `render.py "Jeremiah 3"` writes `par/mech/jeremiah-3.json` (literal draft, hints, flags). Smoothing (a free model, Claude, or a person) writes `par/mech/jeremiah-3.final.json`. `publish.py "Jeremiah 3"` runs the gate and publishes only if there are no errors. Re-running render never loses smoothed text.
+- Decisions in `par/pipeline/mech/glossary.json` (keyed by Strong number) override the lexicon: add one whenever a word is ruled on, so it is never decided twice.
+- First chapter: Jeremiah 3 (the next queued chapter with no text). Smoothed by Claude in a session with no API keys, standing in for the free-model pass. The gate passes with 6 warnings, all KJV-overlap on phrases the Hebrew forces ("the LORD our God").
+- Not done yet: Greek (`macula-greek` has one file per book; the same code should work with a new fetch step), the free-model smoothing script (the daily workflow still runs the old KJV27 pipeline), versification differences between the Hebrew and the English chapters (the gate only compares verse counts), the in-app credit lines the CC BY sources require (`par/SOURCES.md`), and whether the app should still call this text "KJV27".
+- Known rough edges of the draft: tense for `weqatal` is guessed, hiphil and piel are not given causative or intensive senses (flagged per verse), and lexicon glosses are first senses, so vocabulary is plain and sometimes odd until the smoothing pass.
+
 ## Design rules
 - Keep verse count, verse order and the `#` paragraph markers exactly as in `kjv/`.
 - No archaic English (the gate rejects thee/thou/-eth/wherefore/behold/yea etc.). Keep theological words that are still living English; fix clear mistranslations, and report each one in the verse's `note` so the review file shows it. Do not paraphrase.

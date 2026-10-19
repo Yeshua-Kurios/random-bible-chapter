@@ -1,0 +1,1145 @@
+{
+ "ref": "Jeremiah 3",
+ "source": "MACULA Hebrew (WLC lowfat) @ 47db250bd55d0d8577f2a94fba114ef16c35b23c; STEPBible TBESH Gloss @ ed476a8ee6e3f7b3a46fc48af6c7dabc02387b1d",
+ "coverage": {
+  "words": 613,
+  "visited": 613,
+  "visited_once": true,
+  "missing": [],
+  "no_gloss": []
+ },
+ "unknown_rules": [],
+ "verses": [
+  {
+   "n": 1,
+   "hebrew": "לֵאמֹ֡ר הֵ֣ן יְשַׁלַּ֣ח אִ֣ישׁ אֶת־אִשְׁתּוֹ֩ וְהָלְכָ֨ה מֵאִתּ֜וֹ וְהָיְתָ֣ה לְאִישׁ־אַחֵ֗ר הֲיָשׁ֤וּב אֵלֶ֨יהָ֙ ע֔וֹד הֲל֛וֹא חָנ֥וֹף תֶּחֱנַ֖ף הָאָ֣רֶץ הַהִ֑יא וְאַ֗תְּ זָנִית֙ רֵעִ֣ים רַבִּ֔ים וְשׁ֥וֹב אֵלַ֖י נְאֻם־יְהֹוָֽה׃",
+   "literal": "To say look! man will send his woman, and she will go from him, and she will be to another man he will return towards her still? That land surely will not pollute? And you fornicated many neighbors, and return towards me utterance of LORD.",
+   "ids": [
+    "o240030010012",
+    "o240030010021",
+    "o240030010031",
+    "o240030010041",
+    "o240030010061",
+    "o240030010062",
+    "o240030010071",
+    "o240030010072",
+    "o240030010081",
+    "o240030010082",
+    "o240030010083",
+    "o240030010091",
+    "o240030010092",
+    "o240030010101",
+    "o240030010102",
+    "o240030010111",
+    "o240030010122",
+    "o240030010131",
+    "o240030010132",
+    "o240030010141",
+    "o240030010161",
+    "o240030010171",
+    "o240030010182",
+    "o240030010191",
+    "o240030010192",
+    "o240030010201",
+    "o240030010202",
+    "o240030010211",
+    "o240030010221",
+    "o240030010231",
+    "o240030010241",
+    "o240030010242",
+    "o240030010251",
+    "o240030010252",
+    "o240030010261",
+    "o240030010271"
+   ],
+   "keep": [
+    "LORD"
+   ],
+   "hints": [
+    "to say <- infinitive construct/qal",
+    "will send <- yiqtol/piel he",
+    "will go <- weqatal/qal she",
+    "will be <- weqatal/qal she",
+    "will return <- yiqtol/qal he",
+    "will not pollute <- yiqtol/qal she",
+    "fornicated <- qatal/qal you",
+    "return <- infinitive absolute/qal"
+   ],
+   "flags": [
+    "piel שָׁלַח: the stem may change the sense of 'send'",
+    "subject 'she' added from the verb ending",
+    "subject 'he' added from the verb ending",
+    "infinitive absolute read as emphasis ('surely')"
+   ],
+   "final": "It is said: if a man divorces his wife, and she leaves him and becomes another man's wife, can he ever go back to her? Would that land not be thoroughly defiled? You, though, have prostituted yourself with many lovers. Yet come back to me, declares the LORD.",
+   "note": "The last clause (Hebrew shov, infinitive absolute) is read as an invitation, \"come back to me\". It can also be read as a question, \"would you come back to me?\". Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 2,
+   "hebrew": "שְׂאִֽי־עֵינַ֨יִךְ עַל־שְׁפָיִ֜ם וּרְאִ֗י אֵיפֹה֙ לֹ֣א שֻׁכַּ֔בְתְּ עַל־דְּרָכִים֙ יָשַׁ֣בְתְּ לָהֶ֔ם כַּעֲרָבִ֖י בַּמִּדְבָּ֑ר וַתַּחֲנִ֣יפִי אֶ֔רֶץ בִּזְנוּתַ֖יִךְ וּבְרָעָתֵֽךְ׃",
+   "literal": "Lift your eyes upon barenesses and see you were not lain down? Upon ways you dwelt to them like Arab in the mouth and you polluted land in your fornications and in your bad.",
+   "ids": [
+    "o240030020011",
+    "o240030020021",
+    "o240030020022",
+    "o240030020031",
+    "o240030020041",
+    "o240030020051",
+    "o240030020052",
+    "o240030020091",
+    "o240030020101",
+    "o240030020111",
+    "o240030020121",
+    "o240030020131",
+    "o240030020132",
+    "o240030020141",
+    "o240030020142",
+    "o240030020151",
+    "o240030020151ה",
+    "o240030020152",
+    "o240030020161",
+    "o240030020162",
+    "o240030020171",
+    "o240030020181",
+    "o240030020182",
+    "o240030020183",
+    "o240030020191",
+    "o240030020192",
+    "o240030020193",
+    "o240030020194"
+   ],
+   "keep": [
+    "Arab"
+   ],
+   "hints": [
+    "lift <- imperative/qal you",
+    "see <- imperative/qal you",
+    "were not lain down <- qatal/pual you",
+    "dwelt <- qatal/qal you",
+    "polluted <- wayyiqtol/hiphil you"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending",
+    "pual שָׁכַב: the stem may change the sense of 'lie down'",
+    "hiphil חָנֵף: the stem may change the sense of 'pollute'"
+   ],
+   "final": "Lift your eyes to the bare hills and look: where have you not been sexually used? You sat by the roadsides waiting for lovers, like a nomad in the desert. You have defiled the land with your prostitution and your wickedness.",
+   "note": "Hebrew aravi is usually \"Arab\", a desert dweller; \"nomad\" gives the sense (someone waiting by the road). The passive verb here (pual of shagal) is a blunt word for being used sexually; flagged for review.",
+   "rename": {
+    "Arab": "nomad"
+   }
+  },
+  {
+   "n": 3,
+   "hebrew": "וַיִּמָּנְע֣וּ רְבִבִ֔ים וּמַלְק֖וֹשׁ ל֣וֹא הָיָ֑ה וּמֵ֨צַח אִשָּׁ֤ה זוֹנָה֙ הָ֣יָה לָ֔ךְ מֵאַ֖נְתְּ הִכָּלֵֽם׃",
+   "literal": "And showers were withheld and spring rain was not and forehead of woman prostitute was to you you refused to be humiliated.",
+   "ids": [
+    "o240030030011",
+    "o240030030012",
+    "o240030030021",
+    "o240030030031",
+    "o240030030032",
+    "o240030030051",
+    "o240030030061",
+    "o240030030062",
+    "o240030030071",
+    "o240030030081",
+    "o240030030091",
+    "o240030030101",
+    "o240030030102",
+    "o240030030111",
+    "o240030030121"
+   ],
+   "keep": [],
+   "hints": [
+    "were withheld <- wayyiqtol/niphal they",
+    "was not <- qatal/qal he",
+    "was <- qatal/qal he",
+    "refused <- qatal/piel you"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending",
+    "piel מָאֵן: the stem may change the sense of 'refuse'"
+   ],
+   "final": "So the showers have been held back, and the spring rains have not come. Yet you have the brazen look of a prostitute, and you refuse to be ashamed.",
+   "note": "Literally \"the forehead of a prostitute woman\"; rendered by what it means, a shameless face.",
+   "rename": {}
+  },
+  {
+   "n": 4,
+   "hebrew": "הֲל֣וֹא מֵעַ֔תָּה קָרָ֥את לִ֖י אָבִ֑י אַלּ֥וּף נְעֻרַ֖י אָֽתָּה׃",
+   "literal": "From now you did not call my father you are chief of my youths to me?",
+   "ids": [
+    "o240030040021",
+    "o240030040022",
+    "o240030040041",
+    "o240030040051",
+    "o240030040052",
+    "o240030040061",
+    "o240030040062",
+    "o240030040071",
+    "o240030040081",
+    "o240030040082",
+    "o240030040091"
+   ],
+   "keep": [],
+   "hints": [
+    "did not call <- qatal/qal you"
+   ],
+   "flags": [
+    "verbless clause: 'is/are' added, tense unknown",
+    "subject 'you' added from the verb ending"
+   ],
+   "final": "Have you not just now called out to me, \"My father, you are the close friend of my youth\"?",
+   "note": "Hebrew alluf can mean close friend, guide or chief; the draft gloss was \"chief\". \"Close friend\" fits the marriage language of the chapter. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 5,
+   "hebrew": "הֲיִנְטֹ֣ר לְעוֹלָ֔ם אִם־יִשְׁמֹ֖ר לָנֶ֑צַח הִנֵּ֥ה דִבַּ֛רְתְּוַתַּעֲשִׂ֥י הָרָע֖וֹת וַתּוּכָֽל׃פ",
+   "literal": "He will keep to forever? If he will keep to perpetuity look you spoke, and you made the bads, and you were able.",
+   "ids": [
+    "o240030050012",
+    "o240030050021",
+    "o240030050022",
+    "o240030050031",
+    "o240030050041",
+    "o240030050051",
+    "o240030050052",
+    "o240030050061",
+    "o240030050081",
+    "o240030050091",
+    "o240030050092",
+    "o240030050101",
+    "o240030050102",
+    "o240030050111",
+    "o240030050112"
+   ],
+   "keep": [],
+   "hints": [
+    "will keep <- yiqtol/qal he",
+    "will keep <- yiqtol/qal he",
+    "spoke <- qatal/piel you",
+    "made <- wayyiqtol/qal you",
+    "were able <- wayyiqtol/qal you"
+   ],
+   "flags": [
+    "subject 'he' added from the verb ending",
+    "subject 'you' added from the verb ending",
+    "piel דָבַר: the stem may change the sense of 'speak'"
+   ],
+   "final": "Will he hold a grudge forever? Will he stay angry to the end? That is how you talk, and yet you do all the evil you can.",
+   "note": "The Hebrew gives no object for the two verbs (\"keep\"); \"a grudge\" and \"angry\" supply it. The last verb (\"were able\") is read as \"you do all you can\". Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 6,
+   "hebrew": "וַיֹּ֨אמֶר יְהוָ֜ה אֵלַ֗י בִּימֵי֙ יֹאשִׁיָּ֣הוּ הַמֶּ֔לֶךְ הֲֽרָאִ֔יתָ אֲשֶׁ֥ר עָשְׂתָ֖ה מְשֻׁבָ֣ה יִשְׂרָאֵ֑ל הֹלְכָ֨ה הִ֜יא עַל־כָּל־הַ֣ר גָּבֹ֗הַּ וְאֶל־תַּ֛חַת כָּל־עֵ֥ץ רַעֲנָ֖ן וַתִּזְנִי־שָֽׁם׃",
+   "literal": "And LORD said towards me in days of Josiah, the king you saw which faithlessness Israel made? She going upon all high mountain and towards underneath all luxuriant tree and you fornicated there.",
+   "ids": [
+    "o240030060011",
+    "o240030060012",
+    "o240030060021",
+    "o240030060031",
+    "o240030060032",
+    "o240030060041",
+    "o240030060042",
+    "o240030060051",
+    "o240030060061",
+    "o240030060062",
+    "o240030060072",
+    "o240030060081",
+    "o240030060091",
+    "o240030060101",
+    "o240030060111",
+    "o240030060121",
+    "o240030060131",
+    "o240030060141",
+    "o240030060151",
+    "o240030060161",
+    "o240030060171",
+    "o240030060181",
+    "o240030060182",
+    "o240030060191",
+    "o240030060201",
+    "o240030060211",
+    "o240030060221",
+    "o240030060231",
+    "o240030060232",
+    "o240030060241"
+   ],
+   "keep": [
+    "Israel",
+    "Josiah",
+    "LORD"
+   ],
+   "hints": [
+    "said <- wayyiqtol/qal he",
+    "made <- qatal/qal she",
+    "saw <- qatal/qal you",
+    "going <- participle active/qal",
+    "fornicated <- wayyiqtol/qal you"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending"
+   ],
+   "final": "In the days of King Josiah, the LORD said to me, \"Have you seen what apostate Israel did? She went up on every high hill and under every leafy tree, and there she prostituted herself.\"",
+   "note": "The final verb is tagged second person in the data but fits the surrounding \"she\"; read as \"she\". \"Apostate\" renders meshuvah, \"turning away\", the same root as the \"return\" verbs in this chapter.",
+   "rename": {}
+  },
+  {
+   "n": 7,
+   "hebrew": "וָאֹמַ֗ר אַחֲרֵ֨י עֲשׂוֹתָ֧הּ אֶת־כָּל־אֵ֛לֶּה אֵלַ֥י תָּשׁ֖וּב וְלֹא־שָׁ֑בָה וַתֵּ֛רֶא בָּגוֹדָ֥ה אֲחוֹתָ֖הּ יְהוּדָֽה׃",
+   "literal": "And I said after her to make all these towards me she will return and she did not return and treacherous her sister Judah saw.",
+   "ids": [
+    "o240030070011",
+    "o240030070012",
+    "o240030070021",
+    "o240030070031",
+    "o240030070032",
+    "o240030070051",
+    "o240030070061",
+    "o240030070071",
+    "o240030070072",
+    "o240030070081",
+    "o240030070091",
+    "o240030070101",
+    "o240030070121",
+    "o240030070122",
+    "o240030070131",
+    "o240030070141",
+    "o240030070142",
+    "o240030070151"
+   ],
+   "keep": [
+    "Judah"
+   ],
+   "hints": [
+    "said <- wayyiqtol/qal I",
+    "to make <- infinitive construct/qal",
+    "will return <- yiqtol/qal she",
+    "did not return <- qatal/qal she",
+    "saw <- wayyiqtol/qal she"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "subject 'she' added from the verb ending"
+   ],
+   "final": "I thought, \"After she has done all this, she will come back to me.\" But she did not return, and her unfaithful sister Judah saw it.",
+   "note": "Hebrew bogedah (from bagad, \"to act treacherously\") is rendered \"unfaithful\", in keeping with the marriage imagery.",
+   "rename": {}
+  },
+  {
+   "n": 8,
+   "hebrew": "וָאֵ֗רֶא כִּ֤י עַל־כָּל־אֹדוֹת֙ אֲשֶׁ֤ר נִֽאֲפָה֙ מְשֻׁבָ֣ה יִשְׂרָאֵ֔ל שִׁלַּחְתִּ֕יהָ וָאֶתֵּ֛ן אֶת־סֵ֥פֶר כְּרִיתֻתֶ֖יהָ אֵלֶ֑יהָ וְלֹ֨א יָֽרְאָ֜ה בֹּֽגֵדָ֤ה יְהוּדָה֙ אֲחוֹתָ֔הּ וַתֵּ֖לֶךְ וַתִּ֥זֶן גַּם־הִֽיא׃",
+   "literal": "And I saw for upon all becauses which faithlessness Israel committed adultery I sent her, and I gave scroll of her divorces towards her and acting treacherously Judah her sister did not fear and also she went and fornicated.",
+   "ids": [
+    "o240030080011",
+    "o240030080012",
+    "o240030080021",
+    "o240030080031",
+    "o240030080041",
+    "o240030080051",
+    "o240030080061",
+    "o240030080071",
+    "o240030080081",
+    "o240030080091",
+    "o240030080101",
+    "o240030080102",
+    "o240030080111",
+    "o240030080112",
+    "o240030080131",
+    "o240030080141",
+    "o240030080142",
+    "o240030080151",
+    "o240030080152",
+    "o240030080161",
+    "o240030080171",
+    "o240030080181",
+    "o240030080191",
+    "o240030080201",
+    "o240030080202",
+    "o240030080211",
+    "o240030080212",
+    "o240030080221",
+    "o240030080222",
+    "o240030080231",
+    "o240030080241"
+   ],
+   "keep": [
+    "Israel",
+    "Judah"
+   ],
+   "hints": [
+    "committed adultery <- qatal/piel she",
+    "sent <- qatal/piel I",
+    "gave <- wayyiqtol/qal I",
+    "saw <- wayyiqtol/qal I",
+    "did not fear <- qatal/qal she"
+   ],
+   "flags": [
+    "piel נָאַף: the stem may change the sense of 'commit adultery'",
+    "subject 'I' added from the verb ending",
+    "piel שָׁלַח: the stem may change the sense of 'send'"
+   ],
+   "final": "I saw that, because of all her adulteries, I sent apostate Israel away and handed her divorce papers. Yet her unfaithful sister Judah was not afraid; she too went and prostituted herself.",
+   "note": "The Hebrew has a relative clause (\"for all the reasons that Israel committed adultery\"); compressed to \"because of all her adulteries\".",
+   "rename": {}
+  },
+  {
+   "n": 9,
+   "hebrew": "וְהָיָה֙ מִקֹּ֣ל זְנוּתָ֔הּ וַתֶּחֱנַ֖ף אֶת־הָאָ֑רֶץ וַתִּנְאַ֥ף אֶת־הָאֶ֖בֶן וְאֶת־הָעֵֽץ׃",
+   "literal": "And he will be from voice of her fornication and she polluted the land and she committed adultery the stone and the tree.",
+   "ids": [
+    "o240030090011",
+    "o240030090012",
+    "o240030090021",
+    "o240030090022",
+    "o240030090031",
+    "o240030090032",
+    "o240030090041",
+    "o240030090042",
+    "o240030090061",
+    "o240030090062",
+    "o240030090071",
+    "o240030090072",
+    "o240030090091",
+    "o240030090092",
+    "o240030090101",
+    "o240030090111",
+    "o240030090112"
+   ],
+   "keep": [],
+   "hints": [
+    "will be <- weqatal/qal he",
+    "polluted <- wayyiqtol/qal she",
+    "committed adultery <- wayyiqtol/qal she"
+   ],
+   "flags": [
+    "subject 'he' added from the verb ending",
+    "subject 'she' added from the verb ending"
+   ],
+   "final": "Because of the noise of her prostitution, she defiled the land; she committed adultery with stone and with wood.",
+   "note": "The consonants can be read \"sound\" (as pointed here) or \"lightness\", which would give \"because she took her prostitution lightly\". \"Stone and wood\" means idols, kept literal. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 10,
+   "hebrew": "וְגַם־בְּכָל־זֹ֗את לֹא־שָׁ֨בָה אֵלַ֜י בָּגוֹדָ֧ה אֲחוֹתָ֛הּ יְהוּדָ֖ה בְּכָל־לִבָּ֑הּ כִּ֥י אִם־בְּשֶׁ֖קֶר נְאֻם־יְהוָֽה׃פ",
+   "literal": "And also in all this treacherous her sister Judah did not return towards me in all her heart for if in deception utterance of LORD.",
+   "ids": [
+    "o240030100011",
+    "o240030100012",
+    "o240030100021",
+    "o240030100022",
+    "o240030100031",
+    "o240030100051",
+    "o240030100061",
+    "o240030100062",
+    "o240030100071",
+    "o240030100081",
+    "o240030100082",
+    "o240030100091",
+    "o240030100101",
+    "o240030100102",
+    "o240030100111",
+    "o240030100112",
+    "o240030100121",
+    "o240030100131",
+    "o240030100141",
+    "o240030100142",
+    "o240030100151",
+    "o240030100161"
+   ],
+   "keep": [
+    "Judah",
+    "LORD"
+   ],
+   "hints": [
+    "did not return <- qatal/qal she"
+   ],
+   "flags": [],
+   "final": "Even after all this, her unfaithful sister Judah did not return to me wholeheartedly, but only in pretense, declares the LORD.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 11,
+   "hebrew": "וַיֹּ֤אמֶר יְהוָה֙ אֵלַ֔י צִדְּקָ֥ה נַפְשָׁ֖הּ מְשֻׁבָ֣ה יִשְׂרָאֵ֑ל מִבֹּגֵדָ֖ה יְהוּדָֽה׃",
+   "literal": "And LORD said towards me soul of her faithlessness Israel justified from acting treacherously Judah.",
+   "ids": [
+    "o240030110011",
+    "o240030110012",
+    "o240030110021",
+    "o240030110031",
+    "o240030110032",
+    "o240030110041",
+    "o240030110051",
+    "o240030110052",
+    "o240030110061",
+    "o240030110071",
+    "o240030110081",
+    "o240030110082",
+    "o240030110091"
+   ],
+   "keep": [
+    "Israel",
+    "Judah",
+    "LORD"
+   ],
+   "hints": [
+    "said <- wayyiqtol/qal he",
+    "justified <- qatal/piel she"
+   ],
+   "flags": [
+    "piel צָדֵק: the stem may change the sense of 'justify'"
+   ],
+   "final": "The LORD said to me, \"Apostate Israel has proved herself more righteous than unfaithful Judah.\"",
+   "note": "Literally \"Israel's self has been righteous\"; the comparison is the sense.",
+   "rename": {}
+  },
+  {
+   "n": 12,
+   "hebrew": "הָלֹ֡ךְ וְקָֽרָאתָ֩ אֶת־הַדְּבָרִ֨ים הָאֵ֜לֶּה צָפ֗וֹנָה וְ֠אָמַרְתָּ שׁ֣וּבָה מְשֻׁבָ֤ה יִשְׂרָאֵל֙ נְאֻם־יְהוָ֔ה לֽוֹא־אַפִּ֥יל פָּנַ֖י בָּכֶ֑ם כִּֽי־חָסִ֤יד אֲנִי֙ נְאֻם־יְהוָ֔ה לֹ֥א אֶטּ֖וֹר לְעוֹלָֽם׃",
+   "literal": "Go and you will call these words north toward and you will say return faithlessness Israel utterance of LORD I will not fall my faces in you for I am pious utterance of LORD I will not keep to forever.",
+   "ids": [
+    "o240030120011",
+    "o240030120021",
+    "o240030120022",
+    "o240030120042",
+    "o240030120052",
+    "o240030120061",
+    "o240030120062",
+    "o240030120071",
+    "o240030120072",
+    "o240030120081",
+    "o240030120091",
+    "o240030120101",
+    "o240030120111",
+    "o240030120121",
+    "o240030120141",
+    "o240030120151",
+    "o240030120152",
+    "o240030120161",
+    "o240030120162",
+    "o240030120171",
+    "o240030120181",
+    "o240030120191",
+    "o240030120201",
+    "o240030120211",
+    "o240030120231",
+    "o240030120241",
+    "o240030120242"
+   ],
+   "keep": [
+    "Israel",
+    "LORD"
+   ],
+   "hints": [
+    "go <- infinitive absolute/qal",
+    "will call <- weqatal/qal you",
+    "will say <- weqatal/qal you",
+    "will not fall <- yiqtol/hiphil I",
+    "will not keep <- yiqtol/qal I"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending",
+    "subject 'I' added from the verb ending",
+    "hiphil נָפַל: the stem may change the sense of 'fall'",
+    "verbless clause: 'is/are' added, tense unknown"
+   ],
+   "final": "Go and call out this message to the north: \"Return, apostate Israel,\" declares the LORD. \"I will not look at you in anger, for I am faithful,\" declares the LORD; \"I will not stay angry forever.\"",
+   "note": "\"I will not let my face fall on you\" is an idiom for not showing displeasure. Hebrew chasid (draft gloss \"pious\") is read as \"faithful\", one who keeps covenant love. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 13,
+   "hebrew": "אַ֚ךְ דְּעִ֣י עֲוֺנֵ֔ךְ כִּ֛י בַּיהוָ֥ה אֱלֹהַ֖יִךְ פָּשָׁ֑עַתְּ וַתְּפַזְּרִ֨י אֶת־דְּרָכַ֜יִךְ לַזָּרִ֗ים תַּ֚חַת כָּל־עֵ֣ץ רַעֲנָ֔ן וּבְקוֹלִ֥י לֹא־שְׁמַעְתֶּ֖ם נְאֻם־יְהֹוָֽה׃",
+   "literal": "Surely know your iniquity for in LORD your God you transgressed and you scattered your ways to the be loathsome underneath all luxuriant tree and in my voice you did not hear utterance of LORD.",
+   "ids": [
+    "o240030130011",
+    "o240030130021",
+    "o240030130031",
+    "o240030130032",
+    "o240030130041",
+    "o240030130051",
+    "o240030130052",
+    "o240030130061",
+    "o240030130062",
+    "o240030130071",
+    "o240030130081",
+    "o240030130082",
+    "o240030130101",
+    "o240030130102",
+    "o240030130111",
+    "o240030130111ה",
+    "o240030130112",
+    "o240030130121",
+    "o240030130131",
+    "o240030130141",
+    "o240030130151",
+    "o240030130161",
+    "o240030130162",
+    "o240030130163",
+    "o240030130164",
+    "o240030130181",
+    "o240030130191",
+    "o240030130201"
+   ],
+   "keep": [
+    "LORD"
+   ],
+   "hints": [
+    "know <- imperative/qal you",
+    "transgressed <- qatal/qal you",
+    "scattered <- wayyiqtol/piel you",
+    "did not hear <- qatal/qal you"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending",
+    "piel פָּזַר: the stem may change the sense of 'scatter'"
+   ],
+   "final": "Only acknowledge your guilt: you rebelled against the LORD your God, you scattered your ways among strangers under every leafy tree, and you did not listen to my voice, declares the LORD.",
+   "note": "\"Scattered your ways\" is literal; it is probably an idiom for giving yourself around. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 14,
+   "hebrew": "שׁ֣וּבוּ בָנִ֤ים שׁוֹבָבִים֙ נְאֻם־יְהוָ֔ה כִּ֥י אָנֹכִ֖י בָּעַ֣לְתִּי בָכֶ֑ם וְלָקַחְתִּ֨י אֶתְכֶ֜ם אֶחָ֣ד מֵעִ֗יר וּשְׁנַ֨יִם֙ מִמִּשְׁפָּחָ֔ה וְהֵבֵאתִ֥י אֶתְכֶ֖ם צִיּֽוֹן׃",
+   "literal": "Return turning back sons utterance of LORD for I ruled in you and I will take you one from excitement, and two from family and I will come in you Zion.",
+   "ids": [
+    "o240030140011",
+    "o240030140021",
+    "o240030140031",
+    "o240030140041",
+    "o240030140051",
+    "o240030140061",
+    "o240030140071",
+    "o240030140081",
+    "o240030140091",
+    "o240030140092",
+    "o240030140101",
+    "o240030140102",
+    "o240030140112",
+    "o240030140121",
+    "o240030140131",
+    "o240030140132",
+    "o240030140141",
+    "o240030140142",
+    "o240030140151",
+    "o240030140152",
+    "o240030140161",
+    "o240030140162",
+    "o240030140172",
+    "o240030140181"
+   ],
+   "keep": [
+    "LORD",
+    "Zion",
+    "one",
+    "two"
+   ],
+   "hints": [
+    "return <- imperative/qal you",
+    "ruled <- qatal/qal I",
+    "will take <- weqatal/qal I",
+    "will come in <- weqatal/hiphil I"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "hiphil בּוֹא: the stem may change the sense of 'come in'"
+   ],
+   "final": "Return, wayward children, for I am your husband, declares the LORD. I will take you, one from a town and two from a clan, and bring you to Zion.",
+   "note": "Hebrew baalti can mean \"I am your husband\" or \"I am your master\" (the root also gives the name Baal). \"Husband\" follows the marriage language of the chapter. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 15,
+   "hebrew": "וְנָתַתִּ֥י לָכֶ֛ם רֹעִ֖ים כְּלִבִּ֑י וְרָע֥וּ אֶתְכֶ֖ם דֵּעָ֥ה וְהַשְׂכֵּֽיל׃",
+   "literal": "And I will give shepherding to you like my heart and they will pasture you knowledge and be prudent.",
+   "ids": [
+    "o240030150011",
+    "o240030150012",
+    "o240030150021",
+    "o240030150022",
+    "o240030150031",
+    "o240030150041",
+    "o240030150042",
+    "o240030150043",
+    "o240030150051",
+    "o240030150052",
+    "o240030150062",
+    "o240030150071",
+    "o240030150081",
+    "o240030150082"
+   ],
+   "keep": [],
+   "hints": [
+    "will give <- weqatal/qal I",
+    "will pasture <- weqatal/qal they"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "subject 'they' added from the verb ending"
+   ],
+   "final": "I will give you shepherds who follow my heart, and they will tend you with knowledge and insight.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 16,
+   "hebrew": "וְהָיָ֡ה כִּ֣י תִרְבּוּ֩ וּפְרִיתֶ֨ם בָּאָ֜רֶץ בַּיָּמִ֤ים הָהֵ֨מָּה֙ נְאֻם־יְהוָ֔ה לֹא־יֹ֣אמְרוּ ע֗וֹד אֲרוֹן֙ בְּרִית־יְהוָ֔ה וְלֹ֥א יַעֲלֶ֖ה עַל־לֵ֑ב וְלֹ֤א יִזְכְּרוּ־בוֹ֙ וְלֹ֣א יִפְקֹ֔דוּ וְלֹ֥א יֵעָשֶׂ֖ה עֽוֹד׃",
+   "literal": "And he will be for you will multiply and you will be fruitful in the land in those days utterance of LORD they will not say ark of covenant of LORD still and he will not ascend upon heart and they will not remember in him and they will not reckon and he will not be made still.",
+   "ids": [
+    "o240030160011",
+    "o240030160012",
+    "o240030160021",
+    "o240030160031",
+    "o240030160041",
+    "o240030160042",
+    "o240030160051",
+    "o240030160051ה",
+    "o240030160052",
+    "o240030160061",
+    "o240030160062",
+    "o240030160071",
+    "o240030160072",
+    "o240030160081",
+    "o240030160091",
+    "o240030160111",
+    "o240030160121",
+    "o240030160131",
+    "o240030160141",
+    "o240030160151",
+    "o240030160161",
+    "o240030160171",
+    "o240030160181",
+    "o240030160191",
+    "o240030160201",
+    "o240030160211",
+    "o240030160221",
+    "o240030160222",
+    "o240030160231",
+    "o240030160241",
+    "o240030160251",
+    "o240030160261",
+    "o240030160271"
+   ],
+   "keep": [
+    "LORD"
+   ],
+   "hints": [
+    "will be <- weqatal/qal he",
+    "will multiply <- yiqtol/qal you",
+    "will be fruitful <- weqatal/qal you",
+    "will not say <- yiqtol/qal they",
+    "will not ascend <- yiqtol/qal he",
+    "will not remember <- yiqtol/qal they",
+    "will not reckon <- yiqtol/qal they",
+    "will not be made <- yiqtol/niphal he"
+   ],
+   "flags": [
+    "subject 'he' added from the verb ending",
+    "subject 'you' added from the verb ending",
+    "subject 'they' added from the verb ending"
+   ],
+   "final": "When you have grown in number and become fruitful in the land in those days, declares the LORD, no one will say any more, \"The ark of the LORD's covenant.\" It will not come to mind; no one will remember it or miss it, and no other will be made.",
+   "note": "The verb translated \"miss\" (paqad) is broad (visit, attend to, count, miss); \"miss\" is a judgment call. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 17,
+   "hebrew": "בָּעֵ֣ת הַהִ֗יא יִקְרְא֤וּ לִירוּשָׁלִַ֨ם֙ כִּסֵּ֣א יְהוָ֔ה וְנִקְוּ֨וּ אֵלֶ֧יהָ כָֽל־הַגּוֹיִ֛ם לְשֵׁ֥ם יְהוָ֖ה לִירוּשָׁלִָ֑ם וְלֹא־יֵלְכ֣וּ ע֔וֹד אַחֲרֵ֕י שְׁרִר֖וּת לִבָּ֥ם הָרָֽע׃ס",
+   "literal": "In that time they will call throne of LORD to Jerusalem and all the nations will be awaited towards her to name of LORD to Jerusalem and they will not go still after stubbornness of bad their heart.",
+   "ids": [
+    "o240030170011",
+    "o240030170012",
+    "o240030170021",
+    "o240030170022",
+    "o240030170031",
+    "o240030170041",
+    "o240030170042",
+    "o240030170051",
+    "o240030170061",
+    "o240030170071",
+    "o240030170072",
+    "o240030170081",
+    "o240030170082",
+    "o240030170091",
+    "o240030170101",
+    "o240030170102",
+    "o240030170111",
+    "o240030170112",
+    "o240030170121",
+    "o240030170131",
+    "o240030170132",
+    "o240030170141",
+    "o240030170151",
+    "o240030170161",
+    "o240030170171",
+    "o240030170181",
+    "o240030170191",
+    "o240030170192",
+    "o240030170202"
+   ],
+   "keep": [
+    "Jerusalem",
+    "LORD"
+   ],
+   "hints": [
+    "will call <- yiqtol/qal they",
+    "will be awaited <- weqatal/niphal they",
+    "will not go <- yiqtol/qal they"
+   ],
+   "flags": [
+    "subject 'they' added from the verb ending"
+   ],
+   "final": "At that time they will call Jerusalem \"the throne of the LORD,\" and all the nations will gather there, to the LORD's name in Jerusalem. They will no longer follow the stubbornness of their evil hearts.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 18,
+   "hebrew": "בַּיָּמִ֣ים הָהֵ֔מָּה יֵלְכ֥וּ בֵית־יְהוּדָ֖ה עַל־בֵּ֣ית יִשְׂרָאֵ֑ל וְיָבֹ֤אוּ יַחְדָּו֙ מֵאֶ֣רֶץ צָפ֔וֹן עַל־הָאָ֕רֶץ אֲשֶׁ֥ר הִנְחַ֖לְתִּי אֶת־אֲבוֹתֵיכֶֽם׃",
+   "literal": "In those days house of Judah will go upon house of Israel and they will come in unitedness from land of north upon the land which I inherited your fathers.",
+   "ids": [
+    "o240030180011",
+    "o240030180012",
+    "o240030180021",
+    "o240030180022",
+    "o240030180031",
+    "o240030180041",
+    "o240030180051",
+    "o240030180061",
+    "o240030180071",
+    "o240030180081",
+    "o240030180091",
+    "o240030180092",
+    "o240030180101",
+    "o240030180111",
+    "o240030180112",
+    "o240030180121",
+    "o240030180131",
+    "o240030180141",
+    "o240030180142",
+    "o240030180151",
+    "o240030180161",
+    "o240030180181",
+    "o240030180182"
+   ],
+   "keep": [
+    "Israel",
+    "Judah"
+   ],
+   "hints": [
+    "will go <- yiqtol/qal they",
+    "inherited <- qatal/hiphil I",
+    "will come in <- yiqtol/qal they"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "hiphil נָחַל: the stem may change the sense of 'inherit'",
+    "subject 'they' added from the verb ending"
+   ],
+   "final": "In those days the people of Judah will join the people of Israel, and together they will come from a northern land to the land I gave your ancestors as an inheritance.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 19,
+   "hebrew": "וְאָנֹכִ֣י אָמַ֗רְתִּי אֵ֚יךְ אֲשִׁיתֵ֣ךְ בַּבָּנִ֔ים וְאֶתֶּן־לָךְ֙ אֶ֣רֶץ חֶמְדָּ֔ה נַחֲלַ֥ת צְבִ֖י צִבְא֣וֹת גּוֹיִ֑ם וָאֹמַ֗ר אָבִי֙ תִּקְרְאִי־לִ֔י וּמֵאַחֲרַ֖י לֹ֥א תָשֽׁוּבִי׃",
+   "literal": "And I said how? I will set you in the sons and I will give land of desire inheritance of beauty of armies of nations to you and I said you will call my father to me, and from after me you will not return.",
+   "ids": [
+    "o240030190011",
+    "o240030190012",
+    "o240030190021",
+    "o240030190031",
+    "o240030190041",
+    "o240030190042",
+    "o240030190051",
+    "o240030190051ה",
+    "o240030190052",
+    "o240030190061",
+    "o240030190062",
+    "o240030190071",
+    "o240030190072",
+    "o240030190081",
+    "o240030190091",
+    "o240030190101",
+    "o240030190111",
+    "o240030190121",
+    "o240030190131",
+    "o240030190141",
+    "o240030190142",
+    "o240030190151",
+    "o240030190152",
+    "o240030190171",
+    "o240030190181",
+    "o240030190182",
+    "o240030190191",
+    "o240030190192",
+    "o240030190193",
+    "o240030190194",
+    "o240030190221"
+   ],
+   "keep": [],
+   "hints": [
+    "said <- qatal/qal I",
+    "will set <- yiqtol/qal I",
+    "will give <- yiqtol/qal I",
+    "said <- wayyiqtol/qal I",
+    "will call <- yiqtol/qal you",
+    "will not return <- yiqtol/qal you"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "subject 'you' added from the verb ending"
+   ],
+   "final": "I thought, \"How I wanted to set you among my children and give you a desirable land, the loveliest inheritance of any nation!\" I thought you would address me as \"My Father\" and never turn away from following me.",
+   "note": "The first line can also be read as a question (\"how could I set you among my children?\"); the exclamation fits what follows.",
+   "rename": {}
+  },
+  {
+   "n": 20,
+   "hebrew": "אָכֵ֛ן בָּגְדָ֥ה אִשָּׁ֖ה מֵרֵעָ֑הּ כֵּ֣ן בְּגַדְתֶּ֥ם בִּ֛י בֵּ֥ית יִשְׂרָאֵ֖ל נְאֻם־יְהוָֽה׃",
+   "literal": "Surely woman acted treacherously from her neighbor right you acted treacherously in me house of Israel utterance of LORD.",
+   "ids": [
+    "o240030200011",
+    "o240030200021",
+    "o240030200031",
+    "o240030200041",
+    "o240030200042",
+    "o240030200043",
+    "o240030200051",
+    "o240030200061",
+    "o240030200071",
+    "o240030200072",
+    "o240030200081",
+    "o240030200091",
+    "o240030200101",
+    "o240030200111"
+   ],
+   "keep": [
+    "Israel",
+    "LORD"
+   ],
+   "hints": [
+    "acted treacherously <- qatal/qal she",
+    "acted treacherously <- qatal/qal you"
+   ],
+   "flags": [
+    "subject 'you' added from the verb ending"
+   ],
+   "final": "Truly, as a wife breaks faith with her companion, so you have broken faith with me, house of Israel, declares the LORD.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 21,
+   "hebrew": "עַל־שְׁפָיִ֣ים נִשְׁמָ֔ע ק֚וֹל בְּכִ֥י תַחֲנוּנֵ֖י בְּנֵ֣י יִשְׂרָאֵ֑ל כִּ֤י הֶעֱוּוּ֙ אֶת־דַּרְכָּ֔ם שָׁכְח֖וּ אֶת־יְהֹוָ֥ה אֱלֹהֵיהֶֽם׃",
+   "literal": "Upon barenesses voice weeping of supplications of sons of Israel was heard for they twisted their way they forgot LORD their God.",
+   "ids": [
+    "o240030210011",
+    "o240030210021",
+    "o240030210031",
+    "o240030210041",
+    "o240030210051",
+    "o240030210061",
+    "o240030210071",
+    "o240030210081",
+    "o240030210091",
+    "o240030210101",
+    "o240030210121",
+    "o240030210122",
+    "o240030210131",
+    "o240030210151",
+    "o240030210161",
+    "o240030210162"
+   ],
+   "keep": [
+    "Israel",
+    "LORD"
+   ],
+   "hints": [
+    "was heard <- qatal/niphal he",
+    "twisted <- qatal/hiphil they",
+    "forgot <- qatal/qal they"
+   ],
+   "flags": [
+    "subject 'they' added from the verb ending",
+    "hiphil עָוָה: the stem may change the sense of 'twist'"
+   ],
+   "final": "A voice is heard on the bare hills, the weeping and pleading of the people of Israel, because they have twisted their way and forgotten the LORD their God.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 22,
+   "hebrew": "שׁ֚וּבוּ בָּנִ֣ים שׁוֹבָבִ֔ים אֶרְפָּ֖ה מְשׁוּבֹֽתֵיכֶ֑ם הִנְנוּ֙ אָתָ֣נוּ לָ֔ךְ כִּ֥י אַתָּ֖ה יְהֹוָ֥ה אֱלֹהֵֽינוּ׃",
+   "literal": "Return turning back sons I will heal your faithlessnesses us are look came to you for you are LORD our God.",
+   "ids": [
+    "o240030220011",
+    "o240030220021",
+    "o240030220031",
+    "o240030220041",
+    "o240030220051",
+    "o240030220052",
+    "o240030220061",
+    "o240030220062",
+    "o240030220071",
+    "o240030220081",
+    "o240030220082",
+    "o240030220091",
+    "o240030220101",
+    "o240030220111",
+    "o240030220121",
+    "o240030220122"
+   ],
+   "keep": [
+    "LORD"
+   ],
+   "hints": [
+    "return <- imperative/qal you",
+    "will heal <- yiqtol/qal I",
+    "came <- qatal/qal we"
+   ],
+   "flags": [
+    "subject 'I' added from the verb ending",
+    "verbless clause: 'is/are' added, tense unknown"
+   ],
+   "final": "Return, wayward children; I will cure you of your waywardness. \"Here we are; we have come to you, for you are the LORD our God.\"",
+   "note": "The second sentence is the people's answer.",
+   "rename": {}
+  },
+  {
+   "n": 23,
+   "hebrew": "אָכֵ֥ן לַשֶּׁ֛קֶר מִגְּבָע֖וֹת הָמ֣וֹן הָרִ֑ים אָכֵן֙ בַּיהֹוָ֣ה אֱלֹהֵ֔ינוּ תְּשׁוּעַ֖ת יִשְׂרָאֵֽל׃",
+   "literal": "From hills crowd of mountains are surely to the deception deliverance of Israel is surely in LORD our God.",
+   "ids": [
+    "o240030230011",
+    "o240030230021",
+    "o240030230021ה",
+    "o240030230022",
+    "o240030230031",
+    "o240030230032",
+    "o240030230041",
+    "o240030230051",
+    "o240030230061",
+    "o240030230071",
+    "o240030230072",
+    "o240030230081",
+    "o240030230082",
+    "o240030230091",
+    "o240030230101"
+   ],
+   "keep": [
+    "Israel",
+    "LORD"
+   ],
+   "hints": [],
+   "flags": [
+    "verbless clause: 'is/are' added, tense unknown"
+   ],
+   "final": "Truly the hills are a deception, and so is the uproar on the mountains. Truly, Israel's salvation is in the LORD our God.",
+   "note": null,
+   "rename": {}
+  },
+  {
+   "n": 24,
+   "hebrew": "וְהַבֹּ֗שֶׁת אָֽכְלָ֛ה אֶת־יְגִ֥יעַ אֲבוֹתֵ֖ינוּ מִנְּעוּרֵ֑ינוּ אֶת־צֹאנָם֙ וְאֶת־בְּקָרָ֔ם אֶת־בְּנֵיהֶ֖ם וְאֶת־בְּנוֹתֵיהֶֽם׃",
+   "literal": "And the shame ate toil of our fathers from our youths their flock and their cattle their sons and their daughters.",
+   "ids": [
+    "o240030240011",
+    "o240030240012",
+    "o240030240013",
+    "o240030240021",
+    "o240030240041",
+    "o240030240051",
+    "o240030240052",
+    "o240030240061",
+    "o240030240062",
+    "o240030240063",
+    "o240030240081",
+    "o240030240082",
+    "o240030240091",
+    "o240030240101",
+    "o240030240102",
+    "o240030240121",
+    "o240030240122",
+    "o240030240131",
+    "o240030240141",
+    "o240030240142"
+   ],
+   "keep": [],
+   "hints": [
+    "ate <- qatal/qal she"
+   ],
+   "flags": [],
+   "final": "But the shameful thing has devoured everything our ancestors worked for since our youth: their sheep and cattle, their sons and daughters.",
+   "note": "Hebrew bosheth, \"shame\", is often understood as a stand-in for Baal. Flagged for review.",
+   "rename": {}
+  },
+  {
+   "n": 25,
+   "hebrew": "נִשְׁכְּבָ֣ה בְּבָשְׁתֵּ֗נוּ וּֽתְכַסֵּנוּ֮ כְּלִמָּתֵנוּ֒ כִּי֩ לַיהוָ֨ה אֱלֹהֵ֜ינוּ חָטָ֗אנוּ אֲנַ֨חְנוּ֙ וַאֲבוֹתֵ֔ינוּ מִנְּעוּרֵ֖ינוּ וְעַד־הַיּ֣וֹם הַזֶּ֑ה וְלֹ֣א שָׁמַ֔עְנוּ בְּק֖וֹל יְהֹוָ֥ה אֱלֹהֵֽינוּ׃ס",
+   "literal": "Let us lie down in our shame and our shame will cover us for to LORD our God we and our fathers sinned from our youths and till this day and we did not hear in voice of LORD our God.",
+   "ids": [
+    "o240030250011",
+    "o240030250021",
+    "o240030250022",
+    "o240030250023",
+    "o240030250031",
+    "o240030250032",
+    "o240030250033",
+    "o240030250041",
+    "o240030250042",
+    "o240030250051",
+    "o240030250061",
+    "o240030250062",
+    "o240030250071",
+    "o240030250072",
+    "o240030250081",
+    "o240030250091",
+    "o240030250101",
+    "o240030250102",
+    "o240030250103",
+    "o240030250111",
+    "o240030250112",
+    "o240030250113",
+    "o240030250121",
+    "o240030250122",
+    "o240030250132",
+    "o240030250142",
+    "o240030250151",
+    "o240030250161",
+    "o240030250171",
+    "o240030250172",
+    "o240030250181",
+    "o240030250191",
+    "o240030250192"
+   ],
+   "keep": [
+    "LORD"
+   ],
+   "hints": [
+    "let us lie down <- cohortative/qal we",
+    "will cover <- yiqtol/piel she",
+    "sinned <- qatal/qal we",
+    "did not hear <- qatal/qal we"
+   ],
+   "flags": [
+    "piel כָּסָה: the stem may change the sense of 'cover'",
+    "subject 'we' added from the verb ending"
+   ],
+   "final": "Let us lie down in our shame, and let our disgrace cover us; for we and our ancestors have sinned against the LORD our God, from our youth to this day, and we have never listened to the LORD our God.",
+   "note": null,
+   "rename": {}
+  }
+ ],
+ "smoothed": {
+  "by": "Claude (stand-in for the free-model smoothing pass; no API keys were available in this session)",
+  "date": "2026-10-19",
+  "method": "Written from the mechanical draft, its hints and the Hebrew. No KJV or other English Bible text was consulted; the KJV is used only by the gate, to flag overlap."
+ }
+}

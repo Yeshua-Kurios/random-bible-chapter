@@ -31,11 +31,19 @@
    ],
    "review": "hand-polished",
    "revised": []
+  },
+  "jeremiah-3": {
+   "date": "2026-10-19",
+   "source": "from-hebrew",
+   "drafters": [
+    "mechanical (MACULA Hebrew + STEPBible gloss)"
+   ],
+   "review": "mechanical + claude-smoothed",
+   "revised": []
   }
  },
  "failed": {
   "1-chronicles-28": 1,
-  "jeremiah-3": 1,
   "psalms-62": 1
  },
  "updated": "2026-10-18"

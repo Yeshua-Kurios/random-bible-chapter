@@ -2,6 +2,8 @@
 
 KJV27 is the KJV made into clear, correct, modern English. It starts from the KJV text and its verse structure, with two jobs: remove every trace of archaic English, and correct places where the KJV renders the Hebrew or Greek poorly or misleadingly. It is not a fresh translation from the original languages. The name is an unofficial, internal one for personal use; it is not an official or published Bible version.
 
+**From-Hebrew chapters.** Chapters marked `"source": "from-hebrew"` in `par/progress.json` are translated from the Hebrew by `par/pipeline/mech/`, not modernized from the KJV. The KJV-based rules below do not apply to them; their rules live in `par/pipeline/mech/gate.py` (no archaic English, names and numbers kept, every source word accounted for, KJV overlap flagged).
+
 ## Structure (never changes)
 - Keep verse count, verse order, and the `#` paragraph markers exactly as in `kjv/`.
 

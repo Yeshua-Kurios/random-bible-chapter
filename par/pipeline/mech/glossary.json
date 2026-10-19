@@ -1,0 +1,9 @@
+{
+  "note": "This project's own fixed rendering decisions. They win over the lexicon. Keys are extended Strong numbers (first four digits); add one here whenever a person or Claude rules on a word, so the same call is never made twice.",
+  "words": {
+    "H3068": "LORD",
+    "H3069": "LORD",
+    "H0136": "Lord",
+    "H0430": "God"
+  }
+}
