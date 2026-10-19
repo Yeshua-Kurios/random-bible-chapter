@@ -24,6 +24,15 @@
    "review": "hand-polished",
    "revised": []
   },
+  "jeremiah-3": {
+   "date": "2026-10-19",
+   "drafters": [
+    "mechanical (MACULA Hebrew + STEPBible gloss)"
+   ],
+   "review": "mechanical + claude-smoothed",
+   "revised": [],
+   "source": "from-hebrew"
+  },
   "proverbs-12": {
    "date": "2026-10-18",
    "drafters": [
@@ -32,19 +41,42 @@
    "review": "hand-polished",
    "revised": []
   },
-  "jeremiah-3": {
+  "psalms-132": {
    "date": "2026-10-19",
-   "source": "from-hebrew",
    "drafters": [
-    "mechanical (MACULA Hebrew + STEPBible gloss)"
+    "gemini (gemini-3.5-flash)",
+    "groq (openai/gpt-oss-120b)"
    ],
-   "review": "mechanical + claude-smoothed",
+   "review": "fail",
+   "revised": [
+    3,
+    7,
+    12
+   ]
+  },
+  "psalms-3": {
+   "date": "2026-10-19",
+   "drafters": [
+    "nvidia (nvidia/nemotron-3-super-120b-a12b)"
+   ],
+   "review": "fail",
+   "revised": [
+    7
+   ]
+  },
+  "psalms-62": {
+   "date": "2026-10-19",
+   "drafters": [
+    "groq (openai/gpt-oss-120b)"
+   ],
+   "review": "error",
    "revised": []
   }
  },
  "failed": {
-  "1-chronicles-28": 1,
-  "psalms-62": 1
+  "1-chronicles-28": 2,
+  "acts-27": 1,
+  "numbers-9": 1
  },
- "updated": "2026-10-18"
+ "updated": "2026-10-19"
 }
