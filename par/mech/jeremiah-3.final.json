@@ -1,0 +1,135 @@
+{
+ "by": "Claude (stand-in for the free-model smoothing pass; no API keys were available in this session)",
+ "date": "2026-10-19",
+ "method": "Written from the mechanical draft, its hints and the Hebrew. No KJV or other English Bible text was consulted; the KJV is used only by the gate, to flag overlap.",
+ "verses": [
+  {
+   "n": 1,
+   "final": "It is said: if a man divorces his wife, and she leaves him and becomes another man's wife, can he ever go back to her? Would that land not be thoroughly defiled? You, though, have prostituted yourself with many lovers. Yet come back to me, declares the LORD.",
+   "note": "The last clause (Hebrew shov, infinitive absolute) is read as an invitation, \"come back to me\". It can also be read as a question, \"would you come back to me?\". Flagged for review."
+  },
+  {
+   "n": 2,
+   "final": "Lift your eyes to the bare hills and look: where have you not been sexually used? You sat by the roadsides waiting for lovers, like a nomad in the desert. You have defiled the land with your prostitution and your wickedness.",
+   "rename": {
+    "Arab": "nomad"
+   },
+   "note": "Hebrew aravi is usually \"Arab\", a desert dweller; \"nomad\" gives the sense (someone waiting by the road). The passive verb here (pual of shagal) is a blunt word for being used sexually; flagged for review."
+  },
+  {
+   "n": 3,
+   "final": "So the showers have been held back, and the spring rains have not come. Yet you have the brazen look of a prostitute, and you refuse to be ashamed.",
+   "note": "Literally \"the forehead of a prostitute woman\"; rendered by what it means, a shameless face."
+  },
+  {
+   "n": 4,
+   "final": "Have you not just now called out to me, \"My father, you are the close friend of my youth\"?",
+   "note": "Hebrew alluf can mean close friend, guide or chief; the draft gloss was \"chief\". \"Close friend\" fits the marriage language of the chapter. Flagged for review."
+  },
+  {
+   "n": 5,
+   "final": "Will he hold a grudge forever? Will he stay angry to the end? That is how you talk, and yet you do all the evil you can.",
+   "note": "The Hebrew gives no object for the two verbs (\"keep\"); \"a grudge\" and \"angry\" supply it. The last verb (\"were able\") is read as \"you do all you can\". Flagged for review."
+  },
+  {
+   "n": 6,
+   "final": "In the days of King Josiah, the LORD said to me, \"Have you seen what apostate Israel did? She went up on every high hill and under every leafy tree, and there she prostituted herself.\"",
+   "note": "The final verb is tagged second person in the data but fits the surrounding \"she\"; read as \"she\". \"Apostate\" renders meshuvah, \"turning away\", the same root as the \"return\" verbs in this chapter."
+  },
+  {
+   "n": 7,
+   "final": "I thought, \"After she has done all this, she will come back to me.\" But she did not return, and her unfaithful sister Judah saw it.",
+   "note": "Hebrew bogedah (from bagad, \"to act treacherously\") is rendered \"unfaithful\", in keeping with the marriage imagery."
+  },
+  {
+   "n": 8,
+   "final": "I saw that, because of all her adulteries, I sent apostate Israel away and handed her divorce papers. Yet her unfaithful sister Judah was not afraid; she too went and prostituted herself.",
+   "note": "The Hebrew has a relative clause (\"for all the reasons that Israel committed adultery\"); compressed to \"because of all her adulteries\"."
+  },
+  {
+   "n": 9,
+   "final": "Because of the noise of her prostitution, she defiled the land; she committed adultery with stone and with wood.",
+   "note": "The consonants can be read \"sound\" (as pointed here) or \"lightness\", which would give \"because she took her prostitution lightly\". \"Stone and wood\" means idols, kept literal. Flagged for review."
+  },
+  {
+   "n": 10,
+   "final": "Even after all this, her unfaithful sister Judah did not return to me wholeheartedly, but only in pretense, declares the LORD.",
+   "note": null
+  },
+  {
+   "n": 11,
+   "final": "The LORD said to me, \"Apostate Israel has proved herself more righteous than unfaithful Judah.\"",
+   "note": "Literally \"Israel's self has been righteous\"; the comparison is the sense."
+  },
+  {
+   "n": 12,
+   "final": "Go and call out this message to the north: \"Return, apostate Israel,\" declares the LORD. \"I will not look at you in anger, for I am faithful,\" declares the LORD; \"I will not stay angry forever.\"",
+   "note": "\"I will not let my face fall on you\" is an idiom for not showing displeasure. Hebrew chasid (draft gloss \"pious\") is read as \"faithful\", one who keeps covenant love. Flagged for review."
+  },
+  {
+   "n": 13,
+   "final": "Only acknowledge your guilt: you rebelled against the LORD your God, you scattered your ways among strangers under every leafy tree, and you did not listen to my voice, declares the LORD.",
+   "note": "\"Scattered your ways\" is literal; it is probably an idiom for giving yourself around. Flagged for review."
+  },
+  {
+   "n": 14,
+   "final": "Return, wayward children, for I am your husband, declares the LORD. I will take you, one from a town and two from a clan, and bring you to Zion.",
+   "note": "Hebrew baalti can mean \"I am your husband\" or \"I am your master\" (the root also gives the name Baal). \"Husband\" follows the marriage language of the chapter. Flagged for review."
+  },
+  {
+   "n": 15,
+   "final": "I will give you shepherds who follow my heart, and they will tend you with knowledge and insight.",
+   "note": null
+  },
+  {
+   "n": 16,
+   "final": "When you have grown in number and become fruitful in the land in those days, declares the LORD, no one will say any more, \"The ark of the LORD's covenant.\" It will not come to mind; no one will remember it or miss it, and no other will be made.",
+   "note": "The verb translated \"miss\" (paqad) is broad (visit, attend to, count, miss); \"miss\" is a judgment call. Flagged for review."
+  },
+  {
+   "n": 17,
+   "final": "At that time they will call Jerusalem \"the throne of the LORD,\" and all the nations will gather there, to the LORD's name in Jerusalem. They will no longer follow the stubbornness of their evil hearts.",
+   "note": null
+  },
+  {
+   "n": 18,
+   "final": "In those days the people of Judah will join the people of Israel, and together they will come from a northern land to the land I gave your ancestors as an inheritance.",
+   "note": null
+  },
+  {
+   "n": 19,
+   "final": "I thought, \"How I wanted to set you among my children and give you a desirable land, the loveliest inheritance of any nation!\" I thought you would address me as \"My Father\" and never turn away from following me.",
+   "note": "The first line can also be read as a question (\"how could I set you among my children?\"); the exclamation fits what follows."
+  },
+  {
+   "n": 20,
+   "final": "Truly, as a wife breaks faith with her companion, so you have broken faith with me, house of Israel, declares the LORD.",
+   "note": null
+  },
+  {
+   "n": 21,
+   "final": "A voice is heard on the bare hills, the weeping and pleading of the people of Israel, because they have twisted their way and forgotten the LORD their God.",
+   "note": null
+  },
+  {
+   "n": 22,
+   "final": "Return, wayward children; I will cure you of your waywardness. \"Here we are; we have come to you, for you are the LORD our God.\"",
+   "note": "The second sentence is the people's answer."
+  },
+  {
+   "n": 23,
+   "final": "Truly the hills are a deception, and so is the uproar on the mountains. Truly, Israel's salvation is in the LORD our God.",
+   "note": null
+  },
+  {
+   "n": 24,
+   "final": "But the shameful thing has devoured everything our ancestors worked for since our youth: their sheep and cattle, their sons and daughters.",
+   "note": "Hebrew bosheth, \"shame\", is often understood as a stand-in for Baal. Flagged for review."
+  },
+  {
+   "n": 25,
+   "final": "Let us lie down in our shame, and let our disgrace cover us; for we and our ancestors have sinned against the LORD our God, from our youth to this day, and we have never listened to the LORD our God.",
+   "note": null
+  }
+ ]
+}
