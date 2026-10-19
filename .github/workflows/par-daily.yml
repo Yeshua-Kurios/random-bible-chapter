@@ -1,11 +1,12 @@
 name: KJV27 daily
 
-# 5 am US Eastern. GitHub cron is UTC, so it runs at 09:00 and 10:00 UTC (5 am EDT and 5 am EST)
-# and the first step lets through only the run that lands in the 5-6 am Eastern window, once per day.
+# 5 am US Eastern. GitHub cron is UTC and best-effort (runs can be delayed or dropped), so it fires every
+# hour from 09:00 to 14:00 UTC (5 am EDT / 5 am EST first). The first step lets a run through only from
+# 5 am Eastern onward, and only if today's branch does not exist yet, so a missed 5 am is caught up by
+# the next hourly trigger and a successful day never runs twice.
 on:
   schedule:
-    - cron: "0 9 * * *"
-    - cron: "0 10 * * *"
+    - cron: "0 9-14 * * *"
   workflow_dispatch:
     inputs:
       count:
@@ -36,8 +37,8 @@ jobs:
           hour=$(TZ=America/New_York date +%H)
           branch="par/daily-$day"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "05" ] && [ "$hour" != "06" ]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not 5 am Eastern (hour $hour); skipping."
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$((10#$hour))" -lt 5 ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "Before 5 am Eastern (hour $hour); skipping."
           elif git ls-remote --exit-code --heads "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" "$branch" >/dev/null 2>&1 \
                && [ "${{ github.event_name }}" = "schedule" ]; then
             echo "run=false" >> "$GITHUB_OUTPUT"; echo "$branch already exists; skipping."
