@@ -1,18 +1,18 @@
 {
-  "updated": "2026-10-18T16:25:19+00:00",
-  "total_tokens": 68826,
+  "updated": "2026-10-21T14:27:32+00:00",
+  "total_tokens": 178445,
   "providers": {
     "groq": {
-      "calls": 14,
-      "prompt_tokens": 17501,
-      "completion_tokens": 30017,
-      "total_tokens": 47518
+      "calls": 44,
+      "prompt_tokens": 64023,
+      "completion_tokens": 74746,
+      "total_tokens": 138769
     },
     "gemini": {
-      "calls": 1,
-      "prompt_tokens": 1047,
-      "completion_tokens": 730,
-      "total_tokens": 3339
+      "calls": 6,
+      "prompt_tokens": 9523,
+      "completion_tokens": 2357,
+      "total_tokens": 21707
     },
     "nvidia": {
       "calls": 5,
