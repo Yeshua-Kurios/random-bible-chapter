@@ -1,0 +1,47 @@
+name: KJV27 model bake-off (test)
+
+# Manual only. Runs par/pipeline/bakeoff.py: drafts one short chapter plus study notes through
+# Claude Sonnet 5.5, GPT-5.1, Gemini 3.1 Pro and DeepSeek V4 Pro directly (not through
+# claude-code-action), for a real, apples-to-apples quality/cost comparison. Read-only: never
+# commits, never pushes, never opens a PR. Results are a workflow artifact for you to read by hand.
+on:
+  workflow_dispatch:
+    inputs:
+      book:
+        description: kjv/ file stem
+        default: "3-john"
+      chapter:
+        description: Chapter number
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  bakeoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run the bake-off
+        run: python par/pipeline/bakeoff.py --book "${{ inputs.book }}" --chapter "${{ inputs.chapter }}"
+
+      - name: Summary
+        if: always()
+        run: cat par/bakeoff-out/REPORT.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bakeoff-${{ inputs.book }}-${{ inputs.chapter }}
+          path: par/bakeoff-out

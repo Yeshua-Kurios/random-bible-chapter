@@ -1,0 +1,67 @@
+name: KJV27 daily polish
+
+# 08:43 UTC = 04:43 America/New_York during daylight saving (EDT). In winter (EST, UTC-5) this
+# drifts an hour earlier local time, to 03:43 America/New_York, since this is a fixed UTC cron.
+on:
+  schedule:
+    - cron: "43 8 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: kjv27-daily-polish
+  cancel-in-progress: false
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check Claude auth is set
+        run: |
+          if [ -z "${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" ] && [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "::error::Neither CLAUDE_CODE_OAUTH_TOKEN nor ANTHROPIC_API_KEY is set. Add one as a repository secret (Settings > Secrets and variables > Actions): CLAUDE_CODE_OAUTH_TOKEN from 'claude setup-token' (needs the CLI), or ANTHROPIC_API_KEY from console.anthropic.com > Settings > API Keys (works from a browser, no CLI needed)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compute today's branch (America/New_York)
+        id: when
+        run: |
+          day=$(TZ=America/New_York date +%F)
+          echo "branch=claude/kjv27-$day" >> "$GITHUB_OUTPUT"
+          echo "day=$day" >> "$GITHUB_OUTPUT"
+
+      - name: Run KJV27 daily polish
+        uses: anthropics/claude-code-action@c511ba74c10fdd478854737af777d6aaf10402a0 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read .github/prompts/kjv27-daily-polish.md in this repository and follow it exactly.
+            Today's date (America/New_York) is ${{ steps.when.outputs.day }}.
+            Your working branch is ${{ steps.when.outputs.branch }}; create it from the latest origin/main.
+            You have `git` and the `gh` CLI, already authenticated via GH_TOKEN. Never push to main,
+            never force-push, never merge, never enable auto-merge. Open at most one draft PR.
+          claude_args: |
+            --max-turns 60
+            --model claude-sonnet-5-5
+            --allowedTools Bash,Read,Write,Edit,Glob,Grep
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Branch: ${{ steps.when.outputs.branch }}" >> "$GITHUB_STEP_SUMMARY"
