@@ -1,12 +1,14 @@
 name: KJV27 daily
 
+# Schedule disabled 2026-10-24: superseded by .github/workflows/kjv27-daily-polish.yml (a Claude Code
+# Action agent run), which now owns the nightly PR. Kept as workflow_dispatch only, for manual reruns
+# of this older multi-provider pipeline if ever needed.
+#
 # 5 am US Eastern. GitHub cron is UTC and best-effort (runs can be delayed or dropped), so it fires every
 # hour from 09:00 to 14:00 UTC (5 am EDT / 5 am EST first). The first step lets a run through only from
 # 5 am Eastern onward, and only if today's branch does not exist yet, so a missed 5 am is caught up by
 # the next hourly trigger and a successful day never runs twice.
 on:
-  schedule:
-    - cron: "0 9-14 * * *"
   workflow_dispatch:
     inputs:
       count:
