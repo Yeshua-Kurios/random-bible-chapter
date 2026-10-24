@@ -5,10 +5,14 @@
 Whenever a task requires researching which resource to use — an LLM model, an
 API, a hosting service, a library — for a quality-vs-cost tradeoff:
 
-1. Scope the question first: confirm what's actually a free choice versus
-   constrained by the system already in place (e.g. `claude-code-action` only
-   runs Anthropic models, so "best LLM API" for a job using it is a
-   within-Claude-family choice, not a cross-provider one).
+1. **Always survey all realistic options across every provider — never limit
+   the search to one provider or one family up front.** If the tool currently
+   in place is constrained (e.g. `claude-code-action` only runs Anthropic
+   models), that's a separate, later consideration — note it as a switching
+   cost or integration barrier against the winning option, don't use it to
+   narrow the research itself. The owner decides whether a constraint is
+   worth keeping; research shouldn't decide that silently by never looking
+   past it.
 2. Do the research, then **spawn a subagent to audit the research's
    thoroughness** before presenting conclusions — have it check for
    unverified claims, rounded-away caveats, internally inconsistent sources,
