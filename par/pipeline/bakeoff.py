@@ -179,14 +179,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book", default="3-john")
     ap.add_argument("--chapter", type=int, default=1)
+    ap.add_argument("--providers", default="anthropic,openai,gemini,deepseek",
+                     help="comma-separated subset of anthropic,openai,gemini,deepseek")
     args = ap.parse_args()
+    providers = [p.strip() for p in args.providers.split(",") if p.strip()]
 
     title, verses = dryrun.load_kjv(args.book, args.chapter)
     kjv_text = dryrun.kjv_block(verses)
     OUT.mkdir(parents=True, exist_ok=True)
 
     results = []
-    for name in ["anthropic", "openai", "gemini", "deepseek"]:
+    for name in providers:
         print("running %s ..." % name, file=sys.stderr)
         res = run_one(name, title, args.chapter, verses, kjv_text)
         results.append(res)

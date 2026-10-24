@@ -13,6 +13,9 @@ on:
       chapter:
         description: Chapter number
         default: "1"
+      providers:
+        description: Comma-separated subset of anthropic,openai,gemini,deepseek
+        default: "anthropic,openai,gemini,deepseek"
 
 permissions:
   contents: read
@@ -34,7 +37,7 @@ jobs:
           python-version: "3.12"
 
       - name: Run the bake-off
-        run: python par/pipeline/bakeoff.py --book "${{ inputs.book }}" --chapter "${{ inputs.chapter }}"
+        run: python par/pipeline/bakeoff.py --book "${{ inputs.book }}" --chapter "${{ inputs.chapter }}" --providers "${{ inputs.providers }}"
 
       - name: Summary
         if: always()
