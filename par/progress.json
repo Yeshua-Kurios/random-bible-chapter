@@ -1,5 +1,16 @@
 {
  "chapters": {
+  "1-chronicles-28": {
+   "date": "2026-10-24",
+   "drafters": [
+    "groq (openai/gpt-oss-120b)"
+   ],
+   "review": "fail",
+   "revised": [
+    2,
+    17
+   ]
+  },
   "1-peter-2": {
    "date": "2026-10-18",
    "drafters": [
@@ -24,6 +35,32 @@
    "review": "hand-polished",
    "revised": []
   },
+  "jeremiah-3": {
+   "date": "2026-10-19",
+   "drafters": [
+    "mechanical (MACULA Hebrew + STEPBible gloss)"
+   ],
+   "review": "mechanical + claude-smoothed",
+   "revised": [],
+   "source": "from-hebrew"
+  },
+  "numbers-9": {
+   "date": "2026-10-24",
+   "drafters": [
+    "groq (openai/gpt-oss-120b)"
+   ],
+   "review": "fail",
+   "revised": [
+    2,
+    3,
+    7,
+    10,
+    11,
+    12,
+    13,
+    14
+   ]
+  },
   "proverbs-12": {
    "date": "2026-10-18",
    "drafters": [
@@ -32,19 +69,41 @@
    "review": "hand-polished",
    "revised": []
   },
-  "jeremiah-3": {
-   "date": "2026-10-19",
-   "source": "from-hebrew",
+  "psalms-132": {
+   "date": "2026-10-24",
    "drafters": [
-    "mechanical (MACULA Hebrew + STEPBible gloss)"
+    "gemini (gemini-3.5-flash)",
+    "groq (openai/gpt-oss-120b)"
    ],
-   "review": "mechanical + claude-smoothed",
+   "review": "fail",
+   "revised": [
+    3,
+    7,
+    12
+   ]
+  },
+  "psalms-3": {
+   "date": "2026-10-24",
+   "drafters": [
+    "groq (openai/gpt-oss-120b)"
+   ],
+   "review": "pass",
    "revised": []
+  },
+  "psalms-62": {
+   "date": "2026-10-24",
+   "drafters": [
+    "gemini (gemini-3.5-flash)"
+   ],
+   "review": "fail",
+   "revised": [
+    2,
+    6
+   ]
   }
  },
  "failed": {
-  "1-chronicles-28": 1,
-  "psalms-62": 1
+  "acts-27": 1
  },
- "updated": "2026-10-18"
+ "updated": "2026-10-24"
 }
