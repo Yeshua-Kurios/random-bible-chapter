@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Check CLAUDE_CODE_OAUTH_TOKEN is set
+      - name: Check Claude auth is set
         run: |
-          if [ -z "${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" ]; then
-            echo "::error::Secret CLAUDE_CODE_OAUTH_TOKEN is not set. Run 'claude setup-token' locally and add the output as a repository secret named CLAUDE_CODE_OAUTH_TOKEN (Settings > Secrets and variables > Actions)."
+          if [ -z "${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" ] && [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "::error::Neither CLAUDE_CODE_OAUTH_TOKEN nor ANTHROPIC_API_KEY is set. Add one as a repository secret (Settings > Secrets and variables > Actions): CLAUDE_CODE_OAUTH_TOKEN from 'claude setup-token' (needs the CLI), or ANTHROPIC_API_KEY from console.anthropic.com > Settings > API Keys (works from a browser, no CLI needed)."
             exit 1
           fi
 
@@ -47,6 +47,7 @@ jobs:
         uses: anthropics/claude-code-action@c511ba74c10fdd478854737af777d6aaf10402a0 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
             Read .github/prompts/kjv27-daily-polish.md in this repository and follow it exactly.
             Today's date (America/New_York) is ${{ steps.when.outputs.day }}.
@@ -55,7 +56,7 @@ jobs:
             never force-push, never merge, never enable auto-merge. Open at most one draft PR.
           claude_args: |
             --max-turns 60
-            --model claude-opus-5-5
+            --model claude-sonnet-5-5
             --allowedTools Bash,Read,Write,Edit,Glob,Grep
         env:
           GH_TOKEN: ${{ github.token }}
