@@ -11,13 +11,13 @@ Read first, and follow their rules: `par/HANDOFF.md` ("Standing instruction", "D
 - Only work on the branch `claude/kjv27-<YYYY-MM-DD>` (America/New_York date). Create it from the latest `main`.
 - Open at most one PR, as a **draft**, with `gh pr create --draft`.
 
-## 1. Pick up to 3 chapters
+## 1. Pick 1 chapter
 
 - `git fetch origin main` and diff against it so you're working from the latest state.
 - List open PRs (`gh pr list --state open --json headRefName,files`) and remote branches (`git ls-remote --heads origin`). Build a set of chapters already claimed: any chapter touched by an open PR, or by a branch matching `par/daily-*`, `claude/kjv27-*`, or `optimizer/*` (other than the one you are about to create). Skip those.
 - **Priority (a) — polish existing drafts.** Look at `par/progress.json`. Any chapter in `par/text/` whose entry's `review` is **not** `"hand-polished"` and **not** `"mechanical + claude-smoothed"`, and whose `source` is not `"from-hebrew"`, is an unpolished free-model draft. Among these, read the ones whose `par/review/<slug>.md` has `review: error` or a `check:` warning first — they're most likely to have a real problem.
 - **Priority (b) — draft new chapters.** Only after (a) is exhausted or none qualify: take the next chapters in `par/queue.json` `order` that have no `par/text/<slug>.json` file yet and are not in `progress.json`'s `failed` map with a strike count of 3. Draft these from `kjv/<book>.json` following `par/STYLE.md`.
-- Stop at 3 chapters total across (a) and (b). If nothing qualifies at all, say so in one line (no PR) and stop — this is a normal, successful outcome, not a failure.
+- Stop at 1 chapter total across (a) and (b). If nothing qualifies at all, say so in one line (no PR) and stop — this is a normal, successful outcome, not a failure.
 
 ## 2. Polishing / drafting rules (par/STYLE.md)
 

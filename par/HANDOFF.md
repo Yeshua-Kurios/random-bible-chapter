@@ -58,6 +58,10 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
 2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
 
+## State (2026-10-24 addendum)
+- Psalm 62 hand-polished by Claude (`review: hand-polished`, drafters `["claude"]`) and moved out of `failed` in `par/progress.json`; v3's Hebrew is disputed and flagged for review in `par/review/psalms-62.md` and `par/NOTES.md`. 3 study notes added (`par/notes/psalms-62.json`).
+- The KJV27 daily job moved from a Claude cloud scheduled task to `.github/workflows/kjv27-daily-polish.yml` (GitHub Actions + `claude-code-action`, Sonnet 5.5, authenticated with `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`). The old `par-daily.yml` schedule is disabled (kept as `workflow_dispatch` only) so the two can't race. A model bake-off (`par/pipeline/bakeoff.py`, `.github/workflows/kjv27-model-bakeoff.yml`) compared Claude/GPT-5.1/Gemini/DeepSeek on 3 chapters; Claude was kept for the daily job.
+
 ## State (end of 2026-10-18 session; PRs #20-#26 are all merged to main)
 - Pipeline: `par/pipeline/{config.json,dryrun.py,rules.py,daily.py,test_rules.py,make_queue.py}`. `dryrun.py` modernizes one chapter (draft in chunks of 12 verses, `rules.py` gate with retry, ONE `review` call, one revision pass on flagged verses, re-check of revised verses only). `daily.py` picks the next chapters from `par/queue.json`, writes `par/text/<book>-<n>.json` (what the app reads), `par/review/<book>-<n>.md` (KJV beside KJV27, correction notes, `check:` warnings) and `par/progress.json`. Run `python par/pipeline/test_rules.py` after touching the rules.
 - Accepted chapters (hand-polished by Claude, `review: hand-polished`): 1 Peter 2, 2 Kings 16, Ezekiel 31, Proverbs 12. Verses resting on uncertain Hebrew are flagged in their notes and in `par/NOTES.md`. These are the only KJV27 chapters in the app; the five pilots are not published.

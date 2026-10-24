@@ -1,0 +1,32 @@
+{
+  "chapter": "psalms-62",
+  "notes": [
+    {
+      "v": 9,
+      "match": ["a breath", "vanity"],
+      "kind": "word",
+      "title": "Hebel: breath, not conceit",
+      "text": "The Hebrew hebel (translated \"vanity\" in the KJV) literally means breath or vapor -- something that looks substantial for a moment and then is gone. It is the same word that opens Ecclesiastes (\"vanity of vanities\"). Modern English \"vanity\" suggests self-importance or conceit, which is not the sense here; the point is that even powerful people are as fleeting and insubstantial as a breath.",
+      "refs": ["Ecclesiastes 1:2", "Psalm 39:5"],
+      "source": "Brown, Driver, Briggs, A Hebrew and English Lexicon of the Old Testament (1906), s.v. hebel"
+    },
+    {
+      "v": 12,
+      "match": ["steadfast love", "mercy"],
+      "kind": "word",
+      "title": "Chesed: covenant loyalty",
+      "text": "The Hebrew chesed, often rendered \"mercy\" in the KJV, is closer to covenant loyalty or unfailing love -- God's committed faithfulness to his promises, not simply leniency toward wrongdoing. Many modern translations render it \"steadfast love\" or \"lovingkindness\" for this reason. It is a different Hebrew word from the one usually translated \"mercy\" elsewhere (rachamim, compassion).",
+      "refs": ["Psalm 136 (the refrain \"his mercy endures forever\")", "Exodus 34:6-7"],
+      "source": "Koehler & Baumgartner, The Hebrew and Aramaic Lexicon of the Old Testament, s.v. chesed"
+    },
+    {
+      "v": 3,
+      "match": ["a leaning wall, a tottering fence", "a bowing wall... a tottering fence"],
+      "kind": "ane",
+      "title": "A collapsing wall as a picture of a doomed attack",
+      "text": "City and terrace walls in the ancient Near East were built of mudbrick or unmortared stone and could fail suddenly after a leaning crack appeared -- a familiar, vivid image of something that looks standing but is already doomed. The psalmist pictures his attackers as already-collapsing, not as a real threat.",
+      "refs": ["Isaiah 30:13, which uses the same image"],
+      "source": "Craigie, Psalms 1-50 (Word Biblical Commentary, 1983), on Psalm 62"
+    }
+  ]
+}
