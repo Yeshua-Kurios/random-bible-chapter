@@ -40,11 +40,18 @@
    ],
    "review": "mechanical + claude-smoothed",
    "revised": []
+  },
+  "psalms-62": {
+   "date": "2026-10-24",
+   "drafters": [
+    "claude"
+   ],
+   "review": "hand-polished",
+   "revised": []
   }
  },
  "failed": {
-  "1-chronicles-28": 1,
-  "psalms-62": 1
+  "1-chronicles-28": 1
  },
- "updated": "2026-10-18"
+ "updated": "2026-10-24"
 }
