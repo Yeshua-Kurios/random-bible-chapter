@@ -58,6 +58,10 @@ Whenever the owner asks for an app update, FIRST review the KJV27 queue and opti
 1. Whether the five hand-made pilot chapters (`par/pilot-*.json`) should be published in the app now. They are not in `par/progress.json`, so the app shows the KJV for them.
 2. What to do with chapters set aside after 3 failed tries (`failed` in `par/progress.json`).
 
+## State (2026-10-25 addendum, part 2)
+- Acts 27 hand-polished by Claude, catching the KJV27 queue up to Acts 27 (the app's own next-unread chapter, #2 in `par/queue.json`), since the unattended run below had jumped ahead to Revelation 11 (#6) after wrongly treating a stale `par/daily-*` branch as an active claim on Acts 27. 4 study notes added (`par/notes/acts-27.json`); see `par/NOTES.md` for the judgment calls (two Greek textual variants kept as in the KJV and flagged, the disputed headcount in v37, etc).
+- **Still needed:** the 7 stale `par/daily-2026-10-18` through `par/daily-2026-10-24` branches should be deleted -- they are leftover from the now-disabled old pipeline, and as long as they exist the daily job's "skip chapters claimed by a `par/daily-*` branch" rule will keep silently skipping 1 Chronicles 28, Psalms 3, Psalms 132, and Numbers 9. Deleting branches is destructive, so this needs the owner to do it (or explicitly grant permission) rather than being done automatically.
+
 ## State (2026-10-25 addendum)
 - Revelation 11 drafted and polished by Claude in the unattended daily job (`review: hand-polished`, drafters `["claude (unattended)"]`); v11 ("breath of life") flagged for review. 3 study notes added (`par/notes/revelation-11.json`). Chapters named by stale `par/daily-*` branches (1 Chronicles 28, Psalms 3, 132, Numbers 9, Acts 27) were skipped as claimed.
 

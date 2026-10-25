@@ -56,10 +56,18 @@
    ],
    "review": "hand-polished",
    "revised": []
+  },
+  "acts-27": {
+   "date": "2026-10-25",
+   "drafters": [
+    "claude"
+   ],
+   "review": "hand-polished",
+   "revised": []
   }
  },
  "failed": {
   "1-chronicles-28": 1
  },
- "updated": "2026-10-24"
+ "updated": "2026-10-25"
 }

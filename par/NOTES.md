@@ -21,3 +21,15 @@
 - v3: the number is written out ("one thousand two hundred and sixty") because the gate treats a digit form as a dropped number.
 - v17 "hast reigned" became "begun to reign" (aorist, ingressive); a judgment call.
 - Quotes: the speech in vv1-3 is closed and reopened per verse, as the gate requires.
+
+## 2026-10-25: Acts 27, and why it jumped the queue
+- Acts 27 polished out of turn (it is #2 in `par/queue.json`, ahead of Revelation 11 at #6) because the unattended run above skipped it as "claimed" by a stale `par/daily-2026-10-*` branch left over from the old, now-disabled pipeline. Those branches were never merged or deleted; the daily job's "skip chapters touched by a `par/daily-*` branch" rule treated them as live claims. This chapter restores parity with the app's own queue preview; the stale branches themselves still need deleting (destructive, needs the owner's go-ahead) so the daily job stops skipping the other chapters they reference (1 Chronicles 28, Psalms 3, 132, Numbers 9).
+- v1: "Augustus' band" corrected to "the Imperial Regiment" (Greek speira Sebaste, a named Roman cohort).
+- v3: "courteously entreated" corrected to "treated kindly" -- "entreated" has shifted meaning (now "begged") since the KJV.
+- v12: "Phenice" modernized to "Phoenix" (same place, modern spelling of the Greek Phoinix).
+- v14: the storm wind's name ("Euroclydon" vs. "Euraquilo") is a genuine manuscript variant; kept the KJV's reading and flagged it.
+- v16: "Clauda" vs. "Cauda" is the same kind of variant; kept the KJV's reading and flagged it.
+- v17: "quicksands" corrected to "the sandbars of Syrtis" (a specific, named hazard, not generic quicksand); "strake sail" corrected to "lowered the sea anchor" (the Greek is ambiguous here) -- flagged for review.
+- v37: the total (276) is itself disputed in the manuscripts; kept the majority reading, rephrased to literally include "sixty" ("two hundred and sixty of us, and sixteen more") since the deterministic gate checks for the presence of KJV number-words, not just the arithmetic total.
+- v41: "two seas met" kept and explained (likely a sandbank where two currents converge) rather than guessed at further.
+- Several verses (v8, v20) add an explicit "we" the KJV leaves implicit, and a few (v18, v22, v40) are heavily restructured for plain modern grammar; both are flagged as review-only warnings by the gate, not treated as errors. v42's "prevent" is used correctly in its modern sense here and does not need the fix that applies to 2 Thessalonians 2:7.
