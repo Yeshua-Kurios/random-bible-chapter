@@ -1,0 +1,41 @@
+{
+  "chapter": "acts-27",
+  "notes": [
+    {
+      "v": 9,
+      "match": ["the Fast was already over", "the fast was now already past"],
+      "kind": "word",
+      "title": "\"The Fast\": Yom Kippur",
+      "text": "\"The Fast\" (Greek he nesteia) is Luke's shorthand for the Day of Atonement (Yom Kippur), the one fast the Law of Moses required of all Israel (Leviticus 23:27-29). It fell in late September or early October, after which the Mediterranean sailing season was considered dangerous -- which is exactly Luke's point in this verse.",
+      "refs": ["Leviticus 23:27-29", "Acts 27:9"],
+      "source": "F. F. Bruce, The Book of the Acts (NICNT, 1988), on Acts 27:9"
+    },
+    {
+      "v": 14,
+      "match": ["Euroclydon"],
+      "kind": "variant",
+      "title": "Euroclydon or Euraquilo?",
+      "text": "The Greek manuscripts disagree on the storm wind's name: some read Eurakylon (\"northeaster\", a hybrid Greek-Latin nautical term for an east-northeast gale), others Euroklydon (roughly \"east-billow\", a wind that stirs up waves). The KJV follows the reading behind \"Euroclydon\"; many modern translations follow \"Euraquilo\". Either way, the text describes a violent, sudden gale typical of the autumn Mediterranean.",
+      "refs": ["Acts 27:14"],
+      "source": "Bruce M. Metzger, A Textual Commentary on the Greek New Testament, 2nd ed. (1994), on Acts 27:14"
+    },
+    {
+      "v": 17,
+      "match": ["the sandbars of Syrtis", "the quicksands"],
+      "kind": "ane",
+      "title": "The Syrtis: a feared ancient hazard",
+      "text": "The Syrtis (modern Gulf of Sidra and Gulf of Gabes, off Libya and Tunisia) was notorious in antiquity for shifting sandbars that wrecked ships far from land -- ancient sailors feared it the way later sailors feared the Bermuda Triangle. The crew's fear of drifting into it, far south of their intended course, shows how serious the storm had become.",
+      "refs": ["Acts 27:17"],
+      "source": "Strabo, Geography 17.3.20; cited in C. K. Barrett, The Acts of the Apostles, Vol. 2 (ICC, 1998), on Acts 27:17"
+    },
+    {
+      "v": 37,
+      "match": ["two hundred and sixty of us, and sixteen more", "two hundred threescore and sixteen souls"],
+      "kind": "variant",
+      "title": "276 people on one ship",
+      "text": "Some early manuscripts give a smaller number (76, not 276) for those aboard, likely a copying error (the Greek numerals for 276 and 76 differ by one easily-miscopied symbol). Ancient grain ships were large: Josephus describes a similar Alexandrian grain ship carrying about 600 people, so 276 is entirely plausible for the vessel Luke describes.",
+      "refs": ["Acts 27:37", "Josephus, Life 15"],
+      "source": "Bruce M. Metzger, A Textual Commentary on the Greek New Testament, 2nd ed. (1994), on Acts 27:37"
+    }
+  ]
+}
