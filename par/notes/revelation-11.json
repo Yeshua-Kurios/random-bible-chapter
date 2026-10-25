@@ -1,0 +1,50 @@
+{
+ "chapter": "revelation-11",
+ "notes": [
+  {
+   "v": 4,
+   "match": [
+    "olive trees",
+    "olive trees"
+   ],
+   "kind": "canon",
+   "title": "Olive trees and lampstands: Zechariah 4",
+   "text": "The image of two olive trees and lampstands echoes Zechariah's vision of a lampstand flanked by two olive trees, which the prophet identifies as the two \"anointed ones\" who stand by the Lord of the whole earth (Zech 4:2-3, 11-14). Revelation reuses the picture for the two witnesses. Who the witnesses represent is much debated (two individuals, the church, or the law and the prophets); the text itself does not settle it.",
+   "refs": [
+    "Zechariah 4:2-14"
+   ],
+   "source": "Zechariah 4:2-14; see G. K. Beale, The Book of Revelation (NIGTC, 1999), on Rev 11:4"
+  },
+  {
+   "v": 7,
+   "match": [
+    "abyss",
+    "bottomless pit"
+   ],
+   "kind": "word",
+   "title": "Abyss, not a bottomless pit",
+   "text": "The Greek abyssos means the deep: in the Septuagint it renders Hebrew tehom, the ocean depths (Gen 1:2), and in Revelation it is the prison or realm of evil powers (Rev 9:1-2, 11; 20:1-3). \"Bottomless pit\" in the KJV is a literal reading of a-byssos (without bottom), but \"abyss\" better keeps the name of a place.",
+   "refs": [
+    "Revelation 9:1",
+    "Revelation 20:3",
+    "Luke 8:31"
+   ],
+   "source": "Bauer-Danker-Arndt-Gingrich (BDAG), A Greek-English Lexicon of the New Testament, s.v. abyssos"
+  },
+  {
+   "v": 11,
+   "match": [
+    "breath of life",
+    "Spirit of life"
+   ],
+   "kind": "canon",
+   "title": "Breath of life: Ezekiel 37",
+   "text": "The wording echoes Ezekiel's vision of the dry bones, where \"breath\" (Hebrew ruach, Greek pneuma in the Septuagint) enters the dead and they stand on their feet (Ezek 37:5, 10). Greek pneuma can mean breath, wind or spirit, so \"the Spirit of life\" (KJV) and \"the breath of life\" are both defensible; the Ezekiel echo is why KJV27 chose \"breath\", and the verse is flagged for review.",
+   "refs": [
+    "Ezekiel 37:5-10",
+    "Genesis 2:7"
+   ],
+   "source": "BDAG, s.v. pneuma; Septuagint of Ezekiel 37:10"
+  }
+ ]
+}
