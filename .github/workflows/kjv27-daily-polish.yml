@@ -1,10 +1,13 @@
 name: KJV27 daily polish
 
-# 09:00 UTC = 5:00 am America/New_York during daylight saving (EDT). In winter (EST, UTC-5) this
-# drifts an hour earlier local time, to 4:00 am America/New_York, since this is a fixed UTC cron.
+# True 5:00 am America/New_York year-round (EDT or EST), not a fixed UTC offset. GitHub cron is UTC
+# and best-effort, so this fires every hour from 09:00 to 10:00 UTC (5 am EDT first, 5 am EST as a
+# fallback) and the "Is it time?" step below lets the run through only once local Eastern time hits
+# 5 am and only if today's branch doesn't already exist, so a missed 09:00 is caught by the 10:00
+# firing and a day never runs twice. workflow_dispatch always runs, regardless of the hour.
 on:
   schedule:
-    - cron: "0 9 * * *"
+    - cron: "0 9-10 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -32,18 +35,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Compute today's branch (America/New_York)
+      - name: Is it time?
         id: when
         run: |
           day=$(TZ=America/New_York date +%F)
-          echo "branch=claude/kjv27-$day" >> "$GITHUB_OUTPUT"
+          hour=$(TZ=America/New_York date +%H)
+          branch="claude/kjv27-$day"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo "day=$day" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$((10#$hour))" -ne 5 ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not yet 5 am Eastern (hour $hour); skipping."
+          elif [ "${{ github.event_name }}" = "schedule" ] \
+               && git ls-remote --exit-code --heads "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" "$branch" >/dev/null 2>&1; then
+            echo "run=false" >> "$GITHUB_OUTPUT"; echo "$branch already exists; skipping."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.when.outputs.run == 'true'
+        with:
+          python-version: "3.12"
 
       - name: Run KJV27 daily polish
+        if: steps.when.outputs.run == 'true'
         uses: anthropics/claude-code-action@c511ba74c10fdd478854737af777d6aaf10402a0 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -62,6 +77,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Summary
-        if: always()
+        if: always() && steps.when.outputs.run == 'true'
         run: |
           echo "Branch: ${{ steps.when.outputs.branch }}" >> "$GITHUB_STEP_SUMMARY"
