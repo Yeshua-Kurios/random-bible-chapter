@@ -1,10 +1,10 @@
 name: KJV27 daily polish
 
-# 08:43 UTC = 04:43 America/New_York during daylight saving (EDT). In winter (EST, UTC-5) this
-# drifts an hour earlier local time, to 03:43 America/New_York, since this is a fixed UTC cron.
+# 09:00 UTC = 5:00 am America/New_York during daylight saving (EDT). In winter (EST, UTC-5) this
+# drifts an hour earlier local time, to 4:00 am America/New_York, since this is a fixed UTC cron.
 on:
   schedule:
-    - cron: "43 8 * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch: {}
 
 permissions:
