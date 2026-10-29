@@ -25,3 +25,29 @@ API, a hosting service, a library — for a quality-vs-cost tradeoff:
 
 See `par/HANDOFF.md`, `par/STYLE.md`, and `.github/copilot-instructions.md`
 for the KJV27 project's own content and workflow rules.
+
+## Design workflow (EGM)
+
+This repo uses Google's Elephant-Goldfish Model plugin (`egm@egm`) for
+features that need design decisions before implementation:
+
+1. `/egm-brainstorm` to stress-test the idea and produce `concepts_brief.md`.
+2. `/egm-draft` to turn it into a design doc under `docs/designs/`.
+3. `/egm-review` for a fresh-context, multi-stage review of the draft.
+4. Human review (PR) before implementing.
+
+Load `_agents/skills/random-bible-chapter_elephant/SKILL.md` first for
+project context. Skip this workflow for a small, clear fix — use your
+normal coding workflow instead. `docs/designs/SITEMAP.md` indexes approved
+designs; run `/egm-drift-report` periodically to catch drift between them
+and the code.
+
+## Session cost (TokenEconomizer)
+
+This repo also has Microsoft Research's TokenEconomizer plugin
+(`tokeneconomizer@tokeneconomizer`) installed, which learns per-repo
+micro-skills, prunes unused tools, and intervenes on failure loops across
+sessions. It writes its own state to `.claude/settings.local.json` and
+`.git/info/exclude` (both untracked — do not commit them). Run
+`/tokeneconomizer:status` to check it, and `/tokeneconomizer:toolprune
+refresh-catalog` once per machine (and after Claude Code updates).
