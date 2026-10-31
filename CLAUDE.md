@@ -1,5 +1,11 @@
 # Working rules for Claude (this repo)
 
+## Repo Rules doc
+
+Also check the shared Repo Rules doc (Drive, PWAs folder) at session start if it hasn't been
+checked in the last 24h — enforced by `.claude/hooks/session-start-repo-rules.sh`:
+https://docs.google.com/document/d/1jrT4eRP6ZEYjZxcc9kvkOfrgfiCJFl6wkbZ7LivLMIU/edit
+
 ## Resource research (models, APIs, services, tools)
 
 Whenever a task requires researching which resource to use — an LLM model, an
